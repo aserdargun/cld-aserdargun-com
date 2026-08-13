@@ -19,9 +19,17 @@ test('high-traffic scenario recomputes major-provider ranking and exposes source
   await scenarios.getByRole('tab', { name: 'Yüksek trafik' }).click()
   await expect(scenarios.getByLabel('Kullanım senaryosu')).toHaveValue('high-traffic')
 
+  const ranking = page.getByRole('region', { name: 'Sağlayıcı sıralaması' })
+  const azureRanking = ranking.getByRole('listitem', { name: 'Microsoft Azure', exact: true })
+  const azureMonthlyTotal = azureRanking.getByRole('status', { name: 'Aylık toplam' })
+  const presetMonthlyTotal = await azureMonthlyTotal.innerText()
+  expect(presetMonthlyTotal).toMatch(/^\d[\d.,]* USD\/ay$/)
+
   await scenarios.getByLabel('Aylık dış trafik').fill('1000')
   await scenarios.getByRole('button', { name: 'Hesaplamayı güncelle' }).click()
   await expect(scenarios.getByLabel('Aylık dış trafik')).toHaveValue('1000')
+  await expect(azureMonthlyTotal).not.toHaveText(presetMonthlyTotal)
+  await expect(azureMonthlyTotal).toHaveText(/^\d[\d.,]* USD\/ay$/)
 
   const filters = page.getByRole('region', { name: 'Karşılaştırma filtreleri' })
   for (const provider of ['Hetzner', 'Oracle', 'Cloudflare', 'DigitalOcean', 'Vultr']) {
@@ -34,9 +42,7 @@ test('high-traffic scenario recomputes major-provider ranking and exposes source
     await expect(filters.getByRole('button', { name: provider, exact: true })).toHaveAttribute('aria-pressed', 'false')
   }
 
-  const ranking = page.getByRole('region', { name: 'Sağlayıcı sıralaması' })
   await expect(ranking.getByRole('listitem')).toHaveCount(3)
-  await expect(ranking).toContainText('USD/ay')
   await ranking.locator('summary').first().click()
   await expect(ranking.locator('details').first()).toHaveAttribute('open', '')
   await expect(ranking).toContainText('Kalem')
@@ -81,6 +87,13 @@ test('mobile navigation closes and comparison tables own their horizontal overfl
   }))
   expect(rankingOverflow.overflowY).toBe('visible')
   expect(rankingOverflow.scrollHeight).toBe(rankingOverflow.clientHeight)
+
+  const disclosureHitbox = await mobileRanking.locator('summary').first().evaluate((element) => {
+    const bounds = element.getBoundingClientRect()
+    return { width: bounds.width, height: bounds.height }
+  })
+  expect(disclosureHitbox.width).toBeGreaterThanOrEqual(44)
+  expect(disclosureHitbox.height).toBeGreaterThanOrEqual(44)
 
   for (const actionName of ['Varsayılan değerlere sıfırla', 'Hesaplamayı güncelle']) {
     const actionHeight = await page
