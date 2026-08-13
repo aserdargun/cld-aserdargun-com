@@ -62,13 +62,19 @@ describe('App', () => {
     render(<App />)
 
     await user.selectOptions(screen.getByLabelText('Kullanım senaryosu'), 'high-traffic')
+    const ranking = screen.getByRole('region', { name: 'Sağlayıcı sıralaması' })
+    const azure = within(ranking).getByRole('listitem', { name: 'Microsoft Azure' })
+    const before = within(azure).getByLabelText('Aylık toplam').textContent
+
     const outbound = screen.getByLabelText('Aylık dış trafik')
     await user.clear(outbound)
     await user.type(outbound, '1000')
 
-    const ranking = screen.getByRole('region', { name: 'Sağlayıcı sıralaması' })
+    const after = within(azure).getByLabelText('Aylık toplam').textContent
     expect(outbound).toHaveValue(1000)
-    expect(ranking).toHaveTextContent('USD/ay')
+    expect(before).toMatch(/USD\/ay/)
+    expect(after).toMatch(/USD\/ay/)
+    expect(after).not.toBe(before)
   })
 
   it('constrains rankings and detailed offers with provider and category filters', async () => {

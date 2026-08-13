@@ -170,6 +170,8 @@ describe('ScenarioSummary', () => {
     expect(azure).toHaveTextContent('Trafik payı %40')
     expect(estimate.totalUsd).toBe(10.125)
 
+    const disclosure = within(azure).getByText('Maliyet ayrıntılarını göster').closest('details')
+    expect(disclosure).not.toBeNull()
     await user.click(within(azure).getByText('Maliyet ayrıntılarını göster'))
 
     expect(azure).toHaveTextContent('westeurope')
@@ -177,5 +179,6 @@ describe('ScenarioSummary', () => {
     expect(azure).toHaveTextContent('Çalışma süresi')
     expect(azure).toHaveTextContent('Dış trafik')
     expect(azure).toHaveTextContent('100 birim')
+    expect(within(disclosure!).getByText('Ücretsiz katman öncesi')).toBeInTheDocument()
   })
 })

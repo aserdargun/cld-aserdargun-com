@@ -89,7 +89,7 @@
   }
 
   .filter-bar__button {
-    min-height: 40px;
+    min-height: 44px;
     padding: 8px 10px;
   }
 
@@ -110,5 +110,10 @@
     flex-wrap: wrap;
     gap: 12px 20px;
     white-space: normal;
+  }
+
+  .filter-bar__toggles label {
+    min-height: 44px;
+    padding-block: 8px;
   }
 }

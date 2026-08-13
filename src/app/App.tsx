@@ -85,7 +85,6 @@ function Dashboard({ catalog, today }: { catalog: Catalog; today: Date }) {
         <section className="comparison-section page-section" id="karsilastirma" aria-labelledby="comparison-heading">
           <header className="page-section__heading">
             <h2 id="comparison-heading">Servis karşılaştırması</h2>
-            <p>Seçili sağlayıcı ve kategoriler için kaynaklı, vergiler hariç USD fiyatları.</p>
           </header>
           <FilterBar state={state} providers={catalog.providers} />
           <ComparisonTable

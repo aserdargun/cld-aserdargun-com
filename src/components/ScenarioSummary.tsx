@@ -82,6 +82,45 @@ function regionsFor(estimate: RankedProviderEstimate): string | null {
   return regions.length > 0 ? regions.join(', ') : null
 }
 
+function EstimateMetrics({
+  estimate,
+  savings,
+  traffic,
+  regions,
+  variant,
+}: {
+  estimate: RankedProviderEstimate
+  savings: number | null
+  traffic: number | null
+  regions: string | null
+  variant: 'summary' | 'disclosure'
+}) {
+  return (
+    <dl className={`scenario-summary__metrics scenario-summary__metrics--${variant}`}>
+      <div>
+        <dt>Ücretsiz katman öncesi</dt>{' '}
+        <dd>{formatUsd(estimate.subtotalBeforeFreeTierUsd)}</dd>
+      </div>
+      <div>
+        <dt>Uygulanan ücretsiz katman indirimi</dt>{' '}
+        <dd>{formatUsd(savings)}</dd>
+      </div>
+      {traffic === null ? null : (
+        <div>
+          <dt>Trafik payı</dt>{' '}
+          <dd>%{quantityFormatter.format(traffic)}</dd>
+        </div>
+      )}
+      {regions ? (
+        <div>
+          <dt>Bölge</dt>{' '}
+          <dd>{regions}</dd>
+        </div>
+      ) : null}
+    </dl>
+  )
+}
+
 function LineItem({ lineItem }: { lineItem: PriceLineItemEstimate }) {
   return (
     <li className="scenario-summary__price-line">
@@ -117,7 +156,7 @@ export function ScenarioSummary({ estimates, providers: providedProviders }: Sce
 
           return (
             <li
-              className="scenario-summary__provider"
+              className={`scenario-summary__provider${estimate.lineItems.length > 0 ? ' scenario-summary__provider--has-details' : ''}`}
               key={estimate.providerId}
               aria-label={providerName}
             >
@@ -132,35 +171,18 @@ export function ScenarioSummary({ estimates, providers: providedProviders }: Sce
                   <StatusBadge status={estimate.status} />
                 </div>
 
-                <strong className="scenario-summary__total">{formatUsd(estimate.totalUsd)}</strong>
+                <output className="scenario-summary__total" aria-label="Aylık toplam">
+                  {formatUsd(estimate.totalUsd)}
+                </output>
               </div>
 
-              <dl className="scenario-summary__metrics">
-                <div>
-                  <dt>Ücretsiz katman öncesi</dt>
-                  {' '}
-                  <dd>{formatUsd(estimate.subtotalBeforeFreeTierUsd)}</dd>
-                </div>
-                <div>
-                  <dt>Uygulanan ücretsiz katman indirimi</dt>
-                  {' '}
-                  <dd>{formatUsd(savings)}</dd>
-                </div>
-                {traffic === null ? null : (
-                  <div>
-                    <dt>Trafik payı</dt>
-                    {' '}
-                    <dd>%{quantityFormatter.format(traffic)}</dd>
-                  </div>
-                )}
-                {regions ? (
-                  <div>
-                    <dt>Bölge</dt>
-                    {' '}
-                    <dd>{regions}</dd>
-                  </div>
-                ) : null}
-              </dl>
+              <EstimateMetrics
+                estimate={estimate}
+                savings={savings}
+                traffic={traffic}
+                regions={regions}
+                variant="summary"
+              />
 
               {estimate.missingCategories.length > 0 ? (
                 <p className="scenario-summary__missing">
@@ -175,6 +197,14 @@ export function ScenarioSummary({ estimates, providers: providedProviders }: Sce
                     Maliyet ayrıntılarını göster
                     <ChevronDown aria-hidden="true" size={17} strokeWidth={2} />
                   </summary>
+
+                  <EstimateMetrics
+                    estimate={estimate}
+                    savings={savings}
+                    traffic={traffic}
+                    regions={regions}
+                    variant="disclosure"
+                  />
 
                   <div className="scenario-summary__breakdown">
                     {estimate.lineItems.map((offerEstimate) => (
