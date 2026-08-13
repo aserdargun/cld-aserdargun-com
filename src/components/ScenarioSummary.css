@@ -258,8 +258,9 @@
 
 @media (max-width: 699px) {
   .scenario-summary {
-    max-height: 470px;
-    overflow-y: auto;
+    max-height: none;
+    overflow-x: visible;
+    overflow-y: visible;
   }
 
   .scenario-summary__row {

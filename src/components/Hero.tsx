@@ -1,4 +1,5 @@
 import { Menu } from 'lucide-react'
+import { useRef } from 'react'
 
 interface HeroProps {
   verifiedAt: string
@@ -18,18 +19,20 @@ const navigationItems = [
   { href: '#metodoloji', label: 'Metodoloji' },
 ] as const
 
-function NavigationLinks() {
+function NavigationLinks({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <>
       {navigationItems.map((item) => (
-        <a key={item.href} href={item.href}>{item.label}</a>
+        <a key={item.href} href={item.href} onClick={onNavigate}>{item.label}</a>
       ))}
     </>
   )
 }
 
 export function Hero({ verifiedAt }: HeroProps) {
+  const mobileMenuRef = useRef<HTMLDetailsElement>(null)
   const formattedDate = dateFormatter.format(new Date(`${verifiedAt}T00:00:00.000Z`))
+  const closeMobileMenu = () => mobileMenuRef.current?.removeAttribute('open')
 
   return (
     <div className="hero-shell">
@@ -40,13 +43,13 @@ export function Hero({ verifiedAt }: HeroProps) {
         </nav>
         <a className="site-header__sources" href="#metodoloji">Kaynakları incele</a>
 
-        <details className="site-header__mobile-menu">
+        <details className="site-header__mobile-menu" ref={mobileMenuRef}>
           <summary aria-label="Menüyü aç">
             <Menu aria-hidden="true" size={28} strokeWidth={2} />
           </summary>
           <nav aria-label="Mobil navigasyon">
-            <NavigationLinks />
-            <a href="#metodoloji">Kaynakları incele</a>
+            <NavigationLinks onNavigate={closeMobileMenu} />
+            <a href="#metodoloji" onClick={closeMobileMenu}>Kaynakları incele</a>
           </nav>
         </details>
       </header>
