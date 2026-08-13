@@ -17,22 +17,22 @@ Sağlayıcılar: **Azure, Google Cloud, AWS, Hetzner, Oracle Cloud, Cloudflare, 
 
 Servis kategorileri:
 
-- Sanal sunucu
-- GPU/AI
+- Hesaplama
+- AI / GPU
 - Nesne depolama
 - Yönetilen veritabanı
-- Serverless
-- CDN/ağ
+- Sunucusuz
+- CDN / ağ
 - Kubernetes
 
 Hazır senaryolar:
 
 - Küçük web uygulaması
-- API/backend
+- API arka ucu
 - Veritabanlı SaaS
 - Statik site
-- AI/GPU
-- Yüksek trafikli servis
+- Yapay zeka GPU
+- Yüksek trafikli uygulama
 
 Kapsam, Türkiye'den bireysel veya kurumsal hesapla erişilebilen genel teklifler ve İstanbul'a görece yakın Avrupa bölgeleri üzerine kuruludur. Türkiye uygunluğu, araştırma tarihinde hesap açma ve ödeme yöntemlerine ilişkin resmî kanıt bulunması anlamına gelir; sağlayıcının hesabı kabul edeceğini, belirli bir bölgede kapasite bulunacağını veya ödemenin tamamlanacağını garanti etmez. Koşullu sağlayıcılarda Türkiye'ye özgü açık garanti yoktur.
 
