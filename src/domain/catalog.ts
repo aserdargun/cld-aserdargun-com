@@ -74,6 +74,7 @@ export interface Provider {
   officialSite: string
   purchaseAvailability: PurchaseAvailability
   purchaseNote: string
+  purchaseSourceIds: string[]
   verifiedAt: string
   strengths: string[]
   limitations: string[]

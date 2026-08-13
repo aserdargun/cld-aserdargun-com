@@ -36,6 +36,7 @@ function collectInvalidReferences(catalog: Catalog, knownSourceIds: Set<string>)
   }
 
   catalog.providers.forEach((provider) => {
+    addMissing(`provider:${provider.id}:purchase`, provider.purchaseSourceIds)
     provider.regions.forEach((region) => addMissing(`provider:${provider.id}:region:${region.id}`, [region.sourceId]))
   })
   catalog.offers.forEach((offer) => addMissing(`offer:${offer.id}`, offer.sourceIds))

@@ -40,6 +40,7 @@ export const providerSchema = z
     officialSite: z.url().refine((url) => url.startsWith('https://'), 'Must use HTTPS'),
     purchaseAvailability: z.enum(['verified', 'conditional', 'unverified']),
     purchaseNote: nonEmptyString,
+    purchaseSourceIds: z.array(nonEmptyString).min(1),
     verifiedAt: isoDate,
     strengths: z.array(nonEmptyString),
     limitations: z.array(nonEmptyString),
@@ -179,6 +180,9 @@ export const catalogSchema = z
     }
 
     catalog.providers.forEach((provider, providerIndex) => {
+      provider.purchaseSourceIds.forEach((sourceId, sourceIndex) => {
+        checkSource(sourceId, ['providers', providerIndex, 'purchaseSourceIds', sourceIndex])
+      })
       provider.regions.forEach((region, regionIndex) => {
         checkSource(region.sourceId, ['providers', providerIndex, 'regions', regionIndex, 'sourceId'])
       })
