@@ -47,7 +47,11 @@ const freeTier = (overrides: Partial<FreeTier> = {}): FreeTier => ({
   ...overrides,
 })
 
-const emptyContext = (): PricingContext => ({ exchangeRates: [], freeTiers: [] })
+const emptyContext = (): PricingContext => ({
+  exchangeRates: [],
+  freeTiers: [],
+  statusByOfferId: { 'test-offer': 'current' },
+})
 
 describe('convertToUsd', () => {
   it('converts EUR with the dated ECB rate', () => {
@@ -74,6 +78,13 @@ describe('convertToUsd', () => {
 
   it('does not invent USD when the rate is missing', () => {
     expect(convertToUsd(10, 'EUR', [])).toEqual({ amountUsd: null, converted: false })
+  })
+
+  it('rejects an undated EUR rate when estimating a dated offer', () => {
+    expect(convertToUsd(10, 'EUR', [{ base: 'EUR', quote: 'USD', rate: 1.1 }], '2026-08-10')).toEqual({
+      amountUsd: null,
+      converted: false,
+    })
   })
 })
 
@@ -112,7 +123,12 @@ describe('estimateOffer', () => {
     const estimate = estimateOffer(
       offer([{ kind: 'requests-million', price: 2, currency: 'USD', includedQuantity: 0 }]),
       webScenario(),
-      { ...emptyContext(), freeTiers: [freeTier()], eligibleFreeTierIds: ['test-free-tier'] },
+      {
+        ...emptyContext(),
+        freeTiers: [freeTier()],
+        eligibleFreeTierIds: ['test-free-tier'],
+        statusByFreeTierId: { 'test-free-tier': 'current' },
+      },
     )
 
     expect(estimate.subtotalBeforeFreeTierUsd).toBe(4)
@@ -189,5 +205,72 @@ describe('estimateOffer', () => {
 
     expect(estimate.totalUsd).toBeNull()
     expect(estimate.subtotalBeforeFreeTierUsd).toBeNull()
+  })
+
+  it('marks an offer without price components incomplete instead of free', () => {
+    const estimate = estimateOffer(offer([]), webScenario(), emptyContext())
+
+    expect(estimate.totalUsd).toBeNull()
+    expect(estimate.subtotalBeforeFreeTierUsd).toBeNull()
+  })
+
+  it('allocates a matching free quota only once across repeated component kinds', () => {
+    const estimate = estimateOffer(
+      offer([
+        { kind: 'requests-million', price: 1, currency: 'USD', includedQuantity: 0 },
+        { kind: 'requests-million', price: 1, currency: 'USD', includedQuantity: 0 },
+      ]),
+      webScenario(),
+      {
+        ...emptyContext(),
+        freeTiers: [freeTier()],
+        eligibleFreeTierIds: ['test-free-tier'],
+        statusByFreeTierId: { 'test-free-tier': 'current' },
+      },
+    )
+
+    expect(estimate.freeTierSavingsUsd).toBe(1)
+    expect(estimate.totalUsd).toBe(3)
+  })
+
+  it('does not apply an invalid free-tier record', () => {
+    const estimate = estimateOffer(
+      offer([{ kind: 'requests-million', price: 2, currency: 'USD', includedQuantity: 0 }]),
+      webScenario(),
+      {
+        ...emptyContext(),
+        freeTiers: [freeTier()],
+        eligibleFreeTierIds: ['test-free-tier'],
+        statusByFreeTierId: { 'test-free-tier': 'invalid' },
+      },
+    )
+
+    expect(estimate.freeTierSavingsUsd).toBe(0)
+    expect(estimate.totalUsd).toBe(4)
+  })
+
+  it('marks an estimate stale when it uses a stale free-tier record', () => {
+    const estimate = estimateOffer(
+      offer([{ kind: 'requests-million', price: 2, currency: 'USD', includedQuantity: 0 }]),
+      webScenario(),
+      {
+        ...emptyContext(),
+        freeTiers: [freeTier()],
+        eligibleFreeTierIds: ['test-free-tier'],
+        statusByFreeTierId: { 'test-free-tier': 'stale' },
+      },
+    )
+
+    expect(estimate.status).toBe('stale')
+  })
+
+  it('treats an offer without an explicit status as invalid', () => {
+    expect(
+      estimateOffer(
+        offer([{ kind: 'flat-month', price: 10, currency: 'USD', includedQuantity: 0 }]),
+        webScenario(),
+        { exchangeRates: [], freeTiers: [] },
+      ).status,
+    ).toBe('invalid')
   })
 })

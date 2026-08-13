@@ -17,9 +17,12 @@ export interface RankedProviderEstimate extends ProviderEstimate {
 }
 
 function meetsCapacityRequirements(offer: Offer, scenario: Scenario): boolean {
+  if (offer.category !== 'compute' && offer.category !== 'gpu-ai') return true
+
   const hasRequiredVcpu = scenario.vcpu === 0 || (offer.specs.vcpu ?? 0) >= scenario.vcpu
   const hasRequiredRam = scenario.ramGb === 0 || (offer.specs.ramGb ?? 0) >= scenario.ramGb
-  const hasRequiredGpu = scenario.gpuVramGb === 0 || (offer.specs.gpuVramGb ?? 0) >= scenario.gpuVramGb
+  const hasRequiredGpu =
+    offer.category !== 'gpu-ai' || scenario.gpuVramGb === 0 || (offer.specs.gpuVramGb ?? 0) >= scenario.gpuVramGb
   return hasRequiredVcpu && hasRequiredRam && hasRequiredGpu
 }
 

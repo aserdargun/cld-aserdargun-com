@@ -48,7 +48,17 @@ const freeTier = (): FreeTier => ({
   verifiedAt: '2026-08-10',
 })
 
-const context = (): PricingContext => ({ exchangeRates: [], freeTiers: [] })
+const context = (): PricingContext => ({
+  exchangeRates: [],
+  freeTiers: [],
+  statusByOfferId: {
+    'azure-compute': 'current',
+    undersized: 'current',
+    suitable: 'current',
+    'more-expensive': 'current',
+    'storage-offer': 'current',
+  },
+})
 
 const providerEstimate = (
   providerId: ProviderEstimate['providerId'],
@@ -97,11 +107,42 @@ describe('estimateProvider', () => {
         }),
       ],
       scenario(['compute']),
-      { ...context(), freeTiers: [freeTier()], eligibleFreeTierIds: ['outbound-quota'] },
+      {
+        ...context(),
+        freeTiers: [freeTier()],
+        eligibleFreeTierIds: ['outbound-quota'],
+        statusByFreeTierId: { 'outbound-quota': 'current' },
+      },
     )
 
     expect(estimate.subtotalBeforeFreeTierUsd).toBe(3)
     expect(estimate.totalUsd).toBe(1)
+  })
+
+  it('leaves a price-less required category incomplete instead of selecting it at zero cost', () => {
+    const estimate = estimateProvider('azure', [offer({ prices: [] })], scenario(['compute']), context())
+
+    expect(estimate.missingCategories).toEqual(['compute'])
+    expect(estimate.totalUsd).toBeNull()
+  })
+
+  it('does not require compute specs from an object-storage offer', () => {
+    const estimate = estimateProvider(
+      'azure',
+      [
+        offer({
+          id: 'storage-offer',
+          category: 'object-storage',
+          specs: {},
+          prices: [{ kind: 'storage-gb-month', price: 0.05, currency: 'USD', includedQuantity: 0 }],
+        }),
+      ],
+      scenario(['object-storage']),
+      context(),
+    )
+
+    expect(estimate.lineItems.map((lineItem) => lineItem.offer.id)).toEqual(['storage-offer'])
+    expect(estimate.totalUsd).toBe(5)
   })
 })
 

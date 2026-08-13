@@ -22,6 +22,7 @@ export interface PricingContext {
   eligibleFreeTierIds?: readonly string[]
   monthsSinceAccountCreation?: number
   statusByOfferId?: Readonly<Record<string, VerificationStatus>>
+  statusByFreeTierId?: Readonly<Record<string, VerificationStatus>>
 }
 
 export interface CurrencyConversion {
@@ -83,7 +84,7 @@ export function convertToUsd(
     (exchangeRate) =>
       exchangeRate.base === 'EUR' &&
       exchangeRate.quote === 'USD' &&
-      (!verifiedAt || !exchangeRate.date || exchangeRate.date <= verifiedAt),
+      (!verifiedAt || (exchangeRate.date !== undefined && exchangeRate.date <= verifiedAt)),
   )
   const latestRate = matchingRates.reduce<ExchangeRateInput | undefined>((latest, exchangeRate) => {
     if (!latest || (exchangeRate.date ?? '') > (latest.date ?? '')) return exchangeRate
@@ -95,13 +96,20 @@ export function convertToUsd(
     : { amountUsd: null, converted: false }
 }
 
-function freeTierQuantity(
+interface FreeTierAllocation {
+  quantity: number
+  statuses: VerificationStatus[]
+}
+
+function allocateFreeTierQuantity(
   offer: Offer,
   component: PriceComponent,
   context: PricingContext,
-): number {
+  remainingQuotaById: Map<string, number>,
+  maximumQuantity: number,
+): FreeTierAllocation {
   const eligibleIds = new Set(context.eligibleFreeTierIds ?? [])
-  return context.freeTiers.reduce((total, freeTier) => {
+  return context.freeTiers.reduce<FreeTierAllocation>((allocation, freeTier) => {
     const isEligible = eligibleIds.has(freeTier.id)
     const isWithinDuration =
       freeTier.durationMonths === null ||
@@ -110,15 +118,23 @@ function freeTierQuantity(
     const quotaKind = kindByFreeTierUnit[normalizedUnit(freeTier.quota.unit)]
     const isMatchingQuota =
       freeTier.quota.period === 'month' && quotaKind !== undefined && quotaKind === component.kind
+    const status = context.statusByFreeTierId?.[freeTier.id] ?? 'invalid'
+    const remainingQuota = remainingQuotaById.get(freeTier.id) ?? freeTier.quota.amount
+    const allocatedQuantity = Math.min(remainingQuota, Math.max(0, maximumQuantity - allocation.quantity))
 
-    return isEligible &&
+    if (isEligible &&
       isWithinDuration &&
       isMatchingQuota &&
       freeTier.providerId === offer.providerId &&
-      freeTier.category === offer.category
-      ? total + freeTier.quota.amount
-      : total
-  }, 0)
+      freeTier.category === offer.category &&
+      status !== 'invalid' &&
+      allocatedQuantity > 0) {
+      remainingQuotaById.set(freeTier.id, remainingQuota - allocatedQuantity)
+      return { quantity: allocation.quantity + allocatedQuantity, statuses: [...allocation.statuses, status] }
+    }
+
+    return allocation
+  }, { quantity: 0, statuses: [] })
 }
 
 function estimateLineItem(
@@ -126,10 +142,20 @@ function estimateLineItem(
   component: PriceComponent,
   scenario: Scenario,
   context: PricingContext,
+  remainingQuotaById: Map<string, number>,
+  usedStaleFreeTier: { value: boolean },
 ): PriceLineItemEstimate {
   const quantity = quantityByKind[component.kind](scenario)
   const chargeableQuantity = Math.max(0, quantity - component.includedQuantity)
-  const tierQuantity = freeTierQuantity(offer, component, context)
+  const allocation = allocateFreeTierQuantity(
+    offer,
+    component,
+    context,
+    remainingQuotaById,
+    chargeableQuantity,
+  )
+  const tierQuantity = allocation.quantity
+  if (allocation.statuses.includes('stale')) usedStaleFreeTier.value = true
   const beforeFreeTier = Math.min(chargeableQuantity * component.price, component.monthlyCap ?? Infinity)
   const afterFreeTier = Math.min(
     Math.max(0, chargeableQuantity - tierQuantity) * component.price,
@@ -156,14 +182,23 @@ function sumOrNull(values: readonly (number | null)[]): number | null {
 }
 
 export function estimateOffer(offer: Offer, scenario: Scenario, context: PricingContext): OfferEstimate {
-  const lineItems = offer.prices.map((component) => estimateLineItem(offer, component, scenario, context))
+  const remainingQuotaById = new Map<string, number>()
+  const usedStaleFreeTier = { value: false }
+  const lineItems = offer.prices.map((component) =>
+    estimateLineItem(offer, component, scenario, context, remainingQuotaById, usedStaleFreeTier),
+  )
+  const offerStatus = context.statusByOfferId?.[offer.id] ?? 'invalid'
+  const status = offerStatus === 'invalid' ? 'invalid' : usedStaleFreeTier.value ? 'stale' : offerStatus
+  const hasPrices = lineItems.length > 0
 
   return {
     offer,
-    status: context.statusByOfferId?.[offer.id] ?? 'current',
+    status,
     lineItems,
-    subtotalBeforeFreeTierUsd: sumOrNull(lineItems.map((lineItem) => lineItem.subtotalBeforeFreeTierUsd)),
-    freeTierSavingsUsd: sumOrNull(lineItems.map((lineItem) => lineItem.freeTierSavingsUsd)),
-    totalUsd: sumOrNull(lineItems.map((lineItem) => lineItem.totalUsd)),
+    subtotalBeforeFreeTierUsd: hasPrices
+      ? sumOrNull(lineItems.map((lineItem) => lineItem.subtotalBeforeFreeTierUsd))
+      : null,
+    freeTierSavingsUsd: hasPrices ? sumOrNull(lineItems.map((lineItem) => lineItem.freeTierSavingsUsd)) : null,
+    totalUsd: hasPrices ? sumOrNull(lineItems.map((lineItem) => lineItem.totalUsd)) : null,
   }
 }
