@@ -1,12 +1,64 @@
 .scenario-calculator {
+  display: contents;
+}
+
+.scenario-tabs {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(6, minmax(150px, 1fr));
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px 8px 0 0;
+  background: var(--surface);
+  scrollbar-width: thin;
+}
+
+.scenario-tabs__tab {
+  position: relative;
+  min-height: 48px;
+  padding: 10px 16px;
+  border: 0;
+  border-right: 1px solid var(--line);
+  color: var(--navy-900);
+  background: var(--surface);
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 650;
+  line-height: 1.35;
+  white-space: nowrap;
+  transition: color 150ms ease, background-color 150ms ease;
+}
+
+.scenario-tabs__tab:last-child {
+  border-right: 0;
+}
+
+.scenario-tabs__tab[aria-selected='true'] {
+  color: var(--blue);
+  background: #f8fbff;
+}
+
+.scenario-tabs__tab[aria-selected='true']::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: var(--blue);
+  content: '';
+}
+
+.scenario-calculator__panel {
   min-width: 0;
-  padding: 24px 0;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 0 0 8px 8px;
+  background: var(--surface);
 }
 
 .scenario-calculator h2 {
-  margin: 0 0 20px;
+  margin: 0 0 16px;
   color: var(--navy-900);
   font-size: clamp(1.5rem, 2.2vw, 1.875rem);
   font-weight: 700;
@@ -140,7 +192,7 @@
 .scenario-calculator__requirements {
   display: flex;
   flex-wrap: wrap;
-  gap: 0;
+  gap: 0 4px;
   margin-top: 18px;
   padding-top: 14px;
   border-top: 1px solid var(--line);
@@ -156,6 +208,10 @@
 }
 
 @media (max-width: 899px) {
+  .scenario-tabs {
+    grid-template-columns: repeat(6, minmax(142px, 1fr));
+  }
+
   .scenario-calculator__fields {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 14px 12px;
@@ -170,6 +226,21 @@
 }
 
 @media (max-width: 520px) {
+  .scenario-calculator__panel {
+    padding: 18px 16px;
+  }
+
+  .scenario-tabs {
+    border-radius: 8px 8px 0 0;
+  }
+
+  .scenario-tabs__tab {
+    min-width: 135px;
+    min-height: 54px;
+    font-size: 0.9375rem;
+    white-space: normal;
+  }
+
   .scenario-calculator__actions {
     align-items: stretch;
     flex-direction: column-reverse;

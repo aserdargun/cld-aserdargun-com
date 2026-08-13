@@ -1,9 +1,7 @@
 import { loadCatalog } from '../data/catalog'
 import type { ComparisonState } from '../app/useComparisonState'
-import type { ServiceCategory } from '../domain/catalog'
+import type { Provider, ServiceCategory } from '../domain/catalog'
 import './FilterBar.css'
-
-const providers = loadCatalog().providers
 
 const categoryLabels: Record<ServiceCategory, string> = {
   compute: 'Hesaplama',
@@ -27,11 +25,13 @@ interface FilterBarProps {
     | 'setFreeOnly'
     | 'setIncludeStale'
   >
+  providers?: readonly Provider[]
 }
 
-export function FilterBar({ state }: FilterBarProps) {
+export function FilterBar({ state, providers: providedProviders }: FilterBarProps) {
+  const providers = providedProviders ?? loadCatalog().providers
   return (
-    <section className="filter-bar" aria-label="Karşılaştırma filtreleri">
+    <section className="filter-bar" role="region" aria-label="Karşılaştırma filtreleri">
       <fieldset className="filter-bar__group">
         <legend>Sağlayıcılar</legend>
         <div className="filter-bar__choices">

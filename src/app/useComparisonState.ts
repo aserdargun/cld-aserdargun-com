@@ -23,8 +23,6 @@ export interface ComparisonState {
   resetScenario: () => void
 }
 
-const scenarios = loadCatalog().scenarios
-
 export function resolveInitialScenario(presets: readonly Scenario[]): Scenario {
   const smallWebApp = presets.find((scenario) => scenario.id === 'small-web-app')
   if (!smallWebApp) {
@@ -33,8 +31,8 @@ export function resolveInitialScenario(presets: readonly Scenario[]): Scenario {
   return smallWebApp
 }
 
-function scenarioForId(id: string): Scenario | undefined {
-  return scenarios.find((scenario) => scenario.id === id)
+function scenarioForId(presets: readonly Scenario[], id: string): Scenario | undefined {
+  return presets.find((scenario) => scenario.id === id)
 }
 
 function toggleInSet<T>(selected: Set<T>, id: T): Set<T> {
@@ -44,8 +42,10 @@ function toggleInSet<T>(selected: Set<T>, id: T): Set<T> {
   return next
 }
 
-export function useComparisonState(): ComparisonState {
-  const [scenario, setScenario] = useState<Scenario>(() => resolveInitialScenario(scenarios))
+export function useComparisonState(
+  scenarioPresets: readonly Scenario[] = loadCatalog().scenarios,
+): ComparisonState {
+  const [scenario, setScenario] = useState<Scenario>(() => resolveInitialScenario(scenarioPresets))
   const [selectedProviderIds, setSelectedProviderIds] = useState<Set<ProviderId>>(() => new Set(providerIds))
   const [selectedCategories, setSelectedCategories] = useState<Set<ServiceCategory>>(
     () => new Set(serviceCategories),
@@ -54,9 +54,9 @@ export function useComparisonState(): ComparisonState {
   const [includeStale, setIncludeStale] = useState(false)
 
   const selectScenario = useCallback((id: string) => {
-    const preset = scenarioForId(id)
+    const preset = scenarioForId(scenarioPresets, id)
     if (preset) setScenario(preset)
-  }, [])
+  }, [scenarioPresets])
 
   const updateScenario = useCallback((patch: Partial<Scenario>) => {
     setScenario((current) => ({ ...current, ...patch }))
@@ -71,8 +71,10 @@ export function useComparisonState(): ComparisonState {
   }, [])
 
   const resetScenario = useCallback(() => {
-    setScenario((current) => scenarioForId(current.id) ?? resolveInitialScenario(scenarios))
-  }, [])
+    setScenario((current) => (
+      scenarioForId(scenarioPresets, current.id) ?? resolveInitialScenario(scenarioPresets)
+    ))
+  }, [scenarioPresets])
 
   return {
     scenario,

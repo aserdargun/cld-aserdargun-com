@@ -5,8 +5,6 @@ import { loadCatalog } from '../data/catalog'
 import type { Scenario, ServiceCategory } from '../domain/catalog'
 import './ScenarioCalculator.css'
 
-const scenarios = loadCatalog().scenarios
-
 const scenarioLabels: Record<string, string> = {
   'small-web-app': 'Küçük web uygulaması',
   'api-backend': 'API / backend',
@@ -70,9 +68,14 @@ interface ScenarioCalculatorProps {
     ComparisonState,
     'scenario' | 'selectScenario' | 'updateScenario' | 'resetScenario'
   >
+  scenarios?: readonly Scenario[]
 }
 
-export function ScenarioCalculator({ state }: ScenarioCalculatorProps) {
+export function ScenarioCalculator({
+  state,
+  scenarios: providedScenarios,
+}: ScenarioCalculatorProps) {
+  const scenarios = providedScenarios ?? loadCatalog().scenarios
   const formId = useId()
   const [scenarioSnapshot, setScenarioSnapshot] = useState(state.scenario)
   const [drafts, setDrafts] = useState<DraftValues>(() => draftValuesFor(state.scenario))
@@ -130,10 +133,27 @@ export function ScenarioCalculator({ state }: ScenarioCalculatorProps) {
 
   return (
     <section className="scenario-calculator" aria-labelledby={`${formId}-heading`}>
-      <h2 id={`${formId}-heading`}>Senaryo hesaplayıcı</h2>
+      <div className="scenario-tabs" role="tablist" aria-label="Kullanım senaryoları">
+        {scenarios.map((scenario) => (
+          <button
+            className="scenario-tabs__tab"
+            key={scenario.id}
+            type="button"
+            role="tab"
+            aria-selected={state.scenario.id === scenario.id}
+            tabIndex={state.scenario.id === scenario.id ? 0 : -1}
+            onClick={() => state.selectScenario(scenario.id)}
+          >
+            {scenarioLabels[scenario.id] ?? scenario.name}
+          </button>
+        ))}
+      </div>
 
-      <form onSubmit={submitValidValues} noValidate>
-        <label className="scenario-calculator__scenario" htmlFor={`${formId}-scenario`}>
+      <div className="scenario-calculator__panel">
+        <h2 id={`${formId}-heading`}>Senaryo hesaplayıcı</h2>
+
+        <form onSubmit={submitValidValues} noValidate>
+        <label className="scenario-calculator__scenario visually-hidden" htmlFor={`${formId}-scenario`}>
           <span>Kullanım senaryosu</span>
           <select
             id={`${formId}-scenario`}
@@ -193,19 +213,20 @@ export function ScenarioCalculator({ state }: ScenarioCalculatorProps) {
             Hesaplamayı güncelle
           </button>
         </div>
-      </form>
+        </form>
 
-      <div
-        className="scenario-calculator__requirements"
-        role="status"
-        aria-label="Senaryo gereksinim özeti"
-        aria-live="polite"
-      >
-        <span className="scenario-calculator__requirements-label">Gereken hizmetler</span>
-        <span>{categorySummary}; </span>
-        <span>{state.scenario.hoursPerMonth} saat/ay, </span>
-        <span>{state.scenario.storageGb} GB depolama, </span>
-        <span>{state.scenario.outboundGb} GB dış trafik</span>
+        <div
+          className="scenario-calculator__requirements"
+          role="status"
+          aria-label="Senaryo gereksinim özeti"
+          aria-live="polite"
+        >
+          <span className="scenario-calculator__requirements-label">Gereken hizmetler</span>
+          <span>{categorySummary}; </span>
+          <span>{state.scenario.hoursPerMonth} saat/ay, </span>
+          <span>{state.scenario.storageGb} GB depolama, </span>
+          <span>{state.scenario.outboundGb} GB dış trafik</span>
+        </div>
       </div>
     </section>
   )

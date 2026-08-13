@@ -1,12 +1,10 @@
 import { ChevronDown } from 'lucide-react'
 import { loadCatalog } from '../data/catalog'
-import type { PriceKind, ServiceCategory } from '../domain/catalog'
+import type { PriceKind, Provider, ServiceCategory } from '../domain/catalog'
 import type { PriceLineItemEstimate } from '../domain/pricing'
 import type { RankedProviderEstimate } from '../domain/ranking'
 import { StatusBadge } from './StatusBadge'
 import './ScenarioSummary.css'
-
-const providersById = new Map(loadCatalog().providers.map((provider) => [provider.id, provider]))
 
 const categoryLabels: Record<ServiceCategory, string> = {
   compute: 'Hesaplama',
@@ -98,9 +96,12 @@ function LineItem({ lineItem }: { lineItem: PriceLineItemEstimate }) {
 
 interface ScenarioSummaryProps {
   estimates: readonly RankedProviderEstimate[]
+  providers?: readonly Provider[]
 }
 
-export function ScenarioSummary({ estimates }: ScenarioSummaryProps) {
+export function ScenarioSummary({ estimates, providers: providedProviders }: ScenarioSummaryProps) {
+  const providers = providedProviders ?? loadCatalog().providers
+  const providersById = new Map(providers.map((provider) => [provider.id, provider]))
   return (
     <section className="scenario-summary" aria-label="Sağlayıcı sıralaması">
       <h2>Sağlayıcı sıralaması</h2>

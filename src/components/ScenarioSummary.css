@@ -1,10 +1,17 @@
 .scenario-summary {
   min-width: 0;
-  padding: 24px 0;
+  max-height: 486px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 0 0 8px 8px;
+  background: var(--surface);
 }
 
 .scenario-summary h2 {
-  margin: 0 0 12px;
+  margin: 0;
+  padding: 18px;
+  border-bottom: 1px solid var(--line);
   color: var(--navy-900);
   font-size: clamp(1.5rem, 2.2vw, 1.875rem);
   font-weight: 700;
@@ -19,11 +26,13 @@
 }
 
 .scenario-summary__list {
-  border-top: 1px solid var(--navy-900);
+  border-top: 0;
 }
 
 .scenario-summary__provider {
-  padding: 18px 0;
+  position: relative;
+  padding: 14px 18px;
+  padding-right: 58px;
   border-bottom: 1px solid var(--line);
   background: var(--surface);
 }
@@ -88,7 +97,7 @@
 }
 
 .scenario-summary__metrics {
-  display: flex;
+  display: none;
   flex-wrap: wrap;
   gap: 12px 28px;
   margin: 14px 0 0;
@@ -128,8 +137,16 @@
 }
 
 .scenario-summary__details {
-  margin-top: 14px;
+  margin-top: 12px;
   border-top: 1px solid var(--line);
+}
+
+.scenario-summary__details:not([open]) {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  margin: 0;
+  border: 0;
 }
 
 .scenario-summary__details summary {
@@ -143,6 +160,15 @@
   font-weight: 700;
   line-height: 20px;
   list-style: none;
+}
+
+.scenario-summary__details:not([open]) summary {
+  width: 36px;
+  min-height: 44px;
+  justify-content: center;
+  padding: 0;
+  overflow: hidden;
+  font-size: 0;
 }
 
 .scenario-summary__details summary::-webkit-details-marker {
@@ -224,6 +250,11 @@
 }
 
 @media (max-width: 699px) {
+  .scenario-summary {
+    max-height: 470px;
+    overflow-y: auto;
+  }
+
   .scenario-summary__row {
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 10px 14px;

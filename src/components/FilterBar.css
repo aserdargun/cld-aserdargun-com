@@ -3,8 +3,11 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) auto;
   gap: 20px;
   align-items: end;
-  padding: 16px 0;
-  border-bottom: 1px solid var(--line);
+  margin-bottom: 12px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
 }
 
 .filter-bar__group {
@@ -88,5 +91,24 @@
   .filter-bar__button {
     min-height: 40px;
     padding: 8px 10px;
+  }
+
+  .filter-bar__choices {
+    flex-wrap: nowrap;
+    max-width: 100%;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: thin;
+  }
+
+  .filter-bar__button {
+    flex: 0 0 auto;
+  }
+
+  .filter-bar__toggles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 20px;
+    white-space: normal;
   }
 }
