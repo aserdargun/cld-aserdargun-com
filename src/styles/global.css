@@ -88,6 +88,246 @@ p {
   line-height: 1.5;
 }
 
+.data-table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
+}
+
+.data-table-scroll:focus-visible {
+  outline-offset: 3px;
+}
+
+.data-table {
+  width: 100%;
+  min-width: 1280px;
+  border-collapse: separate;
+  border-spacing: 0;
+  color: var(--navy-900);
+  background: var(--surface);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.free-tier-table__table {
+  min-width: 1680px;
+}
+
+.data-table caption {
+  padding: 18px 16px;
+  border-bottom: 1px solid var(--line);
+  color: var(--navy-900);
+  background: var(--surface);
+  font-size: 1.1875rem;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: left;
+}
+
+.data-table th,
+.data-table td {
+  min-width: 132px;
+  padding: 12px 14px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  text-align: left;
+  vertical-align: top;
+}
+
+.data-table th:last-child,
+.data-table td:last-child {
+  border-right: 0;
+}
+
+.data-table tbody tr:last-child th,
+.data-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.data-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  min-width: 148px;
+  color: var(--navy-900);
+  background: var(--page);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.data-table th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  min-width: 168px;
+  box-shadow: 1px 0 0 var(--line);
+}
+
+.data-table thead th:first-child {
+  z-index: 4;
+  background: var(--page);
+}
+
+.data-table tbody th {
+  font-weight: 700;
+}
+
+.data-table strong,
+.data-table__line,
+.data-table__meta,
+.source-link {
+  display: block;
+}
+
+.data-table__line + .data-table__line,
+.source-link + .source-link {
+  margin-top: 6px;
+}
+
+.data-table__meta {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.data-table__numeric {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.data-table__sort {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 6px;
+  margin: -10px -12px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 6px;
+  color: inherit;
+  background: transparent;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.data-table__sort:hover {
+  color: var(--blue);
+}
+
+.data-table__status {
+  display: block;
+  font-weight: 700;
+}
+
+.data-table__status--current {
+  color: var(--green);
+}
+
+.data-table__status--stale {
+  color: var(--orange);
+}
+
+.data-table__status--invalid,
+.source-link--missing {
+  color: var(--red);
+}
+
+.source-link {
+  width: fit-content;
+  color: var(--blue);
+  font-weight: 650;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.source-link time {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.source-link svg {
+  display: inline;
+  margin-left: 4px;
+  vertical-align: -2px;
+}
+
+.free-tier-table__filters {
+  margin: 0 0 16px;
+  padding: 0;
+  border: 0;
+}
+
+.free-tier-table__filters legend {
+  margin-bottom: 8px;
+  color: var(--navy-900);
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.free-tier-table__filter-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.free-tier-table__filter-list button {
+  min-height: 44px;
+  padding: 9px 14px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  color: var(--navy-900);
+  background: var(--surface);
+  font-size: 0.875rem;
+  font-weight: 650;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: color 150ms ease, border-color 150ms ease, background-color 150ms ease;
+}
+
+.free-tier-table__filter-list button:hover {
+  border-color: var(--blue);
+}
+
+.free-tier-table__filter-list button[aria-pressed="true"] {
+  border-color: var(--blue);
+  color: var(--surface);
+  background: var(--blue);
+}
+
+@media (max-width: 600px) {
+  .data-table {
+    font-size: 0.875rem;
+  }
+
+  .data-table thead th,
+  .data-table__sort {
+    font-size: 0.875rem;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 12px;
+  }
+
+  .data-table th:first-child {
+    min-width: 152px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
