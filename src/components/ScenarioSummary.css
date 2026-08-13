@@ -1,0 +1,254 @@
+.scenario-summary {
+  min-width: 0;
+  padding: 24px 0;
+}
+
+.scenario-summary h2 {
+  margin: 0 0 12px;
+  color: var(--navy-900);
+  font-size: clamp(1.5rem, 2.2vw, 1.875rem);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.scenario-summary__list,
+.scenario-summary__offer ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.scenario-summary__list {
+  border-top: 1px solid var(--navy-900);
+}
+
+.scenario-summary__provider {
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.scenario-summary__row {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.2fr) minmax(170px, 1fr) minmax(130px, auto);
+  gap: 18px;
+  align-items: center;
+}
+
+.scenario-summary__identity,
+.scenario-summary__status {
+  display: grid;
+  gap: 3px;
+}
+
+.scenario-summary__identity strong {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 22px;
+}
+
+.scenario-summary__identity span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 17px;
+}
+
+.scenario-summary__rank,
+.status-badge {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 17px;
+}
+
+.scenario-summary__rank {
+  color: var(--blue);
+}
+
+.status-badge--current {
+  color: var(--green);
+}
+
+.status-badge--stale {
+  color: var(--orange);
+}
+
+.status-badge--invalid {
+  color: var(--red);
+}
+
+.scenario-summary__total {
+  justify-self: end;
+  color: var(--navy-900);
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 750;
+  line-height: 24px;
+  white-space: nowrap;
+}
+
+.scenario-summary__metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.scenario-summary__metrics div {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+}
+
+.scenario-summary__metrics dt,
+.scenario-summary__metrics dd {
+  margin: 0;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.scenario-summary__metrics dt {
+  color: var(--muted);
+}
+
+.scenario-summary__metrics dd {
+  color: var(--navy-900);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.scenario-summary__missing {
+  max-width: none;
+  margin: 12px 0 0;
+  color: var(--red);
+  font-size: 13px;
+  line-height: 19px;
+}
+
+.scenario-summary__details {
+  margin-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.scenario-summary__details summary {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  padding: 12px 0 0;
+  color: var(--blue);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 20px;
+  list-style: none;
+}
+
+.scenario-summary__details summary::-webkit-details-marker {
+  display: none;
+}
+
+.scenario-summary__details summary svg {
+  transition: transform 150ms ease;
+}
+
+.scenario-summary__details[open] summary svg {
+  transform: rotate(180deg);
+}
+
+.scenario-summary__breakdown {
+  padding-top: 12px;
+}
+
+.scenario-summary__offer + .scenario-summary__offer {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.scenario-summary__offer header {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: start;
+  padding-bottom: 9px;
+}
+
+.scenario-summary__offer header div {
+  display: grid;
+  gap: 2px;
+}
+
+.scenario-summary__offer header strong {
+  font-size: 13px;
+  line-height: 19px;
+}
+
+.scenario-summary__offer header span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.scenario-summary__line-head,
+.scenario-summary__price-line {
+  display: grid;
+  grid-template-columns: minmax(130px, 1.2fr) repeat(4, minmax(100px, 1fr));
+  gap: 12px;
+  align-items: center;
+}
+
+.scenario-summary__line-head {
+  padding: 7px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+}
+
+.scenario-summary__price-line {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  line-height: 18px;
+}
+
+.scenario-summary__price-line span:not(:first-child),
+.scenario-summary__price-line strong,
+.scenario-summary__line-head span:not(:first-child) {
+  text-align: right;
+}
+
+@media (max-width: 699px) {
+  .scenario-summary__row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px 14px;
+  }
+
+  .scenario-summary__status {
+    grid-column: 1;
+  }
+
+  .scenario-summary__total {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+
+  .scenario-summary__metrics {
+    display: grid;
+    gap: 7px;
+  }
+
+  .scenario-summary__breakdown {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .scenario-summary__offer {
+    min-width: 650px;
+  }
+}
