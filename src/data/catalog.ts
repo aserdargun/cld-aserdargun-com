@@ -1,4 +1,12 @@
-import type { Catalog, CatalogHealth, FreeTier, Offer, VerificationStatus } from '../domain/catalog'
+import type {
+  Catalog,
+  CatalogHealth,
+  ExchangeRate,
+  FreeTier,
+  Offer,
+  Source,
+  VerificationStatus,
+} from '../domain/catalog'
 import exchangeRates from './exchange-rates.json'
 import freeTiers from './free-tiers.json'
 import offers from './offers.json'
@@ -29,11 +37,15 @@ function verificationStatus(
   return ageInDays > 30 ? 'stale' : 'current'
 }
 
-function collectInvalidReferences(catalog: Catalog, knownSourceIds: Set<string>): string[] {
+function isValidExchangeRateSource(source: Source | undefined): boolean {
+  return source?.owner === 'ecb' && source.kind === 'exchange-rate'
+}
+
+function collectInvalidReferences(catalog: Catalog, sourcesById: Map<string, Source>): string[] {
   const invalidReferences: string[] = []
   const addMissing = (record: string, sourceIds: string[]) => {
     sourceIds.forEach((sourceId) => {
-      if (!knownSourceIds.has(sourceId)) invalidReferences.push(`${record}:${sourceId}`)
+      if (!sourcesById.has(sourceId)) invalidReferences.push(`${record}:${sourceId}`)
     })
   }
 
@@ -43,7 +55,11 @@ function collectInvalidReferences(catalog: Catalog, knownSourceIds: Set<string>)
   })
   catalog.offers.forEach((offer) => addMissing(`offer:${offer.id}`, offer.sourceIds))
   catalog.freeTiers.forEach((freeTier) => addMissing(`free-tier:${freeTier.id}`, freeTier.sourceIds))
-  catalog.exchangeRates.forEach((exchangeRate) => addMissing(`exchange-rate:${exchangeRate.id}`, [exchangeRate.sourceId]))
+  catalog.exchangeRates.forEach((exchangeRate) => {
+    if (!isValidExchangeRateSource(sourcesById.get(exchangeRate.sourceId))) {
+      invalidReferences.push(`exchange-rate:${exchangeRate.id}:${exchangeRate.sourceId}`)
+    }
+  })
 
   return invalidReferences
 }
@@ -62,17 +78,34 @@ function statusesFor<T extends Offer | FreeTier>(
 }
 
 export function getCatalogHealth(catalog: Catalog, today: Date): CatalogHealth {
-  const knownSourceIds = new Set(catalog.sources.map((source) => source.id))
+  const sourcesById = new Map(catalog.sources.map((source) => [source.id, source]))
+  const knownSourceIds = new Set(sourcesById.keys())
   const statusByOfferId = statusesFor(catalog.offers, knownSourceIds, today)
   const statusByFreeTierId = statusesFor(catalog.freeTiers, knownSourceIds, today)
+  const statusByExchangeRateId = Object.fromEntries(
+    catalog.exchangeRates.map((exchangeRate) => [
+      exchangeRate.id,
+      isValidExchangeRateSource(sourcesById.get(exchangeRate.sourceId)) ? 'current' : 'invalid',
+    ] satisfies [string, VerificationStatus]),
+  )
   const statusValues = [...Object.values(statusByOfferId), ...Object.values(statusByFreeTierId)]
-  const invalidReferences = collectInvalidReferences(catalog, knownSourceIds)
+  const invalidReferences = collectInvalidReferences(catalog, sourcesById)
 
   return {
     statusByOfferId,
     statusByFreeTierId,
+    statusByExchangeRateId,
     invalidReferences,
     staleCount: statusValues.filter((status) => status === 'stale').length,
     invalidCount: invalidReferences.length,
   }
+}
+
+export function getUsableExchangeRates(
+  catalog: Pick<Catalog, 'exchangeRates'>,
+  health: Pick<CatalogHealth, 'statusByExchangeRateId'>,
+): ExchangeRate[] {
+  return catalog.exchangeRates.filter(
+    (exchangeRate) => health.statusByExchangeRateId[exchangeRate.id] === 'current',
+  )
 }

@@ -9,9 +9,9 @@ import {
   projectScenarioForCategory,
   unassignedScenarioDimensions,
 } from '../domain/coverage'
-import { estimateOffer, type PricingContext } from '../domain/pricing'
+import { estimateOffer, priceKindForFreeTierUnit, type PricingContext } from '../domain/pricing'
 import { estimateProvider } from '../domain/ranking'
-import { getCatalogHealth } from './catalog'
+import { getCatalogHealth, getUsableExchangeRates } from './catalog'
 
 export const catalogSnapshotDate = '2026-08-14'
 const validationDate = new Date(`${catalogSnapshotDate}T00:00:00.000Z`)
@@ -207,6 +207,14 @@ export function validateCatalog(catalog: Catalog): string[] {
     if (freeTier.compatibleOfferIds.length > 0 && freeTier.compatiblePriceKinds.length === 0) {
       failures.push(`free tier ${freeTier.id} has compatible offers but no compatible price kinds`)
     }
+    if (freeTier.compatibleOfferIds.length > 0) {
+      const quotaKind = priceKindForFreeTierUnit(freeTier.quota.unit)
+      for (const priceKind of freeTier.compatiblePriceKinds) {
+        if (quotaKind !== priceKind) {
+          failures.push(`free tier ${freeTier.id} quota unit ${freeTier.quota.unit} does not map to compatible price kind ${priceKind}`)
+        }
+      }
+    }
     for (const offerId of freeTier.compatibleOfferIds) {
       const offer = offersById.get(offerId)
       if (!offer) {
@@ -272,10 +280,11 @@ export function validateCatalog(catalog: Catalog): string[] {
   if (health.staleCount > 0) failures.push(`catalog health reports ${health.staleCount} stale offer/free-tier records`)
 
   const pricingContext: PricingContext = {
-    exchangeRates: catalog.exchangeRates,
+    exchangeRates: getUsableExchangeRates(catalog, health),
     freeTiers: catalog.freeTiers,
     statusByOfferId: health.statusByOfferId,
     statusByFreeTierId: health.statusByFreeTierId,
+    statusByExchangeRateId: health.statusByExchangeRateId,
   }
   for (const scenario of catalog.scenarios) {
     const unassigned = unassignedScenarioDimensions(scenario)

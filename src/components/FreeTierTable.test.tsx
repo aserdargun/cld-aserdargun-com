@@ -100,6 +100,7 @@ const freeTiers: FreeTier[] = [
 const health: CatalogHealth = {
   statusByOfferId: {},
   statusByFreeTierId: Object.fromEntries(freeTiers.map((freeTier) => [freeTier.id, 'current'])),
+  statusByExchangeRateId: {},
   invalidReferences: [],
   staleCount: 0,
   invalidCount: 0,

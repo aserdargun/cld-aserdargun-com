@@ -10,6 +10,7 @@ import type {
 } from './catalog'
 
 export interface ExchangeRateInput {
+  id?: string
   base: ExchangeRate['base']
   quote: ExchangeRate['quote']
   rate: number
@@ -23,6 +24,7 @@ export interface PricingContext {
   monthsSinceAccountCreation?: number
   statusByOfferId?: Readonly<Record<string, VerificationStatus>>
   statusByFreeTierId?: Readonly<Record<string, VerificationStatus>>
+  statusByExchangeRateId?: Readonly<Record<string, VerificationStatus>>
 }
 
 export interface CurrencyConversion {
@@ -59,7 +61,7 @@ const quantityByKind: Record<PriceKind, (scenario: Scenario) => number> = {
   'gpu-hour': (scenario) => scenario.gpuHours,
 }
 
-const kindByFreeTierUnit: Record<string, PriceKind> = {
+export const priceKindByFreeTierUnit: Readonly<Record<string, PriceKind>> = {
   'instance-hours': 'instance-hour',
   'storage-gb-month': 'storage-gb-month',
   'outbound-gb': 'outbound-gb',
@@ -70,6 +72,10 @@ const kindByFreeTierUnit: Record<string, PriceKind> = {
 
 function normalizedUnit(unit: string): string {
   return unit.trim().toLowerCase().replace(/\s+/g, ' ')
+}
+
+export function priceKindForFreeTierUnit(unit: string): PriceKind | null {
+  return priceKindByFreeTierUnit[normalizedUnit(unit)] ?? null
 }
 
 export function convertToUsd(
@@ -115,9 +121,9 @@ function allocateFreeTierQuantity(
       freeTier.durationMonths === null ||
       (context.monthsSinceAccountCreation !== undefined &&
         context.monthsSinceAccountCreation <= freeTier.durationMonths)
-    const quotaKind = kindByFreeTierUnit[normalizedUnit(freeTier.quota.unit)]
+    const quotaKind = priceKindForFreeTierUnit(freeTier.quota.unit)
     const isMatchingQuota =
-      freeTier.quota.period === 'month' && quotaKind !== undefined && quotaKind === component.kind
+      freeTier.quota.period === 'month' && quotaKind !== null && quotaKind === component.kind
     const isCompatibleOffer = freeTier.compatibleOfferIds.includes(offer.id)
     const isCompatibleComponent = freeTier.compatiblePriceKinds.includes(component.kind)
     const status = context.statusByFreeTierId?.[freeTier.id] ?? 'invalid'
@@ -186,14 +192,28 @@ function sumOrNull(values: readonly (number | null)[]): number | null {
 }
 
 export function estimateOffer(offer: Offer, scenario: Scenario, context: PricingContext): OfferEstimate {
+  const exchangeRates = context.statusByExchangeRateId === undefined
+    ? context.exchangeRates
+    : context.exchangeRates.filter((exchangeRate) =>
+      exchangeRate.id !== undefined && context.statusByExchangeRateId?.[exchangeRate.id] === 'current')
+  const effectiveContext = exchangeRates === context.exchangeRates
+    ? context
+    : { ...context, exchangeRates }
   const remainingQuotaById = new Map<string, number>()
   const usedStaleFreeTier = { value: false }
   const lineItems = offer.prices.map((component) =>
-    estimateLineItem(offer, component, scenario, context, remainingQuotaById, usedStaleFreeTier),
+    estimateLineItem(offer, component, scenario, effectiveContext, remainingQuotaById, usedStaleFreeTier),
   )
   const offerStatus = context.statusByOfferId?.[offer.id] ?? 'invalid'
-  const status = offerStatus === 'invalid' ? 'invalid' : usedStaleFreeTier.value ? 'stale' : offerStatus
   const hasPrices = lineItems.length > 0
+  const hasInvalidPricing = !hasPrices || lineItems.some(
+    (lineItem) => lineItem.subtotalBeforeFreeTierUsd === null || lineItem.totalUsd === null,
+  )
+  const status = offerStatus === 'invalid' || hasInvalidPricing
+    ? 'invalid'
+    : usedStaleFreeTier.value
+      ? 'stale'
+      : offerStatus
 
   return {
     offer,

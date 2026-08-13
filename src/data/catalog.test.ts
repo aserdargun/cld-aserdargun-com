@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { providerIds, serviceCategories } from '../domain/catalog'
-import { estimateProvider } from '../domain/ranking'
+import { estimateProvider, rankProviderEstimates } from '../domain/ranking'
 import { getCatalogHealth, loadCatalog } from './catalog'
 import { catalogSchema, freeTierSchema, offerSchema, priceComponentSchema, providerSchema } from './schemas'
 
@@ -192,7 +192,60 @@ describe('catalog schemas', () => {
         'exchange-rate:test-rate:missing-rate-source',
       ]),
     )
+    expect(health.statusByExchangeRateId).toEqual({ 'test-rate': 'invalid' })
     expect(health.invalidCount).toBe(2)
+  })
+
+  it('keeps an invalid exchange-rate source from pricing or ranking EUR offers', () => {
+    const catalog = loadCatalog()
+    const parsed = loadCatalog({
+      ...catalog,
+      exchangeRates: catalog.exchangeRates.map((rate) => ({
+        ...rate,
+        sourceId: 'missing-ecb-source',
+      })),
+    })
+    const health = getCatalogHealth(parsed, new Date('2026-08-14T00:00:00Z'))
+    const computeOnly = {
+      ...catalog.scenarios.find((scenario) => scenario.id === 'small-web-app')!,
+      requiredCategories: ['compute' as const],
+      coverageByCategory: { compute: ['hoursPerMonth' as const, 'vcpu' as const, 'ramGb' as const] },
+      storageGb: 0,
+      outboundGb: 0,
+    }
+    const context = {
+      exchangeRates: parsed.exchangeRates,
+      freeTiers: parsed.freeTiers,
+      statusByOfferId: health.statusByOfferId,
+      statusByFreeTierId: health.statusByFreeTierId,
+      statusByExchangeRateId: health.statusByExchangeRateId,
+    }
+    const hetzner = estimateProvider('hetzner', parsed.offers, computeOnly, context)
+    const azure = estimateProvider('azure', parsed.offers, computeOnly, context)
+    const ranked = rankProviderEstimates([hetzner, azure])
+
+    expect(health.invalidReferences).toContain(
+      `exchange-rate:${parsed.exchangeRates[0]!.id}:missing-ecb-source`,
+    )
+    expect(health.statusByExchangeRateId[parsed.exchangeRates[0]!.id]).toBe('invalid')
+    expect(hetzner).toMatchObject({ totalUsd: null, status: 'invalid' })
+    expect(hetzner.lineItems).toEqual([])
+    expect(azure.totalUsd).not.toBeNull()
+    expect(azure.status).toBe('current')
+    expect(ranked.map((estimate) => [estimate.providerId, estimate.rank])).toEqual([
+      ['azure', 'best-price'],
+      ['hetzner', null],
+    ])
+  })
+
+  it('also invalidates an exchange rate backed by the wrong source owner or kind', () => {
+    const catalog = loadCatalog()
+    const rate = { ...catalog.exchangeRates[0]!, sourceId: 'azure-purchase-methods' }
+    const parsed = loadCatalog({ ...catalog, exchangeRates: [rate] })
+    const health = getCatalogHealth(parsed, new Date('2026-08-14T00:00:00Z'))
+
+    expect(health.statusByExchangeRateId[rate.id]).toBe('invalid')
+    expect(health.invalidReferences).toContain(`exchange-rate:${rate.id}:azure-purchase-methods`)
   })
 
   it('counts invalid provider purchase-source references', () => {
@@ -387,6 +440,18 @@ describe('official catalog policy', () => {
         quota: expect.objectContaining({ amount: 1, unit: 'million requests' }),
       }),
     ]))
+  })
+
+  it('rejects an engine-applicable free tier whose quota unit maps to another price kind', () => {
+    const catalog = loadCatalog()
+    const freeTiers = catalog.freeTiers.map((freeTier) =>
+      freeTier.id === 'azure-functions-flex-executions'
+        ? { ...freeTier, quota: { ...freeTier.quota, unit: 'GB-s' } }
+        : freeTier,
+    )
+
+    expect(catalogSchema.safeParse({ ...catalog, freeTiers }).success).toBe(false)
+    expect(() => loadCatalog({ ...catalog, freeTiers })).toThrow()
   })
 
   it('backs every offer with an official source and a positive paid component', () => {

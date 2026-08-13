@@ -179,15 +179,22 @@ export function ComparisonTable({
   monthsSinceAccountCreation,
 }: ComparisonTableProps) {
   const [sort, setSort] = useState<SortState | null>(null)
+  const usableExchangeRates = useMemo(
+    () => exchangeRates.filter(
+      (exchangeRate) => health.statusByExchangeRateId[exchangeRate.id] === 'current',
+    ),
+    [exchangeRates, health.statusByExchangeRateId],
+  )
   const rows = useMemo(() => offers.map((offer, index) => {
     const provider = providers.find((candidate) => candidate.id === offer.providerId)
     const estimate = estimateOffer(offer, scenario, {
-      exchangeRates,
+      exchangeRates: usableExchangeRates,
       freeTiers,
       eligibleFreeTierIds,
       monthsSinceAccountCreation,
       statusByOfferId: health.statusByOfferId,
       statusByFreeTierId: health.statusByFreeTierId,
+      statusByExchangeRateId: health.statusByExchangeRateId,
     })
     return { offer, provider, estimate, index }
   }), [
@@ -195,7 +202,7 @@ export function ComparisonTable({
     providers,
     health,
     scenario,
-    exchangeRates,
+    usableExchangeRates,
     freeTiers,
     eligibleFreeTierIds,
     monthsSinceAccountCreation,
@@ -284,7 +291,7 @@ export function ComparisonTable({
                     ? 'Doğrulanamadı'
                     : offer.prices.map((component, index) => (
                       <span className="data-table__line" key={`${component.kind}-${index}`}>
-                        {priceText(component, offer, exchangeRates, sources)}
+                        {priceText(component, offer, usableExchangeRates, sources)}
                       </span>
                     ))}
                 </td>
@@ -298,7 +305,7 @@ export function ComparisonTable({
                     <span className="data-table__line" key={quota}>{quota}</span>
                   ))}
                 </td>
-                <td>{trafficText(offer, exchangeRates, sources)}</td>
+                <td>{trafficText(offer, usableExchangeRates, sources)}</td>
                 <td>
                   <span className={`data-table__status data-table__status--${status}`} data-status={status}>
                     {statusLabels[status]}

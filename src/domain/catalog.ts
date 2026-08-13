@@ -168,6 +168,7 @@ export interface Catalog {
 export interface CatalogHealth {
   statusByOfferId: Record<string, VerificationStatus>
   statusByFreeTierId: Record<string, VerificationStatus>
+  statusByExchangeRateId: Record<string, VerificationStatus>
   invalidReferences: string[]
   staleCount: number
   invalidCount: number

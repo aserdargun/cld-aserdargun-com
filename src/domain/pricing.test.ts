@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { FreeTier, Offer, Scenario } from './catalog'
-import { convertToUsd, estimateOffer, type PricingContext } from './pricing'
+import { convertToUsd, estimateOffer, priceKindForFreeTierUnit, type PricingContext } from './pricing'
 
 const webScenario = (): Scenario => ({
   id: 'small-web-app',
@@ -90,6 +90,14 @@ describe('convertToUsd', () => {
       amountUsd: null,
       converted: false,
     })
+  })
+})
+
+describe('priceKindForFreeTierUnit', () => {
+  it('normalizes canonical quota units and rejects unsupported units', () => {
+    expect(priceKindForFreeTierUnit('  Million   Requests ')).toBe('requests-million')
+    expect(priceKindForFreeTierUnit('instance-hours')).toBe('instance-hour')
+    expect(priceKindForFreeTierUnit('GB-s')).toBeNull()
   })
 })
 

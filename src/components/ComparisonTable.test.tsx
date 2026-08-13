@@ -185,6 +185,7 @@ function health(overrides: Partial<CatalogHealth> = {}): CatalogHealth {
   return {
     statusByOfferId: { 'azure-vm': 'current', 'cloudflare-workers': 'current' },
     statusByFreeTierId: { 'azure-vm-free': 'current' },
+    statusByExchangeRateId: {},
     invalidReferences: [],
     staleCount: 0,
     invalidCount: 0,
@@ -374,7 +375,14 @@ describe('ComparisonTable', () => {
           sourceId: 'ecb-rate',
         },
       ],
-      health: health({ statusByOfferId: { 'hetzner-cx23': 'stale' }, statusByFreeTierId: {} }),
+      health: health({
+        statusByOfferId: { 'hetzner-cx23': 'stale' },
+        statusByFreeTierId: {},
+        statusByExchangeRateId: {
+          'eur-usd-2026-08-13': 'current',
+          'eur-usd-2026-08-14': 'current',
+        },
+      }),
     })
 
     const row = screen.getByRole('row', { name: /Hetzner Cloud CX23/ })
@@ -382,6 +390,50 @@ describe('ComparisonTable', () => {
     expect(row).toHaveTextContent('Kur: 1 EUR = 1.10 USD · 2026-08-13')
     expect(row).toHaveTextContent('$6.04/ay')
     expect(row).toHaveTextContent('Yeniden doğrulanmalı')
+  })
+
+  it('does not convert or total an EUR offer with invalid exchange-rate evidence', () => {
+    const hetznerOffer: Offer = {
+      id: 'hetzner-invalid-rate',
+      providerId: 'hetzner',
+      serviceName: 'Hetzner invalid exchange rate',
+      category: 'compute',
+      rankable: true,
+      region: 'nbg1',
+      specs: { vcpu: 2, ramGb: 4 },
+      prices: [{ kind: 'instance-hour', price: 0.0088, currency: 'EUR', includedQuantity: 0 }],
+      sourceIds: ['hetzner-price'],
+      verifiedAt: '2026-08-13',
+      notes: [],
+    }
+    const rate = {
+      id: 'invalid-ecb-rate',
+      base: 'EUR' as const,
+      quote: 'USD' as const,
+      rate: 1.1,
+      date: '2026-08-13',
+      sourceId: 'ecb-rate',
+    }
+
+    renderTable({
+      offers: [hetznerOffer],
+      freeTiers: [],
+      scenario: { ...scenario, hoursPerMonth: 730 },
+      exchangeRates: [rate],
+      health: health({
+        statusByOfferId: { 'hetzner-invalid-rate': 'current' },
+        statusByFreeTierId: {},
+        statusByExchangeRateId: { 'invalid-ecb-rate': 'invalid' },
+      }),
+    })
+
+    const row = screen.getByRole('row', { name: /Hetzner invalid exchange rate/ })
+    const cells = within(row).getAllByRole('cell')
+    expect(cells[3]).toHaveTextContent('€0.0088/saat · Doğrulanamadı')
+    expect(cells[3]).not.toHaveTextContent('$0.00968/saat')
+    expect(cells[3]).not.toHaveTextContent('Kur:')
+    expect(cells[4]).toHaveTextContent('Doğrulanamadı')
+    expect(row).toHaveTextContent('Doğrulanamadı')
   })
 
   it('uses the estimate status when an eligible stale free tier changes the estimate', () => {
@@ -429,7 +481,11 @@ describe('ComparisonTable', () => {
           sourceId: 'ecb-rate',
         },
       ],
-      health: health({ statusByOfferId: { 'hetzner-eur-outbound': 'current' }, statusByFreeTierId: {} }),
+      health: health({
+        statusByOfferId: { 'hetzner-eur-outbound': 'current' },
+        statusByFreeTierId: {},
+        statusByExchangeRateId: { 'eur-usd-2026-08-13': 'current' },
+      }),
     })
 
     const row = screen.getByRole('row', { name: /Hetzner EUR outbound/ })

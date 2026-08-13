@@ -68,6 +68,16 @@ describe('catalog validator policy', () => {
     ]))
   })
 
+  it('rejects a free-tier quota unit that cannot fund its declared compatible price kind', () => {
+    const catalog = clonedCatalog()
+    const freeTier = catalog.freeTiers.find((tier) => tier.id === 'azure-functions-flex-executions')!
+    freeTier.quota.unit = 'GB-s'
+
+    expect(validateCatalog(catalog)).toContain(
+      `free tier ${freeTier.id} quota unit GB-s does not map to compatible price kind requests-million`,
+    )
+  })
+
   it('requires every seeded scenario to have three complete current estimates except GPU, which requires two', () => {
     const catalog = clonedCatalog()
     catalog.offers.forEach((offer) => { offer.rankable = false })

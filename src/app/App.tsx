@@ -1,4 +1,4 @@
-import { getCatalogHealth, loadCatalog } from '../data/catalog'
+import { getCatalogHealth, getUsableExchangeRates, loadCatalog } from '../data/catalog'
 import type { Catalog, Offer, ProviderId } from '../domain/catalog'
 import { estimateProvider, rankProviderEstimates } from '../domain/ranking'
 import { ComparisonTable } from '../components/ComparisonTable'
@@ -36,6 +36,7 @@ function tryLoadCatalog(loader: () => Catalog): Catalog | null {
 function Dashboard({ catalog, today }: { catalog: Catalog; today: Date }) {
   const state = useComparisonState(catalog.scenarios)
   const health = getCatalogHealth(catalog, today)
+  const usableExchangeRates = getUsableExchangeRates(catalog, health)
   const eligibleFreeTierIds: readonly string[] = []
 
   const eligibleByStatus = (offer: Offer) => {
@@ -47,11 +48,12 @@ function Dashboard({ catalog, today }: { catalog: Catalog; today: Date }) {
     (offer) => state.selectedProviderIds.has(offer.providerId) && eligibleByStatus(offer),
   )
   const pricingContext = {
-    exchangeRates: catalog.exchangeRates,
+    exchangeRates: usableExchangeRates,
     freeTiers: catalog.freeTiers,
     eligibleFreeTierIds,
     statusByOfferId: health.statusByOfferId,
     statusByFreeTierId: health.statusByFreeTierId,
+    statusByExchangeRateId: health.statusByExchangeRateId,
   }
   const estimates = rankProviderEstimates(
     [...state.selectedProviderIds].map((providerId: ProviderId) => (

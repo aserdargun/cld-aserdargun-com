@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { providerIds, scenarioUsageDimensions, serviceCategories } from '../domain/catalog'
+import { priceKindForFreeTierUnit } from '../domain/pricing'
 
 const nonEmptyString = z.string().trim().min(1)
 const nonNegativeNumber = z.number().finite().nonnegative()
@@ -238,6 +239,18 @@ export const catalogSchema = z
           path: ['freeTiers', freeTierIndex, 'compatiblePriceKinds'],
           message: 'Engine-applicable free tiers require at least one price component kind',
         })
+      }
+      if (freeTier.compatibleOfferIds.length > 0) {
+        const quotaKind = priceKindForFreeTierUnit(freeTier.quota.unit)
+        for (const priceKind of freeTier.compatiblePriceKinds) {
+          if (quotaKind !== priceKind) {
+            context.addIssue({
+              code: 'custom',
+              path: ['freeTiers', freeTierIndex, 'quota', 'unit'],
+              message: `Quota unit ${freeTier.quota.unit} must map to ${priceKind}`,
+            })
+          }
+        }
       }
       freeTier.compatibleOfferIds.forEach((offerId, offerIdIndex) => {
         const compatibleOffer = offersById.get(offerId)
