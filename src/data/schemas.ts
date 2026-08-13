@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { providerIds, serviceCategories } from '../domain/catalog'
+import { providerIds, scenarioUsageDimensions, serviceCategories } from '../domain/catalog'
 
 const nonEmptyString = z.string().trim().min(1)
 const nonNegativeNumber = z.number().finite().nonnegative()
@@ -143,7 +143,12 @@ export const scenarioSchema = z
     id: z.enum(scenarioIds),
     name: nonEmptyString,
     description: nonEmptyString,
+    scopeNote: nonEmptyString,
     requiredCategories: z.array(z.enum(serviceCategories)).min(1),
+    coverageByCategory: z.partialRecord(
+      z.enum(serviceCategories),
+      z.array(z.enum(scenarioUsageDimensions)),
+    ),
     hoursPerMonth: nonNegativeNumber,
     vcpu: nonNegativeNumber,
     ramGb: nonNegativeNumber,
@@ -155,6 +160,28 @@ export const scenarioSchema = z
     gpuVramGb: nonNegativeNumber,
   })
   .strict()
+  .superRefine((scenario, context) => {
+    const required = new Set(scenario.requiredCategories)
+    for (const category of scenario.requiredCategories) {
+      if (!(category in scenario.coverageByCategory)) {
+        context.addIssue({ code: 'custom', path: ['coverageByCategory', category], message: 'Required category needs an explicit coverage declaration' })
+      }
+    }
+    for (const [category, dimensions] of Object.entries(scenario.coverageByCategory)) {
+      if (!required.has(category as (typeof serviceCategories)[number])) {
+        context.addIssue({ code: 'custom', path: ['coverageByCategory', category], message: 'Coverage category must be required by the scenario' })
+      }
+      if (dimensions && new Set(dimensions).size !== dimensions.length) {
+        context.addIssue({ code: 'custom', path: ['coverageByCategory', category], message: 'Coverage dimensions must be unique' })
+      }
+    }
+    const assigned = new Set(Object.values(scenario.coverageByCategory).flatMap((dimensions) => dimensions ?? []))
+    for (const dimension of scenarioUsageDimensions) {
+      if (scenario[dimension] > 0 && !assigned.has(dimension)) {
+        context.addIssue({ code: 'custom', path: ['coverageByCategory'], message: `Nonzero dimension ${dimension} must be assigned` })
+      }
+    }
+  })
 
 export const catalogSchema = z
   .object({
@@ -185,27 +212,9 @@ export const catalogSchema = z
       scenarioIds,
       ['scenarios'],
     )
-    const sourceIds = new Set(catalog.sources.map((source) => source.id))
-    const checkSource = (sourceId: string, path: PropertyKey[]) => {
-      if (!sourceIds.has(sourceId)) {
-        context.addIssue({ code: 'custom', path, message: `Unknown source ID: ${sourceId}` })
-      }
-    }
-
-    catalog.providers.forEach((provider, providerIndex) => {
-      provider.purchaseSourceIds.forEach((sourceId, sourceIndex) => {
-        checkSource(sourceId, ['providers', providerIndex, 'purchaseSourceIds', sourceIndex])
-      })
-      provider.regions.forEach((region, regionIndex) => {
-        checkSource(region.sourceId, ['providers', providerIndex, 'regions', regionIndex, 'sourceId'])
-      })
-    })
     const providersById = new Map(catalog.providers.map((provider) => [provider.id, provider]))
     const offersById = new Map(catalog.offers.map((offer) => [offer.id, offer]))
     catalog.offers.forEach((offer, offerIndex) => {
-      offer.sourceIds.forEach((sourceId, sourceIndex) => {
-        checkSource(sourceId, ['offers', offerIndex, 'sourceIds', sourceIndex])
-      })
       const provider = providersById.get(offer.providerId)
       if (!provider?.regions.some((region) => region.id === offer.region)) {
         context.addIssue({
@@ -216,9 +225,6 @@ export const catalogSchema = z
       }
     })
     catalog.freeTiers.forEach((freeTier, freeTierIndex) => {
-      freeTier.sourceIds.forEach((sourceId, sourceIndex) => {
-        checkSource(sourceId, ['freeTiers', freeTierIndex, 'sourceIds', sourceIndex])
-      })
       if (freeTier.compatibleOfferIds.length === 0 && freeTier.compatiblePriceKinds.length > 0) {
         context.addIssue({
           code: 'custom',
@@ -257,8 +263,5 @@ export const catalogSchema = z
           }
         }
       })
-    })
-    catalog.exchangeRates.forEach((exchangeRate, exchangeRateIndex) => {
-      checkSource(exchangeRate.sourceId, ['exchangeRates', exchangeRateIndex, 'sourceId'])
     })
   })

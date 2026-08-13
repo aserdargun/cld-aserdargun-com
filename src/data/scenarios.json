@@ -1,8 +1,121 @@
 [
-  {"id":"small-web-app","name":"Küçük web uygulaması","description":"Sürekli çalışan küçük bir web uygulaması.","requiredCategories":["compute"],"hoursPerMonth":730,"vcpu":2,"ramGb":4,"storageGb":50,"outboundGb":100,"requestsMillion":0,"databaseGb":0,"gpuHours":0,"gpuVramGb":0},
-  {"id":"api-backend","name":"API arka ucu","description":"İstek tabanlı API hizmeti.","requiredCategories":["serverless"],"hoursPerMonth":0,"vcpu":1,"ramGb":1,"storageGb":10,"outboundGb":250,"requestsMillion":10,"databaseGb":0,"gpuHours":0,"gpuVramGb":0},
-  {"id":"database-saas","name":"Veritabanlı SaaS","description":"Uygulama ve yönetilen veritabanı gerektiren SaaS.","requiredCategories":["compute","managed-database"],"hoursPerMonth":730,"vcpu":4,"ramGb":8,"storageGb":100,"outboundGb":250,"requestsMillion":5,"databaseGb":50,"gpuHours":0,"gpuVramGb":0},
-  {"id":"static-site","name":"Statik site","description":"Depolama ve CDN kullanan statik site.","requiredCategories":["object-storage","cdn-network"],"hoursPerMonth":0,"vcpu":0,"ramGb":0,"storageGb":50,"outboundGb":500,"requestsMillion":5,"databaseGb":0,"gpuHours":0,"gpuVramGb":0},
-  {"id":"ai-gpu","name":"Yapay zeka GPU","description":"GPU ile yapay zeka iş yükü.","requiredCategories":["gpu-ai"],"hoursPerMonth":0,"vcpu":0,"ramGb":0,"storageGb":100,"outboundGb":100,"requestsMillion":0,"databaseGb":0,"gpuHours":100,"gpuVramGb":24},
-  {"id":"high-traffic","name":"Yüksek trafikli uygulama","description":"Sürekli çalışan ve yüksek çıkış trafiği olan uygulama.","requiredCategories":["compute","cdn-network"],"hoursPerMonth":730,"vcpu":8,"ramGb":16,"storageGb":500,"outboundGb":2000,"requestsMillion":25,"databaseGb":0,"gpuHours":0,"gpuVramGb":0}
+  {
+    "id": "small-web-app",
+    "name": "Küçük web uygulaması",
+    "description": "Sürekli çalışan küçük bir web uygulaması.",
+    "scopeNote": "Hesaplama; uygulama sunucusu çalışma süresi ve kapasitesini, nesne depolamayı ve CDN çıkış trafiğini kapsar. İstek ücretleri, veritabanı ve yedekleme dahil değildir.",
+    "requiredCategories": ["compute", "object-storage", "cdn-network"],
+    "coverageByCategory": {
+      "compute": ["hoursPerMonth", "vcpu", "ramGb"],
+      "object-storage": ["storageGb"],
+      "cdn-network": ["outboundGb"]
+    },
+    "hoursPerMonth": 730,
+    "vcpu": 2,
+    "ramGb": 4,
+    "storageGb": 50,
+    "outboundGb": 100,
+    "requestsMillion": 0,
+    "databaseGb": 0,
+    "gpuHours": 0,
+    "gpuVramGb": 0
+  },
+  {
+    "id": "api-backend",
+    "name": "API arka ucu",
+    "description": "İstek tabanlı API hizmeti.",
+    "scopeNote": "Yalnızca 10 milyon serverless istek ücretini karşılaştırır; yürütme CPU/bellek/süresi, depolama ve ağ ücretleri dahil değildir. Bu nedenle sonuç tam bir backend faturası değildir.",
+    "requiredCategories": ["serverless"],
+    "coverageByCategory": {
+      "serverless": ["requestsMillion", "vcpu", "ramGb", "storageGb", "outboundGb"]
+    },
+    "hoursPerMonth": 0,
+    "vcpu": 0,
+    "ramGb": 0,
+    "storageGb": 0,
+    "outboundGb": 0,
+    "requestsMillion": 10,
+    "databaseGb": 0,
+    "gpuHours": 0,
+    "gpuVramGb": 0
+  },
+  {
+    "id": "database-saas",
+    "name": "Veritabanlı SaaS",
+    "description": "Uygulama ve yönetilen veritabanı gerektiren SaaS.",
+    "scopeNote": "Uygulama sunucusu kapasitesi ile yönetilen veritabanı çalışma süresini kapsar. Veritabanı depolaması, HA, yedekleme, IOPS, uygulama depolaması/trafiği ve istek ücretleri dahil değildir.",
+    "requiredCategories": ["compute", "managed-database"],
+    "coverageByCategory": {
+      "compute": ["hoursPerMonth", "vcpu", "ramGb", "storageGb", "outboundGb", "requestsMillion"],
+      "managed-database": ["hoursPerMonth", "databaseGb"]
+    },
+    "hoursPerMonth": 730,
+    "vcpu": 4,
+    "ramGb": 8,
+    "storageGb": 0,
+    "outboundGb": 0,
+    "requestsMillion": 0,
+    "databaseGb": 0,
+    "gpuHours": 0,
+    "gpuVramGb": 0
+  },
+  {
+    "id": "static-site",
+    "name": "Statik site",
+    "description": "Depolama ve CDN kullanan statik site.",
+    "scopeNote": "50 GB nesne depolama ve 500 GB CDN çıkış trafiğini kapsar. Depolama işlem/istek karışımı dahil değildir.",
+    "requiredCategories": ["object-storage", "cdn-network"],
+    "coverageByCategory": {
+      "object-storage": ["storageGb"],
+      "cdn-network": ["outboundGb", "requestsMillion"]
+    },
+    "hoursPerMonth": 0,
+    "vcpu": 0,
+    "ramGb": 0,
+    "storageGb": 50,
+    "outboundGb": 500,
+    "requestsMillion": 0,
+    "databaseGb": 0,
+    "gpuHours": 0,
+    "gpuVramGb": 0
+  },
+  {
+    "id": "ai-gpu",
+    "name": "Yapay zeka GPU",
+    "description": "GPU ile yapay zeka iş yükü.",
+    "scopeNote": "100 GPU-saat ve en az 24 GB GPU belleğini kapsar. Depolama ve ağ çıkışı dahil değildir.",
+    "requiredCategories": ["gpu-ai"],
+    "coverageByCategory": {
+      "gpu-ai": ["gpuHours", "gpuVramGb", "storageGb", "outboundGb"]
+    },
+    "hoursPerMonth": 0,
+    "vcpu": 0,
+    "ramGb": 0,
+    "storageGb": 0,
+    "outboundGb": 0,
+    "requestsMillion": 0,
+    "databaseGb": 0,
+    "gpuHours": 100,
+    "gpuVramGb": 24
+  },
+  {
+    "id": "high-traffic",
+    "name": "Yüksek trafikli uygulama",
+    "description": "Sürekli çalışan ve yüksek çıkış trafiği olan uygulama.",
+    "scopeNote": "Uygulama sunucusu çalışma süresi/kapasitesi ile 2.000 GB CDN çıkış trafiğini kapsar. Kalıcı depolama, istek ücretleri ve origin egress dahil değildir.",
+    "requiredCategories": ["compute", "cdn-network"],
+    "coverageByCategory": {
+      "compute": ["hoursPerMonth", "vcpu", "ramGb", "storageGb"],
+      "cdn-network": ["outboundGb", "requestsMillion"]
+    },
+    "hoursPerMonth": 730,
+    "vcpu": 8,
+    "ramGb": 16,
+    "storageGb": 0,
+    "outboundGb": 2000,
+    "requestsMillion": 0,
+    "databaseGb": 0,
+    "gpuHours": 0,
+    "gpuVramGb": 0
+  }
 ]

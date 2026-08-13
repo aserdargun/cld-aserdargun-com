@@ -7,12 +7,20 @@ const scenario = (requiredCategories: Scenario['requiredCategories']): Scenario 
   id: 'small-web-app',
   name: 'Small web app',
   description: 'Test scenario',
+  scopeNote: 'Test scope.',
   requiredCategories,
-  hoursPerMonth: 730,
-  vcpu: 2,
-  ramGb: 4,
-  storageGb: 100,
-  outboundGb: 80,
+  coverageByCategory: Object.fromEntries(requiredCategories.map((category) => [category, category === 'compute'
+    ? ['hoursPerMonth', 'vcpu', 'ramGb']
+    : category === 'object-storage'
+      ? ['storageGb']
+      : category === 'cdn-network'
+        ? ['outboundGb']
+        : []])),
+  hoursPerMonth: requiredCategories.includes('compute') ? 730 : 0,
+  vcpu: requiredCategories.includes('compute') ? 2 : 0,
+  ramGb: requiredCategories.includes('compute') ? 4 : 0,
+  storageGb: requiredCategories.includes('object-storage') ? 100 : 0,
+  outboundGb: requiredCategories.includes('cdn-network') ? 80 : 0,
   requestsMillion: 0,
   databaseGb: 0,
   gpuHours: 0,
@@ -78,6 +86,7 @@ const providerEstimate = (
   subtotalBeforeFreeTierUsd: totalUsd,
   lineItems: [],
   missingCategories: totalUsd === null ? ['compute'] : [],
+  missingDimensions: [],
   status,
 })
 
@@ -107,6 +116,12 @@ describe('estimateProvider', () => {
   })
 
   it('keeps traffic-included and free-adjusted totals separate in a provider bundle', () => {
+    const trafficScenario = scenario(['compute'])
+    trafficScenario.hoursPerMonth = 0
+    trafficScenario.vcpu = 0
+    trafficScenario.ramGb = 0
+    trafficScenario.outboundGb = 80
+    trafficScenario.coverageByCategory.compute = ['outboundGb']
     const estimate = estimateProvider(
       'azure',
       [
@@ -114,7 +129,7 @@ describe('estimateProvider', () => {
           prices: [{ kind: 'outbound-gb', price: 0.1, currency: 'USD', includedQuantity: 50 }],
         }),
       ],
-      scenario(['compute']),
+      trafficScenario,
       {
         ...context(),
         freeTiers: [freeTier()],
@@ -232,6 +247,33 @@ describe('estimateProvider', () => {
     expect(estimate.missingCategories).toEqual(['compute'])
     expect(estimate.totalUsd).toBeNull()
   })
+
+  it('prefers a qualifying current offer over a cheaper stale offer', () => {
+    const estimate = estimateProvider(
+      'azure',
+      [
+        offer({ id: 'stale-cheap', prices: [{ kind: 'flat-month', price: 1, currency: 'USD', includedQuantity: 0 }] }),
+        offer({ id: 'current-cost', prices: [{ kind: 'flat-month', price: 10, currency: 'USD', includedQuantity: 0 }] }),
+      ],
+      scenario(['compute']),
+      {
+        ...context(),
+        statusByOfferId: { 'stale-cheap': 'stale', 'current-cost': 'current' },
+      },
+    )
+
+    expect(estimate.lineItems.map((item) => item.offer.id)).toEqual(['current-cost'])
+    expect(estimate.status).toBe('current')
+  })
+
+  it('fails closed with explicit dimensions when edited usage lacks coverage', () => {
+    const edited = scenario(['compute'])
+    edited.storageGb = 100
+    const estimate = estimateProvider('azure', [offer()], edited, context())
+
+    expect(estimate.totalUsd).toBeNull()
+    expect(estimate.missingDimensions).toContain('storageGb')
+  })
 })
 
 describe('rankProviderEstimates', () => {
@@ -254,9 +296,9 @@ describe('rankProviderEstimates', () => {
     ])
 
     expect(ranked.map((estimate) => [estimate.providerId, estimate.rank])).toEqual([
-      ['azure', null],
       ['gcp', 'best-price'],
       ['aws', 'second-price'],
+      ['azure', null],
     ])
   })
 })

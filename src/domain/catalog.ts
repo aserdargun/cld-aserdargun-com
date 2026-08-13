@@ -34,6 +34,20 @@ export type PriceKind =
   | 'database-gb-month'
   | 'gpu-hour'
 
+export const scenarioUsageDimensions = [
+  'hoursPerMonth',
+  'vcpu',
+  'ramGb',
+  'storageGb',
+  'outboundGb',
+  'requestsMillion',
+  'databaseGb',
+  'gpuHours',
+  'gpuVramGb',
+] as const
+
+export type ScenarioUsageDimension = (typeof scenarioUsageDimensions)[number]
+
 export interface PriceComponent {
   kind: PriceKind
   price: number
@@ -128,7 +142,9 @@ export interface Scenario {
   id: string
   name: string
   description: string
+  scopeNote: string
   requiredCategories: ServiceCategory[]
+  coverageByCategory: Partial<Record<ServiceCategory, ScenarioUsageDimension[]>>
   hoursPerMonth: number
   vcpu: number
   ramGb: number

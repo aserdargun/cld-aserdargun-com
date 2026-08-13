@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { providerIds, serviceCategories } from '../domain/catalog'
+import { estimateProvider } from '../domain/ranking'
 import { getCatalogHealth, loadCatalog } from './catalog'
 import { catalogSchema, freeTierSchema, offerSchema, priceComponentSchema, providerSchema } from './schemas'
 
@@ -113,7 +114,7 @@ describe('catalog schemas', () => {
 
   it('rejects free-tier applicability across providers, categories, or missing components', () => {
     const catalog = loadCatalog()
-    const freeTierIndex = catalog.freeTiers.findIndex((tier) => tier.id === 'azure-functions-million-requests')
+    const freeTierIndex = catalog.freeTiers.findIndex((tier) => tier.id === 'azure-functions-flex-executions')
     if (freeTierIndex < 0) throw new Error('Seeded Azure Functions free tier is required')
     const freeTier = catalog.freeTiers[freeTierIndex]!
     const invalidTiers = [
@@ -214,6 +215,29 @@ describe('catalog schemas', () => {
     expect(health.invalidCount).toBe(1)
   })
 
+  it('loads provider evidence defects without invalidating unrelated offer data', () => {
+    const catalog = loadCatalog()
+    const azure = catalog.providers.find((provider) => provider.id === 'azure')!
+    const parsed = loadCatalog({
+      ...catalog,
+      providers: [
+        {
+          ...azure,
+          purchaseSourceIds: ['missing-purchase-source'],
+          regions: [{ ...azure.regions[0]!, sourceId: 'missing-region-source' }],
+        },
+        ...catalog.providers.filter((provider) => provider.id !== 'azure'),
+      ],
+    })
+    const health = getCatalogHealth(parsed, new Date('2026-08-14T00:00:00Z'))
+
+    expect(health.invalidReferences).toEqual(expect.arrayContaining([
+      'provider:azure:purchase:missing-purchase-source',
+      `provider:azure:region:${azure.regions[0]!.id}:missing-region-source`,
+    ]))
+    expect(health.statusByOfferId['azure-b2s-westeurope']).toBe('current')
+  })
+
   it('accepts a nonempty offer with a known official source', () => {
     const catalog = loadCatalog()
     const result = catalogSchema.safeParse({
@@ -224,14 +248,45 @@ describe('catalog schemas', () => {
     expect(result.success).toBe(true)
   })
 
-  it('rejects a nonempty offer with an unknown source', () => {
+  it('loads a structurally valid catalog with an unknown source and isolates the affected offer', () => {
     const catalog = loadCatalog()
-    const result = catalogSchema.safeParse({
+    const affectedFreeTier = { ...catalog.freeTiers[0]!, id: 'missing-source-free-tier', sourceIds: ['unknown-free-source'] }
+    const invalidCheapOffer = {
+      ...sourceBackedOffer,
+      specs: { vcpu: 2, ramGb: 4 },
+      prices: [{ kind: 'flat-month' as const, price: 0.01, currency: 'USD' as const, includedQuantity: 0 }],
+      sourceIds: ['unknown-source'],
+    }
+    const mutated = {
       ...catalog,
-      offers: [...catalog.offers, { ...sourceBackedOffer, sourceIds: ['unknown-source'] }],
-    })
+      offers: [...catalog.offers, invalidCheapOffer],
+      freeTiers: [...catalog.freeTiers, affectedFreeTier],
+    }
+    const parsed = loadCatalog(mutated)
+    const health = getCatalogHealth(parsed, new Date('2026-08-14T00:00:00Z'))
 
-    expect(result.success).toBe(false)
+    expect(parsed.offers).toHaveLength(catalog.offers.length + 1)
+    expect(health.statusByOfferId['source-backed-offer']).toBe('invalid')
+    expect(health.statusByFreeTierId['missing-source-free-tier']).toBe('invalid')
+    expect(health.statusByOfferId[catalog.offers[0]!.id]).toBe('current')
+    expect(health.invalidReferences).toContain('offer:source-backed-offer:unknown-source')
+    expect(health.invalidReferences).toContain('free-tier:missing-source-free-tier:unknown-free-source')
+
+    const computeOnly = {
+      ...catalog.scenarios.find((scenario) => scenario.id === 'small-web-app')!,
+      requiredCategories: ['compute' as const],
+      coverageByCategory: { compute: ['hoursPerMonth' as const, 'vcpu' as const, 'ramGb' as const] },
+      storageGb: 0,
+      outboundGb: 0,
+    }
+    const estimate = estimateProvider('azure', parsed.offers, computeOnly, {
+      exchangeRates: parsed.exchangeRates,
+      freeTiers: parsed.freeTiers,
+      statusByOfferId: health.statusByOfferId,
+      statusByFreeTierId: health.statusByFreeTierId,
+    })
+    expect(estimate.lineItems.map((lineItem) => lineItem.offer.id)).not.toContain('source-backed-offer')
+    expect(estimate.totalUsd).not.toBeNull()
   })
 
   it('rejects an offer whose region is not declared by its provider', () => {
@@ -301,6 +356,37 @@ describe('official catalog policy', () => {
         compatiblePriceKinds: [],
       })
     }
+  })
+
+  it('declares a nonempty modeled scope and typed coverage for every scenario', () => {
+    for (const scenario of catalog.scenarios) {
+      expect(scenario.scopeNote.trim()).not.toBe('')
+      expect(Object.keys(scenario.coverageByCategory)).toEqual(expect.arrayContaining(scenario.requiredCategories))
+    }
+  })
+
+  it('uses the current Flex Consumption grants instead of the legacy one-million Consumption grant', () => {
+    const executions = catalog.freeTiers.find((tier) => tier.id === 'azure-functions-flex-executions')
+    const executionTime = catalog.freeTiers.find((tier) => tier.id === 'azure-functions-flex-execution-time')
+
+    expect(executions).toMatchObject({
+      type: 'eligibility-limited',
+      quota: { amount: 0.25, unit: 'million requests', period: 'month' },
+      compatibleOfferIds: ['azure-functions-flex-requests-westeurope'],
+      compatiblePriceKinds: ['requests-million'],
+    })
+    expect(executionTime).toMatchObject({
+      quota: { amount: 100000, unit: 'GB-s', period: 'month' },
+      compatibleOfferIds: [],
+      compatiblePriceKinds: [],
+    })
+    expect(catalog.freeTiers).not.toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        providerId: 'azure',
+        compatibleOfferIds: ['azure-functions-flex-requests-westeurope'],
+        quota: expect.objectContaining({ amount: 1, unit: 'million requests' }),
+      }),
+    ]))
   })
 
   it('backs every offer with an official source and a positive paid component', () => {

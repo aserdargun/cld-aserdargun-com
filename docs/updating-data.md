@@ -30,7 +30,7 @@ Kaynakların `accessedAt` tarihi, teklifler ve ücretsiz katmanların `verifiedA
 
 ## Ekonomik alternatif doğrulaması
 
-Doğrulayıcı, alternatif sağlayıcı kanıtlarını gerçek senaryo ve fiyat motoruyla yeniden hesaplar. Hetzner, Oracle Cloud, DigitalOcean ve Vultr için iki ayrı güncel, sıralanabilir, kapasite eşleşmiş ve ana sağlayıcıdan daha ucuz teklif gerekir. İnsan onaylı kapsam istisnası nedeniyle Cloudflare için bir savunulabilir teklif yeterlidir. Aynı teklif farklı senaryolarda tekrar sayılmaz; eksik bileşen, uydurma kapasite veya uygun olmayan sabit/elastik karşılaştırma kanıt değildir.
+Doğrulayıcı, alternatif sağlayıcı kanıtlarını gerçek senaryonun kategori projeksiyonu ve fiyat motoruyla yeniden hesaplar. Hetzner, Oracle Cloud, DigitalOcean ve Vultr için iki ayrı güncel, sıralanabilir, kategori-tam ve ana sağlayıcılara karşı savunulabilir fiyat avantajı gösteren teklif gerekir. İnsan onaylı kapsam istisnası nedeniyle Cloudflare için statik site depolama projeksiyonundaki R2 Standard kanıtı yeterlidir. Aynı teklif farklı senaryolarda tekrar sayılmaz; atanmamış/eksik boyut, uydurma kapasite veya uygun olmayan sabit/elastik karşılaştırma kanıt değildir.
 
 ## İnceleme kontrol listesi
 

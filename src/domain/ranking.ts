@@ -1,4 +1,17 @@
-import type { Offer, ProviderId, Scenario, ServiceCategory, VerificationStatus } from './catalog'
+import type {
+  Offer,
+  ProviderId,
+  Scenario,
+  ScenarioUsageDimension,
+  ServiceCategory,
+  VerificationStatus,
+} from './catalog'
+import {
+  assignedDimensionsForCategory,
+  evaluateCategoryCoverage,
+  projectScenarioForCategory,
+  unassignedScenarioDimensions,
+} from './coverage'
 import { estimateOffer, type OfferEstimate, type PricingContext } from './pricing'
 
 export interface ProviderEstimate {
@@ -7,6 +20,7 @@ export interface ProviderEstimate {
   subtotalBeforeFreeTierUsd: number | null
   lineItems: OfferEstimate[]
   missingCategories: ServiceCategory[]
+  missingDimensions: ScenarioUsageDimension[]
   status: VerificationStatus
 }
 
@@ -17,23 +31,7 @@ export interface RankedProviderEstimate extends ProviderEstimate {
 }
 
 export function meetsCapacityRequirements(offer: Offer, scenario: Scenario): boolean {
-  if (offer.category === 'object-storage') {
-    const isElastic = offer.prices.some((component) => component.kind === 'storage-gb-month')
-    return isElastic || scenario.storageGb === 0 || (offer.specs.storageGb ?? 0) >= scenario.storageGb
-  }
-
-  if (offer.category === 'cdn-network') {
-    const isElastic = offer.prices.some((component) => component.kind === 'outbound-gb')
-    return isElastic || scenario.outboundGb === 0 || (offer.specs.outboundGb ?? 0) >= scenario.outboundGb
-  }
-
-  if (offer.category !== 'compute' && offer.category !== 'gpu-ai') return true
-
-  const hasRequiredVcpu = scenario.vcpu === 0 || (offer.specs.vcpu ?? 0) >= scenario.vcpu
-  const hasRequiredRam = scenario.ramGb === 0 || (offer.specs.ramGb ?? 0) >= scenario.ramGb
-  const hasRequiredGpu =
-    offer.category !== 'gpu-ai' || scenario.gpuVramGb === 0 || (offer.specs.gpuVramGb ?? 0) >= scenario.gpuVramGb
-  return hasRequiredVcpu && hasRequiredRam && hasRequiredGpu
+  return evaluateCategoryCoverage(offer, scenario, offer.category).complete
 }
 
 function sumOrNull(values: readonly (number | null)[]): number | null {
@@ -55,23 +53,38 @@ export function estimateProvider(
 ): ProviderEstimate {
   const lineItems: OfferEstimate[] = []
   const missingCategories: ServiceCategory[] = []
+  const missingDimensions = new Set<ScenarioUsageDimension>(unassignedScenarioDimensions(scenario))
 
   scenario.requiredCategories.forEach((category) => {
+    const projection = projectScenarioForCategory(scenario, category)
     const candidates = offers
       .filter(
         (offer) =>
-          offer.providerId === providerId && offer.category === category && offer.rankable && meetsCapacityRequirements(offer, scenario),
+          offer.providerId === providerId &&
+          offer.category === category &&
+          offer.rankable &&
+          evaluateCategoryCoverage(offer, scenario, category).complete,
       )
-      .map((offer) => estimateOffer(offer, scenario, context))
+      .map((offer) => estimateOffer(offer, projection, context))
       .filter((estimate) => estimate.status !== 'invalid' && estimate.totalUsd !== null)
-      .sort((left, right) => (left.totalUsd ?? Infinity) - (right.totalUsd ?? Infinity))
+      .sort((left, right) => {
+        const statusDifference = Number(left.status === 'stale') - Number(right.status === 'stale')
+        return statusDifference !== 0
+          ? statusDifference
+          : (left.totalUsd ?? Infinity) - (right.totalUsd ?? Infinity)
+      })
 
     const selected = candidates[0]
     if (selected) lineItems.push(selected)
-    else missingCategories.push(category)
+    else {
+      missingCategories.push(category)
+      assignedDimensionsForCategory(scenario, category).forEach((dimension) => {
+        if (projection[dimension] > 0) missingDimensions.add(dimension)
+      })
+    }
   })
 
-  const isComplete = missingCategories.length === 0
+  const isComplete = missingCategories.length === 0 && missingDimensions.size === 0
   return {
     providerId,
     totalUsd: isComplete ? sumOrNull(lineItems.map((lineItem) => lineItem.totalUsd)) : null,
@@ -80,12 +93,13 @@ export function estimateProvider(
       : null,
     lineItems,
     missingCategories,
+    missingDimensions: [...missingDimensions],
     status: providerStatus(lineItems, isComplete),
   }
 }
 
 function isComplete(estimate: ProviderEstimate): boolean {
-  return estimate.missingCategories.length === 0 && estimate.totalUsd !== null
+  return estimate.missingCategories.length === 0 && estimate.missingDimensions.length === 0 && estimate.totalUsd !== null
 }
 
 export function rankProviderEstimates(
@@ -94,8 +108,12 @@ export function rankProviderEstimates(
   const sorted = estimates
     .map((estimate, index) => ({ estimate, index }))
     .sort((left, right) => {
-      const completeness = Number(isComplete(right.estimate)) - Number(isComplete(left.estimate))
-      if (completeness !== 0) return completeness
+      const group = (estimate: ProviderEstimate) => {
+        if (!isComplete(estimate)) return 2
+        return estimate.status === 'current' ? 0 : 1
+      }
+      const groupDifference = group(left.estimate) - group(right.estimate)
+      if (groupDifference !== 0) return groupDifference
 
       const totalDifference = (left.estimate.totalUsd ?? Infinity) - (right.estimate.totalUsd ?? Infinity)
       return totalDifference !== 0 ? totalDifference : left.index - right.index

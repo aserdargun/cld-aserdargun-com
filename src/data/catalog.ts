@@ -7,8 +7,10 @@ import scenarios from './scenarios.json'
 import sources from './sources.json'
 import { catalogSchema } from './schemas'
 
-export function loadCatalog(): Catalog {
-  return catalogSchema.parse({ providers, sources, offers, freeTiers, exchangeRates, scenarios })
+const bundledCatalog = { providers, sources, offers, freeTiers, exchangeRates, scenarios }
+
+export function loadCatalog(input: unknown = bundledCatalog): Catalog {
+  return catalogSchema.parse(input)
 }
 
 function verificationStatus(

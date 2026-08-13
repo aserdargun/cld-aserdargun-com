@@ -2,7 +2,7 @@
 
 ## Amaç ve veri fotoğrafı
 
-Uygulama, Türkiye'den erişilebilen genel bulut tekliflerini kaynaklı ve tekrar denetlenebilir biçimde karşılaştırır. Mevcut katalog fotoğrafı **2026-08-13** tarihlidir. Her görünür fiyat, ücretsiz katman, bölge, satın alma notu ve döviz kuru arayüzde resmî kaynak ve erişim tarihiyle ilişkilidir.
+Uygulama, Türkiye'den erişilebilen genel bulut tekliflerini kaynaklı ve tekrar denetlenebilir biçimde karşılaştırır. Mevcut katalog fotoğrafı **2026-08-14** tarihlidir. Her görünür fiyat, ücretsiz katman, bölge, satın alma notu ve döviz kuru arayüzde resmî kaynak ve erişim tarihiyle ilişkilidir.
 
 Bu çalışma teklif, fatura tahmini garantisi, vergi danışmanlığı veya sağlayıcı önerisi değildir. Fiyatların ve uygunluk koşullarının satın alma öncesinde yeniden doğrulanması gerekir.
 
@@ -35,9 +35,9 @@ Her ücretsiz satır kota, dönem, süre, uygunluk, aşım davranışı ve otoma
 
 ## Karşılaştırılabilirlik ve sıralama
 
-Bir sağlayıcı tahmini ancak senaryonun bütün gerekli kategorileri için güncel, sıralanabilir ve kapasiteyi karşılayan teklifler bulunduğunda eksiksiz kabul edilir. Eksiksiz ve güncel USD toplamları içinde en düşük ve ikinci en düşük sonuç etiketlenir.
+Bir sağlayıcı tahmini ancak senaryonun açıkça beyan edilen bütün kullanım boyutları gerekli kategorilere atanmış, bu boyutları karşılayan güncel ve sıralanabilir teklifler bulunmuş ve tüm fiyat bileşenleri hesaplanmışsa eksiksiz kabul edilir. Eksik kaynak veya kapasite bilinmeyen değer sıfır sayılmaz; toplam üretilmez. Eksiksiz ve güncel USD toplamları içinde en düşük ve ikinci en düşük sonuç etiketlenir.
 
-Kapasite eşleştirmesi kategoriye göre yapılır. İşlemde vCPU/RAM, GPU'da tam VM kapasitesi ile GPU belleği, sabit depolama/CDN paketlerinde kayıtlı GB sınırı dikkate alınır. Elastik ve sabit paketler ancak tanımlı kapasite ve gerçek senaryo miktarıyla savunulabilir olduğunda karşılaştırılır.
+Kategori-tam kapsama değerlendirmesi senaryonun o kategoriye yansıttığı kullanım boyutlarına göre yapılır. İşlemde çalışma süresi/vCPU/RAM, GPU'da GPU-saat ve GPU belleği, depolama ve CDN'de ise elastik sayaç veya belgeli sabit GB sınırı dikkate alınır. Bir boyut yalnız atandığı kategori projeksiyonunda hesaplanır; örneğin depolama miktarı CDN çıkış fiyatına taşınmaz. Elastik ve sabit paketler ancak tanımlı kapasite ve gerçek senaryo miktarıyla savunulabilir olduğunda karşılaştırılır.
 
 En ucuz sonuç otomatik olarak en uygun çözüm değildir. Mimari, CPU türü ve performansı, yönetim kapsamı, güvenilirlik, veri yerleşimi, destek, ekosistem, kilitlenme riski ve bölge gecikmesi parasal sıralamadan ayrı değerlendirilmelidir.
 
@@ -57,9 +57,9 @@ Bu durumların hiçbiri kartın kabul edileceği, kimlik incelemesinin geçilece
 
 ## Ekonomik alternatiflerin kanıt politikası
 
-Hetzner, Oracle Cloud, DigitalOcean ve Vultr için en az iki ayrı teklif; aynı kategori ve senaryoda güncel bir ana sağlayıcı teklifinden daha düşük hesaplanmış maliyet ve eşit ya da daha iyi ilgili kapasite göstermelidir.
+Hetzner, Oracle Cloud, DigitalOcean ve Vultr için en az iki ayrı teklif; aynı kategori projeksiyonunda güncel, sayısal ve kategori-tam ana sağlayıcı tekliflerine göre savunulabilir fiyat avantajı göstermelidir. Aynı teklif farklı senaryolarda tekrar sayılmaz.
 
-İnsan tarafından onaylanan dar kapsam istisnasıyla Cloudflare için tek savunulabilir fiyat avantajı kanıtı yeterlidir: R2 Standard. Bu, Cloudflare'a uydurma ikinci bir kanıt eklemek yerine ürün yapısındaki farklılığı açıkça kabul eden bir kapsam politikasıdır. Workers Paid görünür bir teklif olabilir ancak karşılaştırılan senaryoda ana sağlayıcılardan daha ucuz olmadığı için avantaj kanıtı sayılmaz.
+İnsan tarafından onaylanan dar kapsam istisnasıyla Cloudflare için tek savunulabilir fiyat avantajı kanıtı yeterlidir: statik site senaryosunun yalnız depolama boyutunu içeren projeksiyonunda R2 Standard. Çıkış trafiği CDN kategorisine atanır; işlem/istek karışımı bu senaryoda sıfırdır ve hariç tutulur. Bu, Cloudflare'a uydurma ikinci bir kanıt eklemek yerine ürün yapısındaki farklılığı açıkça kabul eden bir kapsam politikasıdır. Workers Paid görünür bir teklif olabilir ancak avantaj kanıtı sayılmaz.
 
 ## Yeniden üretilebilir örnekler
 

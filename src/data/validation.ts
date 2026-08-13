@@ -1,16 +1,19 @@
 import {
   serviceCategories,
   type Catalog,
-  type Offer,
   type ProviderId,
   type Scenario,
-  type ServiceCategory,
 } from '../domain/catalog'
+import {
+  evaluateCategoryCoverage,
+  projectScenarioForCategory,
+  unassignedScenarioDimensions,
+} from '../domain/coverage'
 import { estimateOffer, type PricingContext } from '../domain/pricing'
-import { estimateProvider, meetsCapacityRequirements } from '../domain/ranking'
+import { estimateProvider } from '../domain/ranking'
 import { getCatalogHealth } from './catalog'
 
-export const catalogSnapshotDate = '2026-08-13'
+export const catalogSnapshotDate = '2026-08-14'
 const validationDate = new Date(`${catalogSnapshotDate}T00:00:00.000Z`)
 const majorProviderIds = ['azure', 'gcp', 'aws'] as const
 const alternativeProviderIds = ['hetzner', 'oracle', 'cloudflare', 'digitalocean', 'vultr'] as const
@@ -31,34 +34,9 @@ function checkUniqueIds(records: readonly { id: string }[], label: string, failu
 }
 
 function checkSnapshotDate(date: string, label: string, failures: string[]): void {
-  if (date !== catalogSnapshotDate) {
-    failures.push(`${label} must use snapshot date ${catalogSnapshotDate}, got ${date}`)
+  if (date > catalogSnapshotDate) {
+    failures.push(`${label} is dated after catalog snapshot ${catalogSnapshotDate}: ${date}`)
   }
-}
-
-function hasEqualOrBetterCapacity(alternative: Offer, major: Offer, category: ServiceCategory): boolean {
-  if (category === 'compute') {
-    return (alternative.specs.vcpu ?? 0) >= (major.specs.vcpu ?? 0) &&
-      (alternative.specs.ramGb ?? 0) >= (major.specs.ramGb ?? 0)
-  }
-  if (category === 'gpu-ai') {
-    return (alternative.specs.vcpu ?? 0) >= (major.specs.vcpu ?? 0) &&
-      (alternative.specs.ramGb ?? 0) >= (major.specs.ramGb ?? 0) &&
-      (alternative.specs.gpuVramGb ?? 0) >= (major.specs.gpuVramGb ?? 0)
-  }
-  if (category === 'object-storage') {
-    const alternativeElastic = alternative.prices.some((component) => component.kind === 'storage-gb-month')
-    const majorElastic = major.prices.some((component) => component.kind === 'storage-gb-month')
-    if (alternativeElastic !== majorElastic) return !alternativeElastic
-    return (alternative.specs.storageGb ?? Infinity) >= (major.specs.storageGb ?? Infinity)
-  }
-  if (category === 'cdn-network') {
-    const alternativeElastic = alternative.prices.some((component) => component.kind === 'outbound-gb')
-    const majorElastic = major.prices.some((component) => component.kind === 'outbound-gb')
-    if (alternativeElastic !== majorElastic) return !alternativeElastic
-    return (alternative.specs.outboundGb ?? Infinity) >= (major.specs.outboundGb ?? Infinity)
-  }
-  return true
 }
 
 function alternativeAdvantageOfferIds(
@@ -75,20 +53,35 @@ function alternativeAdvantageOfferIds(
 
   return new Set(alternativeOffers.flatMap((alternative) => {
     const isAdvantaged = catalog.scenarios.some((scenario) => {
-      if (!scenario.requiredCategories.includes(alternative.category) || !meetsCapacityRequirements(alternative, scenario)) {
+      if (
+        !scenario.requiredCategories.includes(alternative.category) ||
+        (alternative.category === 'object-storage' && scenario.id !== 'static-site') ||
+        unassignedScenarioDimensions(scenario).length > 0 ||
+        !evaluateCategoryCoverage(alternative, scenario, alternative.category).complete
+      ) {
         return false
       }
-      const alternativeEstimate = estimateOffer(alternative, scenario, context)
+      const projection = projectScenarioForCategory(scenario, alternative.category)
+      const alternativeEstimate = estimateOffer(alternative, projection, context)
       if (alternativeEstimate.status !== 'current' || alternativeEstimate.totalUsd === null) return false
 
-      return majorOffers.some((major) => {
-        if (major.category !== alternative.category || !meetsCapacityRequirements(major, scenario)) return false
-        if (!hasEqualOrBetterCapacity(alternative, major, alternative.category)) return false
-        const majorEstimate = estimateOffer(major, scenario, context)
-        return majorEstimate.status === 'current' &&
-          majorEstimate.totalUsd !== null &&
-          alternativeEstimate.totalUsd! < majorEstimate.totalUsd
+      const comparableMajorTotals = majorProviderIds.flatMap((majorProviderId) => {
+        const qualifyingTotals = majorOffers
+          .filter((major) =>
+            major.providerId === majorProviderId &&
+            major.category === alternative.category &&
+            evaluateCategoryCoverage(major, scenario, alternative.category).complete,
+          )
+          .map((major) => estimateOffer(major, projection, context))
+          .filter((estimate) => estimate.status === 'current' && estimate.totalUsd !== null)
+          .map((estimate) => estimate.totalUsd!)
+        return qualifyingTotals.length > 0 ? [Math.min(...qualifyingTotals)] : []
       })
+      if (comparableMajorTotals.length !== majorProviderIds.length) return false
+      const cheaperMajorCount = comparableMajorTotals.filter(
+        (majorTotal) => alternativeEstimate.totalUsd! < majorTotal,
+      ).length
+      return cheaperMajorCount >= 2
     })
     return isAdvantaged ? [alternative.id] : []
   }))
@@ -97,7 +90,10 @@ function alternativeAdvantageOfferIds(
 function countCompleteCurrentEstimates(catalog: Catalog, scenario: Scenario, context: PricingContext): number {
   return catalog.providers.filter((provider) => {
     const estimate = estimateProvider(provider.id, catalog.offers, scenario, context)
-    return estimate.status === 'current' && estimate.totalUsd !== null && estimate.missingCategories.length === 0
+    return estimate.status === 'current' &&
+      estimate.totalUsd !== null &&
+      estimate.missingCategories.length === 0 &&
+      estimate.missingDimensions.length === 0
   }).length
 }
 
@@ -262,8 +258,13 @@ export function validateCatalog(catalog: Catalog): string[] {
       failures.push(`exchange rate ${rate.id} does not use an ECB exchange-rate source`)
     }
   }
-  if (!catalog.exchangeRates.some((rate) => rate.base === 'EUR' && rate.quote === 'USD' && rate.date === catalogSnapshotDate)) {
-    failures.push(`catalog lacks the required ${catalogSnapshotDate} ECB EUR/USD rate`)
+  if (!catalog.exchangeRates.some((rate) =>
+    rate.base === 'EUR' &&
+    rate.quote === 'USD' &&
+    rate.date <= catalogSnapshotDate &&
+    sourcesById.get(rate.sourceId)?.owner === 'ecb' &&
+    sourcesById.get(rate.sourceId)?.kind === 'exchange-rate')) {
+    failures.push(`catalog lacks a dated ECB EUR/USD rate on or before ${catalogSnapshotDate}`)
   }
 
   const health = getCatalogHealth(catalog, validationDate)
@@ -277,6 +278,10 @@ export function validateCatalog(catalog: Catalog): string[] {
     statusByFreeTierId: health.statusByFreeTierId,
   }
   for (const scenario of catalog.scenarios) {
+    const unassigned = unassignedScenarioDimensions(scenario)
+    if (unassigned.length > 0) {
+      failures.push(`scenario ${scenario.id} has unassigned nonzero dimensions: ${unassigned.join(', ')}`)
+    }
     const requiredCount = scenario.id === 'ai-gpu' ? 2 : 3
     const actualCount = countCompleteCurrentEstimates(catalog, scenario, pricingContext)
     if (actualCount < requiredCount) {
@@ -287,7 +292,7 @@ export function validateCatalog(catalog: Catalog): string[] {
     const advantageOfferIds = alternativeAdvantageOfferIds(providerId, catalog, pricingContext)
     const requiredCount = requiredAlternativeAdvantageCounts[providerId]
     if (advantageOfferIds.size < requiredCount) {
-      failures.push(`alternative provider ${providerId} has ${advantageOfferIds.size} distinct capacity-matched price-advantaged offer${advantageOfferIds.size === 1 ? '' : 's'}; requires ${requiredCount}`)
+      failures.push(`alternative provider ${providerId} has ${advantageOfferIds.size} distinct category-complete price-advantaged offer${advantageOfferIds.size === 1 ? '' : 's'}; requires ${requiredCount}`)
     }
   }
   return failures

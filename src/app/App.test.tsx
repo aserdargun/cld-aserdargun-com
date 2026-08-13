@@ -16,7 +16,7 @@ describe('App', () => {
       screen.getByText('Türkiye’den satın alınabilen servisler için kaynaklı USD analizi.'),
     ).toBeInTheDocument()
     expect(document.getElementById('genel-bakis')).toHaveTextContent(
-      'Son doğrulama: 13 Ağustos 2026',
+      'Son doğrulama: 14 Ağustos 2026',
     )
 
     const sectionIds = [

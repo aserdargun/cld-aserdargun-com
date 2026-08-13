@@ -26,7 +26,7 @@ const categoryLabels: Record<ServiceCategory, string> = {
 
 type NumericScenarioField = Exclude<
   keyof Scenario,
-  'id' | 'name' | 'description' | 'requiredCategories'
+  'id' | 'name' | 'description' | 'scopeNote' | 'requiredCategories' | 'coverageByCategory'
 >
 
 interface FieldDefinition {

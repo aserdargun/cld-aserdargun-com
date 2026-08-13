@@ -99,6 +99,7 @@ function rankedEstimate({
     subtotalBeforeFreeTierUsd,
     lineItems,
     missingCategories,
+    missingDimensions: [],
   }
 }
 

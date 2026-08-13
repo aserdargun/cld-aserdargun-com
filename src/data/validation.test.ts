@@ -12,21 +12,27 @@ describe('catalog validator policy', () => {
     expect(validateCatalog(clonedCatalog())).toEqual([])
   })
 
-  it('requires every provider, source, offer, free tier, and rate to use the snapshot date', () => {
+  it('keeps missing source foreign keys as production validation failures', () => {
     const catalog = clonedCatalog()
-    catalog.providers[0]!.verifiedAt = '2026-08-12'
-    catalog.sources[0]!.accessedAt = '2026-08-12'
-    catalog.offers[0]!.verifiedAt = '2026-08-12'
-    catalog.freeTiers[0]!.verifiedAt = '2026-08-12'
-    catalog.exchangeRates[0]!.date = '2026-08-12'
+    catalog.offers[0]!.sourceIds = ['missing-pricing-source']
+    catalog.freeTiers[0]!.sourceIds = ['missing-free-source']
 
     expect(validateCatalog(catalog)).toEqual(expect.arrayContaining([
-      'provider azure must use snapshot date 2026-08-13, got 2026-08-12',
-      `source ${catalog.sources[0]!.id} must use snapshot date 2026-08-13, got 2026-08-12`,
-      `offer ${catalog.offers[0]!.id} must use snapshot date 2026-08-13, got 2026-08-12`,
-      `free tier ${catalog.freeTiers[0]!.id} must use snapshot date 2026-08-13, got 2026-08-12`,
-      `exchange rate ${catalog.exchangeRates[0]!.id} must use snapshot date 2026-08-13, got 2026-08-12`,
+      `offer ${catalog.offers[0]!.id} references missing source missing-pricing-source`,
+      `free tier ${catalog.freeTiers[0]!.id} references missing source missing-free-source`,
+      `catalog health reports invalid reference offer:${catalog.offers[0]!.id}:missing-pricing-source`,
+      `catalog health reports invalid reference free-tier:${catalog.freeTiers[0]!.id}:missing-free-source`,
     ]))
+  })
+
+  it('allows independently verified dates through the snapshot date and rejects future records', () => {
+    const catalog = clonedCatalog()
+    expect(validateCatalog(catalog)).toEqual([])
+
+    catalog.sources[0]!.accessedAt = '2026-08-15'
+    expect(validateCatalog(catalog)).toContain(
+      `source ${catalog.sources[0]!.id} is dated after catalog snapshot 2026-08-14: 2026-08-15`,
+    )
   })
 
   it('requires a nonempty deterministic region set and exact offer-region references', () => {
@@ -54,7 +60,7 @@ describe('catalog validator policy', () => {
 
   it('validates explicit rankability and free-tier offer/component applicability', () => {
     const catalog = clonedCatalog()
-    const freeTier = catalog.freeTiers.find((tier) => tier.id === 'azure-functions-million-requests')!
+    const freeTier = catalog.freeTiers.find((tier) => tier.id === 'azure-functions-flex-executions')!
     freeTier.compatibleOfferIds = ['gcp-cloud-run-requests-belgium']
 
     expect(validateCatalog(catalog)).toEqual(expect.arrayContaining([
@@ -82,7 +88,7 @@ describe('catalog validator policy', () => {
     }
 
     expect(validateCatalog(catalog)).toContain(
-      'alternative provider hetzner has 1 distinct capacity-matched price-advantaged offer; requires 2',
+      'alternative provider hetzner has 1 distinct category-complete price-advantaged offer; requires 2',
     )
   })
 
@@ -113,7 +119,7 @@ describe('catalog validator policy', () => {
     )
 
     expect(validateCatalog(catalog)).toContain(
-      'alternative provider cloudflare has 0 distinct capacity-matched price-advantaged offers; requires 1',
+      'alternative provider cloudflare has 0 distinct category-complete price-advantaged offers; requires 1',
     )
   })
 
@@ -124,8 +130,43 @@ describe('catalog validator policy', () => {
     )
 
     expect(validateCatalog(catalog)).toContain(
-      'alternative provider oracle has 1 distinct capacity-matched price-advantaged offer; requires 2',
+      'alternative provider oracle has 1 distinct category-complete price-advantaged offer; requires 2',
     )
+  })
+
+  it('does not count undersized fixed storage as a category-complete price proof', () => {
+    const catalog = clonedCatalog()
+    const r2 = catalog.offers.find((offer) => offer.id === 'cloudflare-r2-standard-global')!
+    r2.specs.storageGb = 10
+    r2.prices = [{ kind: 'flat-month', price: 0.01, currency: 'USD', includedQuantity: 0 }]
+
+    expect(validateCatalog(catalog)).toContain(
+      'alternative provider cloudflare has 0 distinct category-complete price-advantaged offers; requires 1',
+    )
+  })
+
+  it('counts Cloudflare R2 only against the static-site storage projection', () => {
+    const catalog = clonedCatalog()
+    const staticSite = catalog.scenarios.find((scenario) => scenario.id === 'static-site')!
+    staticSite.requiredCategories = ['cdn-network']
+    staticSite.coverageByCategory = { 'cdn-network': ['outboundGb', 'requestsMillion'] }
+    staticSite.storageGb = 0
+
+    expect(validateCatalog(catalog)).toContain(
+      'alternative provider cloudflare has 0 distinct category-complete price-advantaged offers; requires 1',
+    )
+  })
+
+  it('does not count a category price proof when the scenario has an unassigned nonzero dimension', () => {
+    const catalog = clonedCatalog()
+    for (const scenario of catalog.scenarios.filter((item) => item.requiredCategories.includes('object-storage'))) {
+      scenario.databaseGb = 1
+    }
+
+    expect(validateCatalog(catalog)).toEqual(expect.arrayContaining([
+      expect.stringContaining('has unassigned nonzero dimensions: databaseGb'),
+      'alternative provider cloudflare has 0 distinct category-complete price-advantaged offers; requires 1',
+    ]))
   })
 
   it('requires global regions to remain country-neutral', () => {
