@@ -5,6 +5,14 @@ const nonEmptyString = z.string().trim().min(1)
 const nonNegativeNumber = z.number().finite().nonnegative()
 const positiveNumber = z.number().finite().positive()
 const isoDate = z.iso.date()
+const scenarioIds = [
+  'small-web-app',
+  'api-backend',
+  'database-saas',
+  'static-site',
+  'ai-gpu',
+  'high-traffic',
+] as const
 
 export const priceComponentSchema = z
   .object({
@@ -118,7 +126,7 @@ export const exchangeRateSchema = z
 
 export const scenarioSchema = z
   .object({
-    id: nonEmptyString,
+    id: z.enum(scenarioIds),
     name: nonEmptyString,
     description: nonEmptyString,
     requiredCategories: z.array(z.enum(serviceCategories)).min(1),
@@ -145,6 +153,24 @@ export const catalogSchema = z
   })
   .strict()
   .superRefine((catalog, context) => {
+    const requireExactIds = (ids: string[], requiredIds: readonly string[], path: PropertyKey[]) => {
+      const actualIds = new Set(ids)
+      const hasRequiredSet = requiredIds.every((id) => actualIds.has(id))
+      if (ids.length !== requiredIds.length || actualIds.size !== requiredIds.length || !hasRequiredSet) {
+        context.addIssue({ code: 'custom', path, message: 'Must contain each required ID exactly once' })
+      }
+    }
+
+    requireExactIds(
+      catalog.providers.map((provider) => provider.id),
+      providerIds,
+      ['providers'],
+    )
+    requireExactIds(
+      catalog.scenarios.map((scenario) => scenario.id),
+      scenarioIds,
+      ['scenarios'],
+    )
     const sourceIds = new Set(catalog.sources.map((source) => source.id))
     const checkSource = (sourceId: string, path: PropertyKey[]) => {
       if (!sourceIds.has(sourceId)) {

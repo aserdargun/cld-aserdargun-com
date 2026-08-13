@@ -63,12 +63,13 @@ export function getCatalogHealth(catalog: Catalog, today: Date): CatalogHealth {
   const statusByOfferId = statusesFor(catalog.offers, knownSourceIds, today)
   const statusByFreeTierId = statusesFor(catalog.freeTiers, knownSourceIds, today)
   const statusValues = [...Object.values(statusByOfferId), ...Object.values(statusByFreeTierId)]
+  const invalidReferences = collectInvalidReferences(catalog, knownSourceIds)
 
   return {
     statusByOfferId,
     statusByFreeTierId,
-    invalidReferences: collectInvalidReferences(catalog, knownSourceIds),
+    invalidReferences,
     staleCount: statusValues.filter((status) => status === 'stale').length,
-    invalidCount: statusValues.filter((status) => status === 'invalid').length,
+    invalidCount: invalidReferences.length,
   }
 }
