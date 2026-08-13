@@ -42,23 +42,23 @@ function hasEqualOrBetterCapacity(alternative: Offer, major: Offer, category: Se
   if (category === 'object-storage') {
     const alternativeElastic = alternative.prices.some((component) => component.kind === 'storage-gb-month')
     const majorElastic = major.prices.some((component) => component.kind === 'storage-gb-month')
-    if (alternativeElastic !== majorElastic) return alternativeElastic
+    if (alternativeElastic !== majorElastic) return !alternativeElastic
     return (alternative.specs.storageGb ?? Infinity) >= (major.specs.storageGb ?? Infinity)
   }
   if (category === 'cdn-network') {
     const alternativeElastic = alternative.prices.some((component) => component.kind === 'outbound-gb')
     const majorElastic = major.prices.some((component) => component.kind === 'outbound-gb')
-    if (alternativeElastic !== majorElastic) return alternativeElastic
+    if (alternativeElastic !== majorElastic) return !alternativeElastic
     return (alternative.specs.outboundGb ?? Infinity) >= (major.specs.outboundGb ?? Infinity)
   }
   return true
 }
 
-function hasAlternativeAdvantage(
+function alternativeAdvantageOfferIds(
   providerId: ProviderId,
   catalog: Catalog,
   context: PricingContext,
-): boolean {
+): Set<string> {
   const alternativeOffers = catalog.offers.filter(
     (offer) => offer.providerId === providerId && offer.rankable,
   )
@@ -66,8 +66,8 @@ function hasAlternativeAdvantage(
     (offer) => majorProviderIds.includes(offer.providerId as (typeof majorProviderIds)[number]) && offer.rankable,
   )
 
-  return alternativeOffers.some((alternative) =>
-    catalog.scenarios.some((scenario) => {
+  return new Set(alternativeOffers.flatMap((alternative) => {
+    const isAdvantaged = catalog.scenarios.some((scenario) => {
       if (!scenario.requiredCategories.includes(alternative.category) || !meetsCapacityRequirements(alternative, scenario)) {
         return false
       }
@@ -82,8 +82,9 @@ function hasAlternativeAdvantage(
           majorEstimate.totalUsd !== null &&
           alternativeEstimate.totalUsd! < majorEstimate.totalUsd
       })
-    }),
-  )
+    })
+    return isAdvantaged ? [alternative.id] : []
+  }))
 }
 
 function countCompleteCurrentEstimates(catalog: Catalog, scenario: Scenario, context: PricingContext): number {
@@ -276,8 +277,9 @@ export function validateCatalog(catalog: Catalog): string[] {
     }
   }
   for (const providerId of alternativeProviderIds) {
-    if (!hasAlternativeAdvantage(providerId, catalog, pricingContext)) {
-      failures.push(`alternative provider ${providerId} lacks a capacity-matched normalized price advantage over a major provider`)
+    const advantageOfferIds = alternativeAdvantageOfferIds(providerId, catalog, pricingContext)
+    if (advantageOfferIds.size < 2) {
+      failures.push(`alternative provider ${providerId} has ${advantageOfferIds.size} distinct capacity-matched price-advantaged offer${advantageOfferIds.size === 1 ? '' : 's'}; requires 2`)
     }
   }
   return failures

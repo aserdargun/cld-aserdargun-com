@@ -72,17 +72,38 @@ describe('catalog validator policy', () => {
     ]))
   })
 
-  it('requires each alternative to prove a capacity-matched advantage over a major provider', () => {
+  it('rejects an alternative with two offers when only one distinct offer is price-advantaged', () => {
     const catalog = clonedCatalog()
-    for (const offer of catalog.offers.filter((candidate) => candidate.providerId === 'hetzner')) {
-      for (const component of offer.prices) {
-        component.price = 1_000_000
-        component.monthlyCap = 1_000_000
-      }
+    const hetznerOffers = catalog.offers.filter((offer) => offer.providerId === 'hetzner')
+    expect(hetznerOffers).toHaveLength(2)
+    for (const component of hetznerOffers[1]!.prices) {
+      component.price = 1_000_000
+      component.monthlyCap = 1_000_000
     }
 
     expect(validateCatalog(catalog)).toContain(
-      'alternative provider hetzner lacks a capacity-matched normalized price advantage over a major provider',
+      'alternative provider hetzner has 1 distinct capacity-matched price-advantaged offer; requires 2',
+    )
+  })
+
+  it('accepts exactly two distinct price-advantaged alternative offer IDs', () => {
+    const catalog = clonedCatalog()
+    const hetznerOfferIds = catalog.offers
+      .filter((offer) => offer.providerId === 'hetzner')
+      .map((offer) => offer.id)
+
+    expect(hetznerOfferIds).toEqual(['hetzner-cx23-nuremberg', 'hetzner-cax11-nuremberg'])
+    expect(validateCatalog(catalog)).not.toContain(expect.stringContaining('alternative provider hetzner has'))
+  })
+
+  it('does not count an offer that is cheaper than only one of three comparable major providers', () => {
+    const catalog = clonedCatalog()
+    catalog.offers = catalog.offers.filter(
+      (offer) => offer.id !== 'oracle-a1-two-ocpu-12gb-frankfurt',
+    )
+
+    expect(validateCatalog(catalog)).toContain(
+      'alternative provider oracle has 1 distinct capacity-matched price-advantaged offer; requires 2',
     )
   })
 

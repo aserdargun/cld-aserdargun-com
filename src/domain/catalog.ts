@@ -54,6 +54,7 @@ export interface Offer {
     ramGb?: number
     storageGb?: number
     outboundGb?: number
+    outboundGbUnlimited?: boolean
     gpuModel?: string
     gpuVramGb?: number
   }

@@ -51,12 +51,14 @@
   {"id":"oracle-regions","owner":"oracle","title":"Oracle Cloud public regions","url":"https://www.oracle.com/cloud/public-cloud-regions/","kind":"regions","accessedAt":"2026-08-13"},
   {"id":"oracle-price-list","owner":"oracle","title":"Oracle Cloud price list","url":"https://www.oracle.com/cloud/price-list/","kind":"pricing","accessedAt":"2026-08-13"},
   {"id":"oracle-price-json","owner":"oracle","title":"Oracle Cloud machine-readable price list","url":"https://www.oracle.com/a/ocom/docs/pricing/cloud-price-list.json","kind":"pricing","accessedAt":"2026-08-13"},
+  {"id":"oracle-a1-flex-shape","owner":"oracle","title":"Oracle Compute shape specifications for Ampere A1 Flex","url":"https://docs.oracle.com/en-us/iaas/Content/Compute/References/computeshapes.htm","kind":"pricing","accessedAt":"2026-08-13"},
   {"id":"oracle-always-free","owner":"oracle","title":"Oracle Cloud Always Free resources","url":"https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm","kind":"free-tier","accessedAt":"2026-08-13"},
 
   {"id":"cloudflare-billing-profile","owner":"cloudflare","title":"Cloudflare billing profile and payment methods","url":"https://developers.cloudflare.com/billing/get-started/create-billing-profile/","kind":"purchase","accessedAt":"2026-08-13"},
   {"id":"cloudflare-network","owner":"cloudflare","title":"Cloudflare global network","url":"https://www.cloudflare.com/network/","kind":"regions","accessedAt":"2026-08-13"},
   {"id":"cloudflare-workers-pricing","owner":"cloudflare","title":"Cloudflare Workers pricing","url":"https://developers.cloudflare.com/workers/platform/pricing/","kind":"pricing","accessedAt":"2026-08-13"},
   {"id":"cloudflare-r2-pricing","owner":"cloudflare","title":"Cloudflare R2 pricing","url":"https://developers.cloudflare.com/r2/pricing/","kind":"pricing","accessedAt":"2026-08-13"},
+  {"id":"cloudflare-pro-plan","owner":"cloudflare","title":"Cloudflare Pro application services plan","url":"https://www.cloudflare.com/plans/pro/","kind":"pricing","accessedAt":"2026-08-13"},
 
   {"id":"digitalocean-payment","owner":"digitalocean","title":"DigitalOcean payment methods","url":"https://docs.digitalocean.com/platform/billing/manage-payment-methods/","kind":"purchase","accessedAt":"2026-08-13"},
   {"id":"digitalocean-regions","owner":"digitalocean","title":"DigitalOcean regional availability","url":"https://docs.digitalocean.com/platform/regional-availability/","kind":"regions","accessedAt":"2026-08-13"},

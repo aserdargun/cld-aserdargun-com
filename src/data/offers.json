@@ -154,9 +154,14 @@
   },
 
   {
-    "id":"oracle-a1-one-ocpu-6gb-frankfurt","providerId":"oracle","serviceName":"OCI Ampere A1 Flex 1 OCPU and 6 GB memory","category":"compute","rankable":true,"region":"eu-frankfurt-1","specs":{"vcpu":2,"ramGb":6},
-    "prices":[{"kind":"instance-hour","price":0.019,"currency":"USD","includedQuantity":0}],"sourceIds":["oracle-price-list","oracle-price-json"],"verifiedAt":"2026-08-13",
-    "notes":["B93297 OCPU 0.01 + B93298 bellek 6 × 0.0015 = 0.019 USD/saat olarak birleştirildi; boot volume, public IP, ağ çıkışı, ek hizmetler ve vergi hariçtir."]
+    "id":"oracle-a1-two-ocpu-6gb-frankfurt","providerId":"oracle","serviceName":"OCI Ampere A1 Flex 2 OCPU and 6 GB memory","category":"compute","rankable":true,"region":"eu-frankfurt-1","specs":{"vcpu":2,"ramGb":6},
+    "prices":[{"kind":"instance-hour","price":0.029,"currency":"USD","includedQuantity":0}],"sourceIds":["oracle-price-list","oracle-price-json","oracle-a1-flex-shape"],"verifiedAt":"2026-08-13",
+    "notes":["Ampere A1'de her OCPU tek donanım yürütme iş parçacığıdır. B93297 2 × 0.01 + B93298 bellek 6 × 0.0015 = 0.029 USD/saat olarak birleştirildi; boot volume, public IP, ağ çıkışı, ek hizmetler ve vergi hariçtir."]
+  },
+  {
+    "id":"oracle-a1-two-ocpu-12gb-frankfurt","providerId":"oracle","serviceName":"OCI Ampere A1 Flex 2 OCPU and 12 GB memory","category":"compute","rankable":true,"region":"eu-frankfurt-1","specs":{"vcpu":2,"ramGb":12},
+    "prices":[{"kind":"instance-hour","price":0.038,"currency":"USD","includedQuantity":0}],"sourceIds":["oracle-price-list","oracle-price-json","oracle-a1-flex-shape"],"verifiedAt":"2026-08-13",
+    "notes":["Ampere A1'de her OCPU tek donanım yürütme iş parçacığıdır. B93297 2 × 0.01 + B93298 bellek 12 × 0.0015 = 0.038 USD/saat olarak birleştirildi; boot volume, public IP, ağ çıkışı, ek hizmetler ve vergi hariçtir."]
   },
   {
     "id":"oracle-object-standard-frankfurt","providerId":"oracle","serviceName":"OCI Object Storage Standard","category":"object-storage","rankable":true,"region":"eu-frankfurt-1","specs":{},
@@ -174,11 +179,21 @@
     "prices":[{"kind":"storage-gb-month","price":0.015,"currency":"USD","includedQuantity":10}],"sourceIds":["cloudflare-r2-pricing"],"verifiedAt":"2026-08-13",
     "notes":["İlk 10 GB-ay sonrası standart depolamadır ve internet egress ücretsizdir; Class A/B işlemleri, Infrequent Access ücretleri ve vergi hariçtir."]
   },
+  {
+    "id":"cloudflare-pro-cdn-global","providerId":"cloudflare","serviceName":"Cloudflare Pro application services plan","category":"cdn-network","rankable":true,"region":"global","specs":{"outboundGbUnlimited":true},
+    "prices":[{"kind":"flat-month","price":25,"currency":"USD","includedQuantity":0}],"sourceIds":["cloudflare-pro-plan"],"verifiedAt":"2026-08-13",
+    "notes":["Aylık Pro plan, CDN ve resmi sayfada belirtilen ek kullanım ücreti olmamasını içerir; alan adı kaydı, origin, Argo, Load Balancing, ücretli eklentiler ve vergi hariçtir."]
+  },
 
   {
     "id":"digitalocean-basic-4gb-fra1","providerId":"digitalocean","serviceName":"DigitalOcean Basic Droplet 4 GiB","category":"compute","rankable":true,"region":"fra1","specs":{"vcpu":2,"ramGb":4,"storageGb":80,"outboundGb":4000},
     "prices":[{"kind":"instance-hour","price":0.03571,"currency":"USD","includedQuantity":0,"monthlyCap":24}],"sourceIds":["digitalocean-droplets-pricing"],"verifiedAt":"2026-08-13",
     "notes":["Paket 4.000 GiB transfer içerir; 60 saniye minimum faturalama uygulanır. Backup, snapshot, ek volume/IP, transfer aşımı ve vergi hariçtir."]
+  },
+  {
+    "id":"digitalocean-basic-16gb-fra1","providerId":"digitalocean","serviceName":"DigitalOcean Basic Droplet 16 GiB","category":"compute","rankable":true,"region":"fra1","specs":{"vcpu":8,"ramGb":16,"storageGb":320,"outboundGb":6000},
+    "prices":[{"kind":"instance-hour","price":0.14286,"currency":"USD","includedQuantity":0,"monthlyCap":96}],"sourceIds":["digitalocean-droplets-pricing"],"verifiedAt":"2026-08-13",
+    "notes":["Resmi Basic plan 8 vCPU, 16 GiB bellek, 320 GiB disk ve 6.000 GiB transfer içerir; 60 saniye minimum faturalama uygulanır. Backup, snapshot, ek volume/IP, transfer aşımı ve vergi hariçtir."]
   },
   {
     "id":"digitalocean-spaces-fra1","providerId":"digitalocean","serviceName":"DigitalOcean Spaces base subscription","category":"object-storage","rankable":true,"region":"fra1","specs":{},
@@ -190,6 +205,11 @@
     "id":"vultr-vc2-2c-4gb-frankfurt","providerId":"vultr","serviceName":"Vultr Cloud Compute vc2-2c-4gb","category":"compute","rankable":true,"region":"fra","specs":{"vcpu":2,"ramGb":4,"storageGb":80,"outboundGb":3072},
     "prices":[{"kind":"instance-hour","price":0.027,"currency":"USD","includedQuantity":0,"monthlyCap":20}],"sourceIds":["vultr-plans-api"],"verifiedAt":"2026-08-13",
     "notes":["Resmi API planı on-demand ve Frankfurt'ta kullanılabilir, 3.072 GB bant genişliği içerir; lisans, backup, snapshot, ek IP, aşım ve vergi hariçtir."]
+  },
+  {
+    "id":"vultr-vc2-4c-8gb-frankfurt","providerId":"vultr","serviceName":"Vultr Cloud Compute vc2-4c-8gb","category":"compute","rankable":true,"region":"fra","specs":{"vcpu":4,"ramGb":8,"storageGb":160,"outboundGb":4096},
+    "prices":[{"kind":"instance-hour","price":0.055,"currency":"USD","includedQuantity":0,"monthlyCap":40}],"sourceIds":["vultr-plans-api"],"verifiedAt":"2026-08-13",
+    "notes":["Resmi API planı on-demand ve Frankfurt'ta kullanılabilir, 4.096 GB bant genişliği içerir; lisans, backup, snapshot, ek IP, aşım ve vergi hariçtir."]
   },
   {
     "id":"vultr-object-standard-amsterdam","providerId":"vultr","serviceName":"Vultr Object Storage Standard","category":"object-storage","rankable":true,"region":"ams","specs":{},

@@ -63,6 +63,7 @@ const context = (): PricingContext => ({
     'small-storage-bundle': 'current',
     'elastic-storage': 'current',
     'small-cdn-bundle': 'current',
+    'unlimited-cdn-plan': 'current',
     'component-only': 'current',
   },
 })
@@ -201,6 +202,23 @@ describe('estimateProvider', () => {
 
     expect(estimate.missingCategories).toEqual(['cdn-network'])
     expect(estimate.totalUsd).toBeNull()
+  })
+
+  it('accepts a flat CDN plan with officially unlimited outbound capacity', () => {
+    const estimate = estimateProvider(
+      'azure',
+      [offer({
+        id: 'unlimited-cdn-plan',
+        category: 'cdn-network',
+        specs: { outboundGbUnlimited: true },
+        prices: [{ kind: 'flat-month', price: 25, currency: 'USD', includedQuantity: 0 }],
+      })],
+      scenario(['cdn-network']),
+      context(),
+    )
+
+    expect(estimate.missingCategories).toEqual([])
+    expect(estimate.totalUsd).toBe(25)
   })
 
   it('never lets a component-only offer complete a scenario', () => {

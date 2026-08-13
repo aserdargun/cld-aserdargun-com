@@ -91,6 +91,7 @@ export const offerSchema = z
         ramGb: nonNegativeNumber.optional(),
         storageGb: nonNegativeNumber.optional(),
         outboundGb: nonNegativeNumber.optional(),
+        outboundGbUnlimited: z.boolean().optional(),
         gpuModel: nonEmptyString.optional(),
         gpuVramGb: nonNegativeNumber.optional(),
       })
