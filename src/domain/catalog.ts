@@ -47,11 +47,13 @@ export interface Offer {
   providerId: ProviderId
   serviceName: string
   category: ServiceCategory
+  rankable: boolean
   region: string
   specs: {
     vcpu?: number
     ramGb?: number
     storageGb?: number
+    outboundGb?: number
     gpuModel?: string
     gpuVramGb?: number
   }
@@ -81,7 +83,8 @@ export interface Provider {
   regions: Array<{
     id: string
     name: string
-    countryCode: string
+    countryCode: string | null
+    scope: 'regional' | 'global'
     sourceId: string
   }>
 }
@@ -109,6 +112,8 @@ export interface FreeTier {
   providerId: ProviderId
   serviceName: string
   category: ServiceCategory
+  compatibleOfferIds: string[]
+  compatiblePriceKinds: PriceKind[]
   type: FreeTierType
   quota: { amount: number; unit: string; period: 'once' | 'month' }
   durationMonths: number | null

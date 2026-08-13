@@ -24,6 +24,7 @@ const offer = (overrides: Partial<Offer> = {}): Offer => ({
   providerId: 'azure',
   serviceName: 'Test compute',
   category: 'compute',
+  rankable: true,
   region: 'westeurope',
   specs: { vcpu: 2, ramGb: 4 },
   prices: [{ kind: 'flat-month', price: 10, currency: 'USD', includedQuantity: 0 }],
@@ -38,6 +39,8 @@ const freeTier = (): FreeTier => ({
   providerId: 'azure',
   serviceName: 'Traffic quota',
   category: 'compute',
+  compatibleOfferIds: ['azure-compute'],
+  compatiblePriceKinds: ['outbound-gb'],
   type: 'always-free',
   quota: { amount: 20, unit: 'outbound-gb', period: 'month' },
   durationMonths: null,
@@ -57,6 +60,10 @@ const context = (): PricingContext => ({
     suitable: 'current',
     'more-expensive': 'current',
     'storage-offer': 'current',
+    'small-storage-bundle': 'current',
+    'elastic-storage': 'current',
+    'small-cdn-bundle': 'current',
+    'component-only': 'current',
   },
 })
 
@@ -143,6 +150,69 @@ describe('estimateProvider', () => {
 
     expect(estimate.lineItems.map((lineItem) => lineItem.offer.id)).toEqual(['storage-offer'])
     expect(estimate.totalUsd).toBe(5)
+  })
+
+  it('rejects a flat object-storage bundle below the scenario storage requirement', () => {
+    const estimate = estimateProvider(
+      'azure',
+      [offer({
+        id: 'small-storage-bundle',
+        category: 'object-storage',
+        specs: { storageGb: 5 },
+        prices: [{ kind: 'flat-month', price: 1, currency: 'USD', includedQuantity: 0 }],
+      })],
+      scenario(['object-storage']),
+      context(),
+    )
+
+    expect(estimate.missingCategories).toEqual(['object-storage'])
+    expect(estimate.totalUsd).toBeNull()
+  })
+
+  it('lets usage-priced object storage scale beyond a finite bundled capacity', () => {
+    const estimate = estimateProvider(
+      'azure',
+      [offer({
+        id: 'elastic-storage',
+        category: 'object-storage',
+        specs: {},
+        prices: [{ kind: 'storage-gb-month', price: 0.05, currency: 'USD', includedQuantity: 0 }],
+      })],
+      scenario(['object-storage']),
+      context(),
+    )
+
+    expect(estimate.lineItems.map((lineItem) => lineItem.offer.id)).toEqual(['elastic-storage'])
+    expect(estimate.totalUsd).toBe(5)
+  })
+
+  it('rejects a flat CDN bundle below the scenario outbound requirement', () => {
+    const estimate = estimateProvider(
+      'azure',
+      [offer({
+        id: 'small-cdn-bundle',
+        category: 'cdn-network',
+        specs: { outboundGb: 50 },
+        prices: [{ kind: 'flat-month', price: 2.5, currency: 'USD', includedQuantity: 0 }],
+      })],
+      scenario(['cdn-network']),
+      context(),
+    )
+
+    expect(estimate.missingCategories).toEqual(['cdn-network'])
+    expect(estimate.totalUsd).toBeNull()
+  })
+
+  it('never lets a component-only offer complete a scenario', () => {
+    const estimate = estimateProvider(
+      'azure',
+      [offer({ id: 'component-only', rankable: false, prices: [{ kind: 'flat-month', price: 1, currency: 'USD', includedQuantity: 0 }] })],
+      scenario(['compute']),
+      context(),
+    )
+
+    expect(estimate.missingCategories).toEqual(['compute'])
+    expect(estimate.totalUsd).toBeNull()
   })
 })
 

@@ -16,7 +16,17 @@ export interface RankedProviderEstimate extends ProviderEstimate {
   rank: ProviderPriceRank
 }
 
-function meetsCapacityRequirements(offer: Offer, scenario: Scenario): boolean {
+export function meetsCapacityRequirements(offer: Offer, scenario: Scenario): boolean {
+  if (offer.category === 'object-storage') {
+    const isElastic = offer.prices.some((component) => component.kind === 'storage-gb-month')
+    return isElastic || scenario.storageGb === 0 || (offer.specs.storageGb ?? 0) >= scenario.storageGb
+  }
+
+  if (offer.category === 'cdn-network') {
+    const isElastic = offer.prices.some((component) => component.kind === 'outbound-gb')
+    return isElastic || scenario.outboundGb === 0 || (offer.specs.outboundGb ?? 0) >= scenario.outboundGb
+  }
+
   if (offer.category !== 'compute' && offer.category !== 'gpu-ai') return true
 
   const hasRequiredVcpu = scenario.vcpu === 0 || (offer.specs.vcpu ?? 0) >= scenario.vcpu
@@ -50,7 +60,7 @@ export function estimateProvider(
     const candidates = offers
       .filter(
         (offer) =>
-          offer.providerId === providerId && offer.category === category && meetsCapacityRequirements(offer, scenario),
+          offer.providerId === providerId && offer.category === category && offer.rankable && meetsCapacityRequirements(offer, scenario),
       )
       .map((offer) => estimateOffer(offer, scenario, context))
       .filter((estimate) => estimate.status !== 'invalid' && estimate.totalUsd !== null)

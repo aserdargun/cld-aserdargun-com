@@ -23,6 +23,7 @@ const offer = (prices: Offer['prices'], verifiedAt = '2026-08-10'): Offer => ({
   providerId: 'azure',
   serviceName: 'Test service',
   category: 'compute',
+  rankable: true,
   region: 'westeurope',
   specs: { vcpu: 2, ramGb: 4 },
   prices,
@@ -36,6 +37,8 @@ const freeTier = (overrides: Partial<FreeTier> = {}): FreeTier => ({
   providerId: 'azure',
   serviceName: 'Test free tier',
   category: 'compute',
+  compatibleOfferIds: ['test-offer'],
+  compatiblePriceKinds: ['requests-million'],
   type: 'always-free',
   quota: { amount: 1, unit: 'million requests', period: 'month' },
   durationMonths: null,
@@ -144,6 +147,54 @@ describe('estimateOffer', () => {
         { ...emptyContext(), freeTiers: [freeTier()] },
       ).totalUsd,
     ).toBe(4)
+  })
+
+  it('does not apply a same-category free tier to an offer that is not explicitly compatible', () => {
+    const estimate = estimateOffer(
+      offer([{ kind: 'requests-million', price: 2, currency: 'USD', includedQuantity: 0 }]),
+      webScenario(),
+      {
+        ...emptyContext(),
+        freeTiers: [freeTier({ compatibleOfferIds: ['different-offer'] })],
+        eligibleFreeTierIds: ['test-free-tier'],
+        statusByFreeTierId: { 'test-free-tier': 'current' },
+      },
+    )
+
+    expect(estimate.freeTierSavingsUsd).toBe(0)
+    expect(estimate.totalUsd).toBe(4)
+  })
+
+  it('keeps display-only credits and quotas from reducing engine estimates', () => {
+    const estimate = estimateOffer(
+      offer([{ kind: 'requests-million', price: 2, currency: 'USD', includedQuantity: 0 }]),
+      webScenario(),
+      {
+        ...emptyContext(),
+        freeTiers: [freeTier({ compatibleOfferIds: [], compatiblePriceKinds: [] })],
+        eligibleFreeTierIds: ['test-free-tier'],
+        statusByFreeTierId: { 'test-free-tier': 'current' },
+      },
+    )
+
+    expect(estimate.freeTierSavingsUsd).toBe(0)
+    expect(estimate.totalUsd).toBe(4)
+  })
+
+  it('does not apply a compatible offer quota to an unlisted price component', () => {
+    const estimate = estimateOffer(
+      offer([{ kind: 'requests-million', price: 2, currency: 'USD', includedQuantity: 0 }]),
+      webScenario(),
+      {
+        ...emptyContext(),
+        freeTiers: [freeTier({ compatiblePriceKinds: ['outbound-gb'] })],
+        eligibleFreeTierIds: ['test-free-tier'],
+        statusByFreeTierId: { 'test-free-tier': 'current' },
+      },
+    )
+
+    expect(estimate.freeTierSavingsUsd).toBe(0)
+    expect(estimate.totalUsd).toBe(4)
   })
 
   it('does not apply a time-limited quota after its duration', () => {

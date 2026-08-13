@@ -3,48 +3,48 @@
     "id":"azure","name":"Microsoft Azure","shortName":"Azure","officialSite":"https://azure.microsoft.com/","purchaseAvailability":"verified",
     "purchaseNote":"Azure'ın ülke/bölge ödeme tablosunda Türkiye için American Express, Mastercard ve Visa açıkça listelenir; hesap ve kart doğrulaması yine gereklidir.","purchaseSourceIds":["azure-purchase-methods"],"verifiedAt":"2026-08-13",
     "strengths":["Geniş kurumsal hizmet kataloğu","Batı Avrupa'da çok sayıda yönetilen hizmet"],"limitations":["Toplam fatura yapılandırma, ağ ve lisanslara göre değişir"],
-    "regions":[{"id":"westeurope","name":"West Europe (Netherlands)","countryCode":"NL","sourceId":"azure-regions"}]
+    "regions":[{"id":"westeurope","name":"West Europe (Netherlands)","countryCode":"NL","scope":"regional","sourceId":"azure-regions"}]
   },
   {
     "id":"gcp","name":"Google Cloud","shortName":"GCP","officialSite":"https://cloud.google.com/","purchaseAvailability":"verified",
     "purchaseNote":"Google Cloud ülke tablosu Türkiye için TRY faturalama para birimini ve kredi/banka kartı ödemesini açıkça listeler; hesap doğrulaması uygulanabilir.","purchaseSourceIds":["gcp-purchase-currency"],"verifiedAt":"2026-08-13",
     "strengths":["Veri, yapay zeka ve Kubernetes hizmetleri","Şeffaf bölgesel fiyat sayfaları"],"limitations":["Hizmet bileşenleri ayrı ayrı ücretlendirilebilir"],
-    "regions":[{"id":"europe-west1","name":"Belgium (europe-west1)","countryCode":"BE","sourceId":"gcp-regions"}]
+    "regions":[{"id":"europe-west1","name":"Belgium (europe-west1)","countryCode":"BE","scope":"regional","sourceId":"gcp-regions"}]
   },
   {
     "id":"aws","name":"Amazon Web Services","shortName":"AWS","officialSite":"https://aws.amazon.com/","purchaseAvailability":"verified",
     "purchaseNote":"AWS Türkiye SSS, Türkiye'deki hesapların AWS Türkiye tarafından faturalandırıldığını ve Visa, Mastercard, Amex veya yerel banka transferini açıkça belirtir.","purchaseSourceIds":["aws-turkey-purchase"],"verifiedAt":"2026-08-13",
     "strengths":["Çok geniş hizmet ve bölge kataloğu","Olgun yönetilen hizmetler"],"limitations":["Ayrıntılı bileşen ve veri aktarımı ücretleri toplamı etkiler"],
-    "regions":[{"id":"eu-central-1","name":"Europe (Frankfurt)","countryCode":"DE","sourceId":"aws-regions"}]
+    "regions":[{"id":"eu-central-1","name":"Europe (Frankfurt)","countryCode":"DE","scope":"regional","sourceId":"aws-regions"},{"id":"global","name":"CloudFront global edge network","countryCode":null,"scope":"global","sourceId":"aws-cloudfront-network"}]
   },
   {
     "id":"hetzner","name":"Hetzner","shortName":"Hetzner","officialSite":"https://www.hetzner.com/","purchaseAvailability":"conditional",
     "purchaseNote":"Hetzner kart, SEPA, havale ve PayPal yöntemlerini açıklar ancak yöntemlerin her ülkede bulunmadığını da belirtir; Türkiye uygunluğu garanti edilmez.","purchaseSourceIds":["hetzner-payment"],"verifiedAt":"2026-08-13",
     "strengths":["Ekonomik Avrupa bulut sunucuları","Basit saatlik fiyat ve aylık üst sınır"],"limitations":["Ödeme yöntemi ülkeye göre kısıtlanabilir","Yönetilen hizmet kapsamı ana sağlayıcılardan dardır"],
-    "regions":[{"id":"nbg1","name":"Nuremberg (NBG1)","countryCode":"DE","sourceId":"hetzner-regions"}]
+    "regions":[{"id":"nbg1","name":"Nuremberg (NBG1)","countryCode":"DE","scope":"regional","sourceId":"hetzner-regions"}]
   },
   {
     "id":"oracle","name":"Oracle Cloud Infrastructure","shortName":"Oracle","officialSite":"https://www.oracle.com/cloud/","purchaseAvailability":"conditional",
     "purchaseNote":"Oracle kayıt için kredi/banka kartı ve kimlik doğrulaması ister; resmi SSS Türkiye'ye satın alma garantisi vermediğinden durum koşulludur.","purchaseSourceIds":["oracle-purchase-free-faq"],"verifiedAt":"2026-08-13",
     "strengths":["Cömert Always Free kaynakları","Ampere tabanlı esnek hesaplama"],"limitations":["Always Free kapasitesi ve uygunluğu garanti edilmez"],
-    "regions":[{"id":"eu-frankfurt-1","name":"Germany Central (Frankfurt)","countryCode":"DE","sourceId":"oracle-regions"}]
+    "regions":[{"id":"eu-frankfurt-1","name":"Germany Central (Frankfurt)","countryCode":"DE","scope":"regional","sourceId":"oracle-regions"}]
   },
   {
     "id":"cloudflare","name":"Cloudflare","shortName":"Cloudflare","officialSite":"https://www.cloudflare.com/","purchaseAvailability":"conditional",
     "purchaseNote":"Cloudflare kart, PayPal ve cüzdan ödeme seçeneklerini belgeler fakat Türkiye için açık bir satın alma garantisi sunmaz; 3D Secure doğrulaması gerekebilir.","purchaseSourceIds":["cloudflare-billing-profile"],"verifiedAt":"2026-08-13",
     "strengths":["Küresel edge ağı","Sunucusuz işlem ve çıkış ücreti olmayan nesne depolama"],"limitations":["Tek bir müşteri seçilebilir bölge yerine küresel edge mimarisi kullanır"],
-    "regions":[{"id":"global-europe","name":"Global edge network (Europe)","countryCode":"DE","sourceId":"cloudflare-network"}]
+    "regions":[{"id":"global","name":"Global edge network","countryCode":null,"scope":"global","sourceId":"cloudflare-network"}]
   },
   {
     "id":"digitalocean","name":"DigitalOcean","shortName":"DigitalOcean","officialSite":"https://www.digitalocean.com/","purchaseAvailability":"conditional",
     "purchaseNote":"DigitalOcean kart, PayPal, Google Pay ve Apple Pay yöntemlerini belgeler ancak Türkiye uygunluğunu açıkça garanti etmez; geçici provizyon uygulanabilir.","purchaseSourceIds":["digitalocean-payment"],"verifiedAt":"2026-08-13",
     "strengths":["Basit geliştirici deneyimi","Öngörülebilir paket fiyatları"],"limitations":["Hizmet ve bölge kapsamı ana sağlayıcılardan dardır"],
-    "regions":[{"id":"fra1","name":"Frankfurt (FRA1)","countryCode":"DE","sourceId":"digitalocean-regions"}]
+    "regions":[{"id":"fra1","name":"Frankfurt (FRA1)","countryCode":"DE","scope":"regional","sourceId":"digitalocean-regions"}]
   },
   {
     "id":"vultr","name":"Vultr","shortName":"Vultr","officialSite":"https://www.vultr.com/","purchaseAvailability":"conditional",
     "purchaseNote":"Vultr kart, PayPal ve çeşitli alternatif ödeme yöntemlerini listeler ancak Türkiye için satın alma garantisi yayımlamaz; hesap doğrulaması uygulanabilir.","purchaseSourceIds":["vultr-payment"],"verifiedAt":"2026-08-13",
     "strengths":["Çok sayıda bölge","Basit saatlik genel amaçlı sunucular"],"limitations":["Bölgesel kapasite ve ürün bulunabilirliği değişebilir"],
-    "regions":[{"id":"fra","name":"Frankfurt","countryCode":"DE","sourceId":"vultr-regions-api"},{"id":"ams","name":"Amsterdam","countryCode":"NL","sourceId":"vultr-object-clusters-api"}]
+    "regions":[{"id":"fra","name":"Frankfurt","countryCode":"DE","scope":"regional","sourceId":"vultr-regions-api"},{"id":"ams","name":"Amsterdam","countryCode":"NL","scope":"regional","sourceId":"vultr-object-clusters-api"}]
   }
 ]

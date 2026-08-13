@@ -1,14 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import { providerIds, serviceCategories } from '../domain/catalog'
 import { getCatalogHealth, loadCatalog } from './catalog'
-import { catalogSchema, priceComponentSchema, providerSchema } from './schemas'
+import { catalogSchema, freeTierSchema, offerSchema, priceComponentSchema, providerSchema } from './schemas'
 
 const sourceBackedOffer = {
   id: 'source-backed-offer',
   providerId: 'azure' as const,
   serviceName: 'Example compute',
   category: 'compute' as const,
-  region: 'example-region',
+  rankable: true,
+  region: 'westeurope',
   specs: {},
   prices: [],
   sourceIds: ['azure-retail-vm-b2s'],
@@ -47,6 +48,78 @@ describe('catalog schemas', () => {
     })
 
     expect(result.success).toBe(false)
+  })
+
+  it('rejects a zero monthly cap', () => {
+    const result = priceComponentSchema.safeParse({
+      kind: 'outbound-gb',
+      price: 0.1,
+      currency: 'USD',
+      includedQuantity: 0,
+      monthlyCap: 0,
+    })
+
+    expect(result.success).toBe(false)
+  })
+
+  it('requires every offer to declare whether it is rankable', () => {
+    const withoutRankability: Partial<typeof sourceBackedOffer> = { ...sourceBackedOffer }
+    delete withoutRankability.rankable
+
+    expect(offerSchema.safeParse(withoutRankability).success).toBe(false)
+  })
+
+  it('accepts an explicitly scoped global provider region without a fabricated country', () => {
+    const catalog = loadCatalog()
+    const cloudflare = catalog.providers.find((provider) => provider.id === 'cloudflare')
+    if (!cloudflare) throw new Error('Seeded Cloudflare provider is required for this test')
+
+    expect(providerSchema.safeParse({
+      ...cloudflare,
+      regions: [{ id: 'global', name: 'Global edge network', countryCode: null, scope: 'global', sourceId: 'cloudflare-network' }],
+    }).success).toBe(true)
+  })
+
+  it('rejects a provider without any supported regions', () => {
+    const catalog = loadCatalog()
+    const azure = catalog.providers.find((provider) => provider.id === 'azure')
+    if (!azure) throw new Error('Seeded Azure provider is required for this test')
+
+    expect(providerSchema.safeParse({ ...azure, regions: [] }).success).toBe(false)
+  })
+
+  it('accepts explicit offer and component applicability on a free tier', () => {
+    const catalog = loadCatalog()
+    const freeTier = catalog.freeTiers[0]
+    const compatibleOffer = catalog.offers.find(
+      (offer) => offer.providerId === freeTier?.providerId && offer.category === freeTier.category,
+    )
+    if (!freeTier || !compatibleOffer) throw new Error('Seeded compatible free tier and offer are required')
+
+    expect(freeTierSchema.safeParse({
+      ...freeTier,
+      compatibleOfferIds: [compatibleOffer.id],
+      compatiblePriceKinds: [compatibleOffer.prices[0]!.kind],
+    }).success).toBe(true)
+  })
+
+  it('rejects free-tier applicability across providers, categories, or missing components', () => {
+    const catalog = loadCatalog()
+    const freeTierIndex = catalog.freeTiers.findIndex((tier) => tier.id === 'azure-functions-million-requests')
+    if (freeTierIndex < 0) throw new Error('Seeded Azure Functions free tier is required')
+    const freeTier = catalog.freeTiers[freeTierIndex]!
+    const invalidTiers = [
+      { ...freeTier, compatibleOfferIds: ['gcp-cloud-run-requests-belgium'] },
+      { ...freeTier, compatibleOfferIds: ['azure-b2s-westeurope'] },
+      { ...freeTier, compatiblePriceKinds: ['outbound-gb' as const] },
+      { ...freeTier, compatibleOfferIds: [], compatiblePriceKinds: ['requests-million' as const] },
+    ]
+
+    for (const invalidTier of invalidTiers) {
+      const freeTiers = [...catalog.freeTiers]
+      freeTiers[freeTierIndex] = invalidTier
+      expect(catalogSchema.safeParse({ ...catalog, freeTiers }).success).toBe(false)
+    }
   })
 
   it('rejects a catalog missing a required provider', () => {
@@ -94,7 +167,7 @@ describe('catalog schemas', () => {
       {
         ...catalog,
         providers: [
-          { ...azure, regions: [{ id: 'test-region', name: 'Test region', countryCode: 'TR', sourceId: 'missing-region-source' }] },
+          { ...azure, regions: [{ id: 'test-region', name: 'Test region', countryCode: 'TR', scope: 'regional', sourceId: 'missing-region-source' }] },
           ...catalog.providers.filter((provider) => provider.id !== 'azure'),
         ],
         exchangeRates: [
@@ -137,7 +210,7 @@ describe('catalog schemas', () => {
     const catalog = loadCatalog()
     const result = catalogSchema.safeParse({
       ...catalog,
-      offers: [sourceBackedOffer],
+      offers: [...catalog.offers, sourceBackedOffer],
     })
 
     expect(result.success).toBe(true)
@@ -147,7 +220,17 @@ describe('catalog schemas', () => {
     const catalog = loadCatalog()
     const result = catalogSchema.safeParse({
       ...catalog,
-      offers: [{ ...sourceBackedOffer, sourceIds: ['unknown-source'] }],
+      offers: [...catalog.offers, { ...sourceBackedOffer, sourceIds: ['unknown-source'] }],
+    })
+
+    expect(result.success).toBe(false)
+  })
+
+  it('rejects an offer whose region is not declared by its provider', () => {
+    const catalog = loadCatalog()
+    const result = catalogSchema.safeParse({
+      ...catalog,
+      offers: [{ ...catalog.offers[0]!, region: 'fabricated-region' }, ...catalog.offers.slice(1)],
     })
 
     expect(result.success).toBe(false)
@@ -193,6 +276,23 @@ describe('official catalog policy', () => {
     expect(freeTierCount('gcp')).toBeGreaterThanOrEqual(6)
     expect(freeTierCount('aws')).toBeGreaterThanOrEqual(4)
     expect(freeTierCount('oracle')).toBeGreaterThanOrEqual(4)
+  })
+
+  it('keeps unrelated official free tiers display-only', () => {
+    const incompatibleIds = [
+      'azure-vm-750-hours',
+      'azure-container-registry-100gb',
+      'gcp-cloud-run-functions-2m',
+      'aws-sqs-million-requests',
+      'oracle-block-volume-200gb',
+    ]
+
+    for (const freeTierId of incompatibleIds) {
+      expect(catalog.freeTiers.find((freeTier) => freeTier.id === freeTierId)).toMatchObject({
+        compatibleOfferIds: [],
+        compatiblePriceKinds: [],
+      })
+    }
   })
 
   it('backs every offer with an official source and a positive paid component', () => {

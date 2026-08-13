@@ -1,163 +1,198 @@
 [
   {
-    "id":"azure-b2s-westeurope","providerId":"azure","serviceName":"Azure Virtual Machines Standard B2s Linux","category":"compute","region":"westeurope","specs":{"vcpu":2,"ramGb":4},
+    "id":"azure-b2s-westeurope","providerId":"azure","serviceName":"Azure Virtual Machines Standard B2s Linux","category":"compute","rankable":true,"region":"westeurope","specs":{"vcpu":2,"ramGb":4},
     "prices":[{"kind":"instance-hour","price":0.048,"currency":"USD","includedQuantity":0}],"sourceIds":["azure-retail-vm-b2s","azure-b-series-specs"],"verifiedAt":"2026-08-13",
     "notes":["Retail Prices API'deki tüketim türü Linux fiyatıdır; Windows lisansı, işletim sistemi diskleri, genel IP, ağ çıkışı ve vergi hariçtir."]
   },
   {
-    "id":"azure-nc4as-t4-v3-westeurope","providerId":"azure","serviceName":"Azure Virtual Machines Standard NC4as T4 v3 Linux","category":"gpu-ai","region":"westeurope","specs":{"vcpu":4,"ramGb":28,"gpuModel":"NVIDIA T4","gpuVramGb":16},
+    "id":"azure-d4as-v5-westeurope","providerId":"azure","serviceName":"Azure Virtual Machines Standard D4as v5 Linux","category":"compute","rankable":true,"region":"westeurope","specs":{"vcpu":4,"ramGb":16},
+    "prices":[{"kind":"instance-hour","price":0.208,"currency":"USD","includedQuantity":0}],"sourceIds":["azure-retail-vm-d4as-v5","azure-dasv5-specs"],"verifiedAt":"2026-08-13",
+    "notes":["Retail Prices API'deki normal Linux tüketim fiyatıdır; spot/low-priority ve Windows satırları kullanılmadı. Disk, genel IP, ağ çıkışı, lisans ve vergi hariçtir."]
+  },
+  {
+    "id":"azure-d8as-v5-westeurope","providerId":"azure","serviceName":"Azure Virtual Machines Standard D8as v5 Linux","category":"compute","rankable":true,"region":"westeurope","specs":{"vcpu":8,"ramGb":32},
+    "prices":[{"kind":"instance-hour","price":0.416,"currency":"USD","includedQuantity":0}],"sourceIds":["azure-retail-vm-d8as-v5","azure-dasv5-specs"],"verifiedAt":"2026-08-13",
+    "notes":["Retail Prices API'deki normal Linux tüketim fiyatıdır; spot/low-priority ve Windows satırları kullanılmadı. Disk, genel IP, ağ çıkışı, lisans ve vergi hariçtir."]
+  },
+  {
+    "id":"azure-nc4as-t4-v3-westeurope","providerId":"azure","serviceName":"Azure Virtual Machines Standard NC4as T4 v3 Linux","category":"gpu-ai","rankable":true,"region":"westeurope","specs":{"vcpu":4,"ramGb":28,"gpuModel":"NVIDIA T4","gpuVramGb":16},
     "prices":[{"kind":"gpu-hour","price":0.658,"currency":"USD","includedQuantity":0}],"sourceIds":["azure-retail-gpu-t4","azure-gpu-specs"],"verifiedAt":"2026-08-13",
     "notes":["Normal Linux tüketim fiyatıdır; spot/low-priority ve Windows satırları kullanılmadı. Disk, genel IP, ağ çıkışı, lisans ve vergi hariçtir."]
   },
   {
-    "id":"azure-blob-hot-lrs-westeurope","providerId":"azure","serviceName":"Azure Blob Storage Hot LRS","category":"object-storage","region":"westeurope","specs":{},
+    "id":"azure-nc24ads-a100-v4-westeurope","providerId":"azure","serviceName":"Azure Virtual Machines Standard NC24ads A100 v4 Linux","category":"gpu-ai","rankable":true,"region":"westeurope","specs":{"vcpu":24,"ramGb":220,"gpuModel":"NVIDIA A100","gpuVramGb":80},
+    "prices":[{"kind":"gpu-hour","price":4.775,"currency":"USD","includedQuantity":0}],"sourceIds":["azure-retail-gpu-a100","azure-a100-specs"],"verifiedAt":"2026-08-13",
+    "notes":["Retail Prices API'deki normal Linux tüketim fiyatıdır; spot/low-priority ve Windows satırları kullanılmadı. Disk, genel IP, ağ çıkışı, lisans ve vergi hariçtir."]
+  },
+  {
+    "id":"azure-blob-hot-lrs-westeurope","providerId":"azure","serviceName":"Azure Blob Storage Hot LRS","category":"object-storage","rankable":true,"region":"westeurope","specs":{},
     "prices":[{"kind":"storage-gb-month","price":0.0196,"currency":"USD","includedQuantity":0}],"sourceIds":["azure-retail-blob-hot"],"verifiedAt":"2026-08-13",
     "notes":["İlk kullanım katmanındaki depolanan veri fiyatıdır; işlem, veri erişimi, çoğaltma dışı özellikler, ağ çıkışı ve vergi hariçtir."]
   },
   {
-    "id":"azure-postgres-flex-b1ms-westeurope","providerId":"azure","serviceName":"Azure Database for PostgreSQL Flexible Server B1MS","category":"managed-database","region":"westeurope","specs":{"vcpu":1,"ramGb":2},
+    "id":"azure-postgres-flex-b1ms-westeurope","providerId":"azure","serviceName":"Azure Database for PostgreSQL Flexible Server B1MS","category":"managed-database","rankable":true,"region":"westeurope","specs":{"vcpu":1,"ramGb":2},
     "prices":[{"kind":"instance-hour","price":0.0199,"currency":"USD","includedQuantity":0}],"sourceIds":["azure-retail-postgres-b1ms","azure-postgres-compute-specs"],"verifiedAt":"2026-08-13",
     "notes":["Burstable B1MS hesaplama sayacıdır; depolama, yedekleme, IOPS, yüksek kullanılabilirlik, ağ çıkışı ve vergi hariçtir."]
   },
   {
-    "id":"azure-functions-flex-requests-westeurope","providerId":"azure","serviceName":"Azure Functions Flex Consumption executions","category":"serverless","region":"westeurope","specs":{},
+    "id":"azure-functions-flex-requests-westeurope","providerId":"azure","serviceName":"Azure Functions Flex Consumption executions","category":"serverless","rankable":true,"region":"westeurope","specs":{},
     "prices":[{"kind":"requests-million","price":0.4,"currency":"USD","includedQuantity":0}],"sourceIds":["azure-retail-functions"],"verifiedAt":"2026-08-13",
     "notes":["API'nin 10 yürütme başına 0.000004 USD sayacı milyon yürütmeye çevrildi; yürütme belleği/süresi, ağ, depolama ve vergi hariçtir."]
   },
   {
-    "id":"azure-front-door-standard-zone1","providerId":"azure","serviceName":"Azure Front Door Standard data transfer out","category":"cdn-network","region":"Zone 1 (Europe)","specs":{},
+    "id":"azure-front-door-standard-zone1","providerId":"azure","serviceName":"Azure Front Door Standard data transfer out","category":"cdn-network","rankable":true,"region":"westeurope","specs":{},
     "prices":[{"kind":"outbound-gb","price":0.17,"currency":"USD","includedQuantity":0}],"sourceIds":["azure-retail-front-door"],"verifiedAt":"2026-08-13",
     "notes":["Zone 1 ilk 10 TB veri aktarımı katmanıdır; istekler, taban ücretleri, kurallar, origin trafiği, güvenlik özellikleri ve vergi hariçtir."]
   },
   {
-    "id":"azure-aks-standard-westeurope","providerId":"azure","serviceName":"Azure Kubernetes Service Standard tier uptime SLA","category":"kubernetes","region":"westeurope","specs":{},
+    "id":"azure-aks-standard-westeurope","providerId":"azure","serviceName":"Azure Kubernetes Service Standard tier uptime SLA","category":"kubernetes","rankable":true,"region":"westeurope","specs":{},
     "prices":[{"kind":"instance-hour","price":0.1,"currency":"USD","includedQuantity":0}],"sourceIds":["azure-retail-aks"],"verifiedAt":"2026-08-13",
     "notes":["Yalnızca Standard katman kontrol düzlemi uptime SLA saatidir; worker node, disk, load balancer, IP, ağ çıkışı ve vergi hariçtir."]
   },
 
   {
-    "id":"gcp-workstations-e2-standard-2-belgium","providerId":"gcp","serviceName":"Cloud Workstations e2-standard-2 workstation","category":"compute","region":"europe-west1","specs":{"vcpu":2,"ramGb":8},
-    "prices":[{"kind":"instance-hour","price":0.17371546,"currency":"USD","includedQuantity":0}],"sourceIds":["gcp-workstations-pricing"],"verifiedAt":"2026-08-13",
-    "notes":["Resmi fiyat sayfasında Belgium ve varsayılan on-demand seçimiyle standart workstation saatidir; kontrol düzlemi, kalıcı disk, ağ çıkışı ve vergi hariçtir."]
+    "id":"gcp-e2-standard-2-belgium","providerId":"gcp","serviceName":"Compute Engine e2-standard-2 VM","category":"compute","rankable":true,"region":"europe-west1","specs":{"vcpu":2,"ramGb":8},
+    "prices":[{"kind":"instance-hour","price":0.07371546,"currency":"USD","includedQuantity":0}],"sourceIds":["gcp-compute-pricing"],"verifiedAt":"2026-08-13",
+    "notes":["Resmi Compute Engine fiyat sayfasında Belgium ve varsayılan on-demand seçimiyle tam VM saatidir; kalıcı disk, genel IP, ağ çıkışı, işletim sistemi lisansı ve vergi hariçtir."]
   },
   {
-    "id":"gcp-t4-gpu-belgium","providerId":"gcp","serviceName":"Compute Engine NVIDIA T4 GPU","category":"gpu-ai","region":"europe-west1","specs":{"gpuModel":"NVIDIA T4","gpuVramGb":16},
+    "id":"gcp-e2-standard-4-belgium","providerId":"gcp","serviceName":"Compute Engine e2-standard-4 VM","category":"compute","rankable":true,"region":"europe-west1","specs":{"vcpu":4,"ramGb":16},
+    "prices":[{"kind":"instance-hour","price":0.14743092,"currency":"USD","includedQuantity":0}],"sourceIds":["gcp-compute-pricing"],"verifiedAt":"2026-08-13",
+    "notes":["Resmi Compute Engine fiyat sayfasında Belgium ve varsayılan on-demand seçimiyle tam VM saatidir; kalıcı disk, genel IP, ağ çıkışı, işletim sistemi lisansı ve vergi hariçtir."]
+  },
+  {
+    "id":"gcp-e2-standard-8-belgium","providerId":"gcp","serviceName":"Compute Engine e2-standard-8 VM","category":"compute","rankable":true,"region":"europe-west1","specs":{"vcpu":8,"ramGb":32},
+    "prices":[{"kind":"instance-hour","price":0.29486184,"currency":"USD","includedQuantity":0}],"sourceIds":["gcp-compute-pricing"],"verifiedAt":"2026-08-13",
+    "notes":["Resmi Compute Engine fiyat sayfasında Belgium ve varsayılan on-demand seçimiyle tam VM saatidir; kalıcı disk, genel IP, ağ çıkışı, işletim sistemi lisansı ve vergi hariçtir."]
+  },
+  {
+    "id":"gcp-t4-gpu-belgium","providerId":"gcp","serviceName":"Compute Engine NVIDIA T4 GPU accelerator component","category":"gpu-ai","rankable":false,"region":"europe-west1","specs":{"gpuModel":"NVIDIA T4","gpuVramGb":16},
     "prices":[{"kind":"gpu-hour","price":0.35,"currency":"USD","includedQuantity":0}],"sourceIds":["gcp-gpu-pricing"],"verifiedAt":"2026-08-13",
     "notes":["Resmi GPU fiyat sayfasında Belgium ve on-demand seçimi kullanıldı; bağlı sanal makine, disk, ağ çıkışı, Virtual Workstation lisansı ve vergi hariçtir."]
   },
   {
-    "id":"gcp-storage-standard-belgium","providerId":"gcp","serviceName":"Cloud Storage Standard regional storage","category":"object-storage","region":"europe-west1","specs":{},
+    "id":"gcp-storage-standard-belgium","providerId":"gcp","serviceName":"Cloud Storage Standard regional storage","category":"object-storage","rankable":true,"region":"europe-west1","specs":{},
     "prices":[{"kind":"storage-gb-month","price":0.02,"currency":"USD","includedQuantity":0}],"sourceIds":["gcp-storage-pricing"],"verifiedAt":"2026-08-13",
     "notes":["Resmi fiyat sayfasında Belgium, Region ve aylık görünüm seçildi; Class A/B işlemleri, retrieval, replikasyon dışı özellikler, ağ çıkışı ve vergi hariçtir."]
   },
   {
-    "id":"gcp-cloud-sql-custom-belgium","providerId":"gcp","serviceName":"Cloud SQL Enterprise custom 1 vCPU and 3.75 GiB","category":"managed-database","region":"europe-west1","specs":{"vcpu":1,"ramGb":3.75},
+    "id":"gcp-cloud-sql-custom-belgium","providerId":"gcp","serviceName":"Cloud SQL Enterprise custom 1 vCPU and 3.75 GiB","category":"managed-database","rankable":true,"region":"europe-west1","specs":{"vcpu":1,"ramGb":3.75},
     "prices":[{"kind":"instance-hour","price":0.06755,"currency":"USD","includedQuantity":0}],"sourceIds":["gcp-sql-pricing"],"verifiedAt":"2026-08-13",
     "notes":["Belgium Enterprise fiyatından 1 vCPU × 0.0413 + 3.75 GiB × 0.007 = 0.06755 USD/saat hesaplandı; HA, depolama, IOPS, yedekleme, ağ ve vergi hariçtir."]
   },
   {
-    "id":"gcp-cloud-run-requests-belgium","providerId":"gcp","serviceName":"Cloud Run request-based billing requests","category":"serverless","region":"europe-west1","specs":{},
+    "id":"gcp-cloud-run-requests-belgium","providerId":"gcp","serviceName":"Cloud Run request-based billing requests","category":"serverless","rankable":true,"region":"europe-west1","specs":{},
     "prices":[{"kind":"requests-million","price":0.4,"currency":"USD","includedQuantity":0}],"sourceIds":["gcp-run-pricing"],"verifiedAt":"2026-08-13",
     "notes":["Resmi sayfada Belgium, Services ve request-based billing seçildi; vCPU-saniye, GiB-saniye, ağ çıkışı, Cloud Build/Registry ve vergi hariçtir."]
   },
   {
-    "id":"gcp-cloud-cdn-europe","providerId":"gcp","serviceName":"Cloud CDN cache data transfer out","category":"cdn-network","region":"Europe","specs":{},
+    "id":"gcp-cloud-cdn-europe","providerId":"gcp","serviceName":"Cloud CDN cache data transfer out","category":"cdn-network","rankable":true,"region":"europe-west1","specs":{},
     "prices":[{"kind":"outbound-gb","price":0.08,"currency":"USD","includedQuantity":0}],"sourceIds":["gcp-cdn-pricing"],"verifiedAt":"2026-08-13",
     "notes":["Europe 0–10 TiB aylık cache data transfer out katmanıdır; cache lookup, cache fill, origin, load balancer ve vergi hariçtir."]
   },
   {
-    "id":"gcp-gke-cluster-belgium","providerId":"gcp","serviceName":"Google Kubernetes Engine cluster management","category":"kubernetes","region":"europe-west1","specs":{},
+    "id":"gcp-gke-cluster-belgium","providerId":"gcp","serviceName":"Google Kubernetes Engine cluster management","category":"kubernetes","rankable":true,"region":"europe-west1","specs":{},
     "prices":[{"kind":"instance-hour","price":0.1,"currency":"USD","includedQuantity":0}],"sourceIds":["gcp-gke-pricing"],"verifiedAt":"2026-08-13",
     "notes":["Standart küme yönetim ücreti cluster başına saattir; worker node, Autopilot pod kaynakları, disk, ağ, uzatılmış destek ve vergi hariçtir."]
   },
 
   {
-    "id":"aws-lightsail-linux-05gb-frankfurt","providerId":"aws","serviceName":"Amazon Lightsail Linux/Unix IPv4 bundle","category":"compute","region":"eu-central-1","specs":{"vcpu":2,"ramGb":0.5,"storageGb":20},
-    "prices":[{"kind":"flat-month","price":5,"currency":"USD","includedQuantity":0}],"sourceIds":["aws-lightsail-pricing"],"verifiedAt":"2026-08-13",
-    "notes":["Genel amaçlı Linux/Unix public IPv4 paketi 1 TB aktarım içerir; aktarım aşımı, snapshot, ek disk/IP, lisans ve vergi hariçtir."]
+    "id":"aws-lightsail-linux-4gb-frankfurt","providerId":"aws","serviceName":"Amazon Lightsail Linux/Unix 4 GB IPv4 bundle","category":"compute","rankable":true,"region":"eu-central-1","specs":{"vcpu":2,"ramGb":4,"storageGb":80,"outboundGb":4000},
+    "prices":[{"kind":"flat-month","price":24,"currency":"USD","includedQuantity":0}],"sourceIds":["aws-lightsail-pricing"],"verifiedAt":"2026-08-13",
+    "notes":["Genel amaçlı Linux/Unix public IPv4 paketi 80 GB SSD ve 4 TB aktarım içerir; aktarım aşımı, snapshot, ek disk/IP, lisans ve vergi hariçtir."]
   },
   {
-    "id":"aws-sagemaker-g5-xlarge-training-frankfurt","providerId":"aws","serviceName":"Amazon SageMaker ml.g5.xlarge Training","category":"gpu-ai","region":"eu-central-1","specs":{"vcpu":4,"ramGb":16,"storageGb":250,"gpuModel":"NVIDIA A10G","gpuVramGb":24},
+    "id":"aws-lightsail-linux-16gb-frankfurt","providerId":"aws","serviceName":"Amazon Lightsail Linux/Unix 16 GB IPv4 bundle","category":"compute","rankable":true,"region":"eu-central-1","specs":{"vcpu":4,"ramGb":16,"storageGb":320,"outboundGb":6000},
+    "prices":[{"kind":"flat-month","price":84,"currency":"USD","includedQuantity":0}],"sourceIds":["aws-lightsail-pricing"],"verifiedAt":"2026-08-13",
+    "notes":["Genel amaçlı Linux/Unix public IPv4 paketi 320 GB SSD ve 6 TB aktarım içerir; aktarım aşımı, snapshot, ek disk/IP, lisans ve vergi hariçtir."]
+  },
+  {
+    "id":"aws-lightsail-linux-32gb-frankfurt","providerId":"aws","serviceName":"Amazon Lightsail Linux/Unix 32 GB IPv4 bundle","category":"compute","rankable":true,"region":"eu-central-1","specs":{"vcpu":8,"ramGb":32,"storageGb":640,"outboundGb":7000},
+    "prices":[{"kind":"flat-month","price":164,"currency":"USD","includedQuantity":0}],"sourceIds":["aws-lightsail-pricing"],"verifiedAt":"2026-08-13",
+    "notes":["Genel amaçlı Linux/Unix public IPv4 paketi 640 GB SSD ve 7 TB aktarım içerir; aktarım aşımı, snapshot, ek disk/IP, lisans ve vergi hariçtir."]
+  },
+  {
+    "id":"aws-sagemaker-g5-xlarge-training-frankfurt","providerId":"aws","serviceName":"Amazon SageMaker ml.g5.xlarge Training","category":"gpu-ai","rankable":true,"region":"eu-central-1","specs":{"vcpu":4,"ramGb":16,"storageGb":250,"gpuModel":"NVIDIA A10G","gpuVramGb":24},
     "prices":[{"kind":"gpu-hour","price":1.76,"currency":"USD","includedQuantity":0}],"sourceIds":["aws-sagemaker-price-list","aws-g5-specs"],"verifiedAt":"2026-08-13",
     "notes":["AWS Price List SKU VXE3WDJXX6P8ECXB için eu-central-1 on-demand Training saatidir; EBS/S3, model artifact, ağ çıkışı, diğer SageMaker özellikleri ve vergi hariçtir."]
   },
   {
-    "id":"aws-lightsail-object-5gb-frankfurt","providerId":"aws","serviceName":"Amazon Lightsail Object Storage 5 GB bundle","category":"object-storage","region":"eu-central-1","specs":{"storageGb":5},
-    "prices":[{"kind":"flat-month","price":1,"currency":"USD","includedQuantity":0}],"sourceIds":["aws-lightsail-pricing"],"verifiedAt":"2026-08-13",
-    "notes":["Paket 5 GB depolama ve 25 GB aktarım içerir; kapasite/aktarım aşımı, istekler, çoğaltma dışı özellikler ve vergi hariçtir."]
+    "id":"aws-lightsail-object-100gb-frankfurt","providerId":"aws","serviceName":"Amazon Lightsail Object Storage 100 GB bundle","category":"object-storage","rankable":true,"region":"eu-central-1","specs":{"storageGb":100,"outboundGb":250},
+    "prices":[{"kind":"flat-month","price":3,"currency":"USD","includedQuantity":0}],"sourceIds":["aws-lightsail-pricing"],"verifiedAt":"2026-08-13",
+    "notes":["Paket 100 GB depolama ve 250 GB aktarım içerir; kapasite/aktarım aşımı, istekler, çoğaltma dışı özellikler ve vergi hariçtir."]
   },
   {
-    "id":"aws-lightsail-database-standard-frankfurt","providerId":"aws","serviceName":"Amazon Lightsail managed database standard plan","category":"managed-database","region":"eu-central-1","specs":{"vcpu":1,"ramGb":1,"storageGb":40},
+    "id":"aws-lightsail-database-standard-frankfurt","providerId":"aws","serviceName":"Amazon Lightsail managed database standard plan","category":"managed-database","rankable":true,"region":"eu-central-1","specs":{"vcpu":1,"ramGb":1,"storageGb":40},
     "prices":[{"kind":"flat-month","price":15,"currency":"USD","includedQuantity":0}],"sourceIds":["aws-lightsail-pricing"],"verifiedAt":"2026-08-13",
     "notes":["Standart plan 100 GB aktarım içerir ve veri şifreleme sunmaz; HA, aktarım aşımı, snapshot/yedekleme dışı kullanımlar ve vergi hariçtir."]
   },
   {
-    "id":"aws-lambda-requests-frankfurt","providerId":"aws","serviceName":"AWS Lambda requests","category":"serverless","region":"eu-central-1","specs":{},
+    "id":"aws-lambda-requests-frankfurt","providerId":"aws","serviceName":"AWS Lambda requests","category":"serverless","rankable":true,"region":"eu-central-1","specs":{},
     "prices":[{"kind":"requests-million","price":0.2,"currency":"USD","includedQuantity":0}],"sourceIds":["aws-lambda-pricing"],"verifiedAt":"2026-08-13",
     "notes":["İstek fiyatı milyon başınadır; GB-saniye işlem, provisioned concurrency, SnapStart, ağ çıkışı, diğer AWS servisleri ve vergi hariçtir."]
   },
   {
-    "id":"aws-lightsail-cdn-50gb-frankfurt","providerId":"aws","serviceName":"Amazon Lightsail CDN distribution 50 GB bundle","category":"cdn-network","region":"eu-central-1","specs":{},
-    "prices":[{"kind":"flat-month","price":2.5,"currency":"USD","includedQuantity":0}],"sourceIds":["aws-lightsail-pricing"],"verifiedAt":"2026-08-13",
-    "notes":["Paket 50 GB veri aktarımı içerir; aktarım aşımı, origin hizmeti, ek depolama/istekler ve vergi hariçtir."]
+    "id":"aws-cloudfront-pro-global","providerId":"aws","serviceName":"Amazon CloudFront Pro flat-rate plan","category":"cdn-network","rankable":true,"region":"global","specs":{"storageGb":50,"outboundGb":50000},
+    "prices":[{"kind":"flat-month","price":15,"currency":"USD","includedQuantity":0}],"sourceIds":["aws-cloudfront-pricing"],"verifiedAt":"2026-08-13",
+    "notes":["Pro plan dağıtım başına 10 milyon istek, 50 TB veri aktarımı ve 50 GB S3 Standard kredisi içerir ve aşım ücreti yoktur; vergi ve plan dışı AWS kaynakları hariçtir. Katalog kapasitesi resmi 50 TB değerini 50.000 GB olarak temsil eder."]
   },
   {
-    "id":"aws-eks-standard-support-frankfurt","providerId":"aws","serviceName":"Amazon EKS standard support cluster","category":"kubernetes","region":"eu-central-1","specs":{},
+    "id":"aws-eks-standard-support-frankfurt","providerId":"aws","serviceName":"Amazon EKS standard support cluster","category":"kubernetes","rankable":true,"region":"eu-central-1","specs":{},
     "prices":[{"kind":"instance-hour","price":0.1,"currency":"USD","includedQuantity":0}],"sourceIds":["aws-eks-pricing"],"verifiedAt":"2026-08-13",
     "notes":["Standart Kubernetes sürüm desteğindeki cluster saatidir; EC2/Fargate node, EBS, load balancer, public IPv4, ağ çıkışı, extended support ve vergi hariçtir."]
   },
 
   {
-    "id":"hetzner-cx23-nuremberg","providerId":"hetzner","serviceName":"Hetzner Cloud CX23","category":"compute","region":"nbg1","specs":{"vcpu":2,"ramGb":4,"storageGb":40},
+    "id":"hetzner-cx23-nuremberg","providerId":"hetzner","serviceName":"Hetzner Cloud CX23","category":"compute","rankable":true,"region":"nbg1","specs":{"vcpu":2,"ramGb":4,"storageGb":40},
     "prices":[{"kind":"instance-hour","price":0.0088,"currency":"EUR","includedQuantity":0,"monthlyCap":5.49}],"sourceIds":["hetzner-price-adjustment","hetzner-cloud-specs"],"verifiedAt":"2026-08-13",
     "notes":["15 Haziran 2026 sonrası Almanya/Finlandiya KDV hariç fiyatıdır; paylaşımlı CPU, birincil IPv4, snapshot/backup, ek trafik ve vergi hariçtir."]
   },
   {
-    "id":"hetzner-cax11-nuremberg","providerId":"hetzner","serviceName":"Hetzner Cloud CAX11 Arm","category":"compute","region":"nbg1","specs":{"vcpu":2,"ramGb":4,"storageGb":40},
+    "id":"hetzner-cax11-nuremberg","providerId":"hetzner","serviceName":"Hetzner Cloud CAX11 Arm","category":"compute","rankable":true,"region":"nbg1","specs":{"vcpu":2,"ramGb":4,"storageGb":40},
     "prices":[{"kind":"instance-hour","price":0.0096,"currency":"EUR","includedQuantity":0,"monthlyCap":5.99}],"sourceIds":["hetzner-price-adjustment","hetzner-cloud-specs"],"verifiedAt":"2026-08-13",
     "notes":["15 Haziran 2026 sonrası Almanya/Finlandiya KDV hariç Arm fiyatıdır; paylaşımlı CPU, birincil IPv4, snapshot/backup, ek trafik ve vergi hariçtir."]
   },
 
   {
-    "id":"oracle-a1-one-ocpu-6gb-frankfurt","providerId":"oracle","serviceName":"OCI Ampere A1 Flex 1 OCPU and 6 GB memory","category":"compute","region":"eu-frankfurt-1","specs":{"vcpu":2,"ramGb":6},
+    "id":"oracle-a1-one-ocpu-6gb-frankfurt","providerId":"oracle","serviceName":"OCI Ampere A1 Flex 1 OCPU and 6 GB memory","category":"compute","rankable":true,"region":"eu-frankfurt-1","specs":{"vcpu":2,"ramGb":6},
     "prices":[{"kind":"instance-hour","price":0.019,"currency":"USD","includedQuantity":0}],"sourceIds":["oracle-price-list","oracle-price-json"],"verifiedAt":"2026-08-13",
     "notes":["B93297 OCPU 0.01 + B93298 bellek 6 × 0.0015 = 0.019 USD/saat olarak birleştirildi; boot volume, public IP, ağ çıkışı, ek hizmetler ve vergi hariçtir."]
   },
   {
-    "id":"oracle-object-standard-frankfurt","providerId":"oracle","serviceName":"OCI Object Storage Standard","category":"object-storage","region":"eu-frankfurt-1","specs":{},
+    "id":"oracle-object-standard-frankfurt","providerId":"oracle","serviceName":"OCI Object Storage Standard","category":"object-storage","rankable":true,"region":"eu-frankfurt-1","specs":{},
     "prices":[{"kind":"storage-gb-month","price":0.0255,"currency":"USD","includedQuantity":10}],"sourceIds":["oracle-price-list","oracle-price-json"],"verifiedAt":"2026-08-13",
     "notes":["B91628 listesinde ilk 10 GB sonrası standart depolama fiyatıdır; istekler, retrieval, replikasyon, ağ çıkışı ve vergi hariçtir."]
   },
 
   {
-    "id":"cloudflare-workers-paid-global","providerId":"cloudflare","serviceName":"Cloudflare Workers Paid","category":"serverless","region":"global-europe","specs":{},
+    "id":"cloudflare-workers-paid-global","providerId":"cloudflare","serviceName":"Cloudflare Workers Paid","category":"serverless","rankable":true,"region":"global","specs":{},
     "prices":[{"kind":"flat-month","price":5,"currency":"USD","includedQuantity":0},{"kind":"requests-million","price":0.3,"currency":"USD","includedQuantity":10}],"sourceIds":["cloudflare-workers-pricing"],"verifiedAt":"2026-08-13",
     "notes":["Paid plan hesabı aylık 5 USD'den başlar ve 10 milyon istek içerir; CPU süresi aşımı, Durable Objects/diğer ürünler ve vergi hariçtir."]
   },
   {
-    "id":"cloudflare-r2-standard-global","providerId":"cloudflare","serviceName":"Cloudflare R2 Standard storage","category":"object-storage","region":"global-europe","specs":{},
+    "id":"cloudflare-r2-standard-global","providerId":"cloudflare","serviceName":"Cloudflare R2 Standard storage","category":"object-storage","rankable":true,"region":"global","specs":{},
     "prices":[{"kind":"storage-gb-month","price":0.015,"currency":"USD","includedQuantity":10}],"sourceIds":["cloudflare-r2-pricing"],"verifiedAt":"2026-08-13",
     "notes":["İlk 10 GB-ay sonrası standart depolamadır ve internet egress ücretsizdir; Class A/B işlemleri, Infrequent Access ücretleri ve vergi hariçtir."]
   },
 
   {
-    "id":"digitalocean-basic-512mb-fra1","providerId":"digitalocean","serviceName":"DigitalOcean Basic Droplet 512 MiB","category":"compute","region":"fra1","specs":{"vcpu":1,"ramGb":0.5,"storageGb":10},
-    "prices":[{"kind":"instance-hour","price":0.00595,"currency":"USD","includedQuantity":0,"monthlyCap":4}],"sourceIds":["digitalocean-droplets-pricing"],"verifiedAt":"2026-08-13",
-    "notes":["Paket 500 GiB transfer içerir; 60 saniye minimum faturalama uygulanır. Backup, snapshot, ek volume/IP, transfer aşımı ve vergi hariçtir."]
+    "id":"digitalocean-basic-4gb-fra1","providerId":"digitalocean","serviceName":"DigitalOcean Basic Droplet 4 GiB","category":"compute","rankable":true,"region":"fra1","specs":{"vcpu":2,"ramGb":4,"storageGb":80,"outboundGb":4000},
+    "prices":[{"kind":"instance-hour","price":0.03571,"currency":"USD","includedQuantity":0,"monthlyCap":24}],"sourceIds":["digitalocean-droplets-pricing"],"verifiedAt":"2026-08-13",
+    "notes":["Paket 4.000 GiB transfer içerir; 60 saniye minimum faturalama uygulanır. Backup, snapshot, ek volume/IP, transfer aşımı ve vergi hariçtir."]
   },
   {
-    "id":"digitalocean-spaces-fra1","providerId":"digitalocean","serviceName":"DigitalOcean Spaces base subscription","category":"object-storage","region":"fra1","specs":{},
+    "id":"digitalocean-spaces-fra1","providerId":"digitalocean","serviceName":"DigitalOcean Spaces base subscription","category":"object-storage","rankable":true,"region":"fra1","specs":{},
     "prices":[{"kind":"flat-month","price":5,"currency":"USD","includedQuantity":0},{"kind":"storage-gb-month","price":0.02,"currency":"USD","includedQuantity":250},{"kind":"outbound-gb","price":0.01,"currency":"USD","includedQuantity":1024}],"sourceIds":["digitalocean-spaces-pricing"],"verifiedAt":"2026-08-13",
     "notes":["Abonelik 250 GiB depolama ve 1,024 GiB outbound içerir; aşım bileşenleri kaydedildi. CDN dışı ek ürünler ve vergi hariçtir."]
   },
 
   {
-    "id":"vultr-vc2-1c-1gb-frankfurt","providerId":"vultr","serviceName":"Vultr Cloud Compute vc2-1c-1gb","category":"compute","region":"fra","specs":{"vcpu":1,"ramGb":1,"storageGb":25},
-    "prices":[{"kind":"instance-hour","price":0.007,"currency":"USD","includedQuantity":0,"monthlyCap":5}],"sourceIds":["vultr-plans-api"],"verifiedAt":"2026-08-13",
-    "notes":["Resmi API planı on-demand ve Frankfurt'ta kullanılabilir, 1,024 GB bant genişliği içerir; lisans, backup, snapshot, ek IP, aşım ve vergi hariçtir."]
+    "id":"vultr-vc2-2c-4gb-frankfurt","providerId":"vultr","serviceName":"Vultr Cloud Compute vc2-2c-4gb","category":"compute","rankable":true,"region":"fra","specs":{"vcpu":2,"ramGb":4,"storageGb":80,"outboundGb":3072},
+    "prices":[{"kind":"instance-hour","price":0.027,"currency":"USD","includedQuantity":0,"monthlyCap":20}],"sourceIds":["vultr-plans-api"],"verifiedAt":"2026-08-13",
+    "notes":["Resmi API planı on-demand ve Frankfurt'ta kullanılabilir, 3.072 GB bant genişliği içerir; lisans, backup, snapshot, ek IP, aşım ve vergi hariçtir."]
   },
   {
-    "id":"vultr-object-standard-amsterdam","providerId":"vultr","serviceName":"Vultr Object Storage Standard","category":"object-storage","region":"ams","specs":{},
+    "id":"vultr-object-standard-amsterdam","providerId":"vultr","serviceName":"Vultr Object Storage Standard","category":"object-storage","rankable":true,"region":"ams","specs":{},
     "prices":[{"kind":"flat-month","price":18,"currency":"USD","includedQuantity":0},{"kind":"storage-gb-month","price":0.018,"currency":"USD","includedQuantity":1000},{"kind":"outbound-gb","price":0.01,"currency":"USD","includedQuantity":1000}],"sourceIds":["vultr-object-pricing"],"verifiedAt":"2026-08-13",
     "notes":["Paket 1,000 GB depolama ve 1,000 GB outbound içerir; aşım bileşenleri kaydedildi. Ek özellikler, API operasyonları ve vergi hariçtir."]
   }

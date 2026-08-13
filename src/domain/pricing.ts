@@ -118,6 +118,8 @@ function allocateFreeTierQuantity(
     const quotaKind = kindByFreeTierUnit[normalizedUnit(freeTier.quota.unit)]
     const isMatchingQuota =
       freeTier.quota.period === 'month' && quotaKind !== undefined && quotaKind === component.kind
+    const isCompatibleOffer = freeTier.compatibleOfferIds.includes(offer.id)
+    const isCompatibleComponent = freeTier.compatiblePriceKinds.includes(component.kind)
     const status = context.statusByFreeTierId?.[freeTier.id] ?? 'invalid'
     const remainingQuota = remainingQuotaById.get(freeTier.id) ?? freeTier.quota.amount
     const allocatedQuantity = Math.min(remainingQuota, Math.max(0, maximumQuantity - allocation.quantity))
@@ -125,6 +127,8 @@ function allocateFreeTierQuantity(
     if (isEligible &&
       isWithinDuration &&
       isMatchingQuota &&
+      isCompatibleOffer &&
+      isCompatibleComponent &&
       freeTier.providerId === offer.providerId &&
       freeTier.category === offer.category &&
       status !== 'invalid' &&

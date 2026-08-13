@@ -1,89 +1,89 @@
 [
   {
-    "id":"azure-new-account-credit","providerId":"azure","serviceName":"Azure free account credit","category":"compute","type":"new-account-credit","quota":{"amount":200,"unit":"USD credit","period":"once"},"durationMonths":1,
+    "id":"azure-new-account-credit","providerId":"azure","serviceName":"Azure free account credit","category":"compute","compatibleOfferIds":[],"compatiblePriceKinds":[],"type":"new-account-credit","quota":{"amount":200,"unit":"USD credit","period":"once"},"durationMonths":1,
     "eligibilityNote":"Yalnızca yeni Azure müşterileri; kredi kayıt tarihinden itibaren 30 gün geçerlidir.","overageNote":"Kredi biterse veya 30 gün dolarsa devam etmek için pay-as-you-go hesabına geçmek gerekir.","automaticChargeNote":"Spending protection nedeniyle kullanıcı pay-as-you-go'ya açıkça geçmeden kart otomatik ücretlendirilmez.","sourceIds":["azure-free-account"],"verifiedAt":"2026-08-13"
   },
   {
-    "id":"azure-vm-750-hours","providerId":"azure","serviceName":"Azure burstable Linux or Windows virtual machines","category":"compute","type":"time-limited","quota":{"amount":750,"unit":"instance-hours","period":"month"},"durationMonths":12,
+    "id":"azure-vm-750-hours","providerId":"azure","serviceName":"Azure burstable Linux or Windows virtual machines","category":"compute","compatibleOfferIds":[],"compatiblePriceKinds":[],"type":"time-limited","quota":{"amount":750,"unit":"instance-hours","period":"month"},"durationMonths":12,
     "eligibilityNote":"Yeni Azure müşterileri için B1s, B2pts v2 ve B2ats v2 boyutlarının her biri 12 ay boyunca belirtilen aylık limite tabidir.","overageNote":"Boyut, süre veya diğer kaynaklar kotayı aşarsa standart fiyatlar uygulanır.","automaticChargeNote":"Free account harcama koruması ödeme hesabına açık geçiş yapılana kadar ücreti engeller; pay-as-you-go hesapta aşım ücretlidir.","sourceIds":["azure-free-account"],"verifiedAt":"2026-08-13"
   },
   {
-    "id":"azure-container-registry-100gb","providerId":"azure","serviceName":"Azure Container Registry Standard","category":"object-storage","type":"time-limited","quota":{"amount":100,"unit":"storage-gb-month","period":"month"},"durationMonths":12,
+    "id":"azure-container-registry-100gb","providerId":"azure","serviceName":"Azure Container Registry Standard","category":"object-storage","compatibleOfferIds":[],"compatiblePriceKinds":[],"type":"time-limited","quota":{"amount":100,"unit":"storage-gb-month","period":"month"},"durationMonths":12,
     "eligibilityNote":"Yeni Azure müşterileri için bir Standard registry, 100 GB depolama ve 10 webhook 12 ay ücretsizdir.","overageNote":"Ek depolama, registry veya ilgili ağ kullanımı standart fiyatla ücretlendirilir.","automaticChargeNote":"Pay-as-you-go'ya yükseltilmiş hesaplarda ücretsiz miktar üzeri otomatik faturalandırılır.","sourceIds":["azure-free-account"],"verifiedAt":"2026-08-13"
   },
   {
-    "id":"azure-sql-serverless-vcore-seconds","providerId":"azure","serviceName":"Azure SQL Database serverless","category":"managed-database","type":"always-free","quota":{"amount":100000,"unit":"vCore-seconds","period":"month"},"durationMonths":null,
+    "id":"azure-sql-serverless-vcore-seconds","providerId":"azure","serviceName":"Azure SQL Database serverless","category":"managed-database","compatibleOfferIds":[],"compatiblePriceKinds":[],"type":"always-free","quota":{"amount":100000,"unit":"vCore-seconds","period":"month"},"durationMonths":null,
     "eligibilityNote":"Azure SQL Database serverless ücretsiz aylık miktarı ve 32 GB depolama koşulları geçerlidir.","overageNote":"100.000 vCore-saniye veya 32 GB depolama üzeri standart fiyatla ücretlendirilir.","automaticChargeNote":"Ücretli hesapta sınır üzerindeki kullanım otomatik olarak faturaya yansır.","sourceIds":["azure-free-account"],"verifiedAt":"2026-08-13"
   },
   {
-    "id":"azure-postgres-flex-750-hours","providerId":"azure","serviceName":"Azure Database for PostgreSQL Flexible Server B1MS","category":"managed-database","type":"time-limited","quota":{"amount":750,"unit":"instance-hours","period":"month"},"durationMonths":12,
+    "id":"azure-postgres-flex-750-hours","providerId":"azure","serviceName":"Azure Database for PostgreSQL Flexible Server B1MS","category":"managed-database","compatibleOfferIds":["azure-postgres-flex-b1ms-westeurope"],"compatiblePriceKinds":["instance-hour"],"type":"time-limited","quota":{"amount":750,"unit":"instance-hours","period":"month"},"durationMonths":12,
     "eligibilityNote":"Yeni Azure müşterileri için Burstable B1MS, 32 GB depolama ve 32 GB yedek depolama 12 ay boyunca geçerlidir.","overageNote":"Saat, depolama, yedekleme veya diğer bileşenler kotayı aşarsa standart fiyat uygulanır.","automaticChargeNote":"Pay-as-you-go'ya yükseltilmiş hesaplarda kotayı aşan kullanım otomatik ücretlendirilir.","sourceIds":["azure-free-account"],"verifiedAt":"2026-08-13"
   },
   {
-    "id":"azure-functions-million-requests","providerId":"azure","serviceName":"Azure Functions requests","category":"serverless","type":"always-free","quota":{"amount":1,"unit":"million requests","period":"month"},"durationMonths":null,
+    "id":"azure-functions-million-requests","providerId":"azure","serviceName":"Azure Functions requests","category":"serverless","compatibleOfferIds":["azure-functions-flex-requests-westeurope"],"compatiblePriceKinds":["requests-million"],"type":"always-free","quota":{"amount":1,"unit":"million requests","period":"month"},"durationMonths":null,
     "eligibilityNote":"Azure Functions için aylık ücretsiz istek miktarı; işlem süresi gibi ayrı sayaçlar kendi limitlerine tabidir.","overageNote":"Bir milyon üzerindeki istekler ve ücretsiz işlem miktarı dışındaki kullanım standart fiyatla ücretlendirilir.","automaticChargeNote":"Ücretli hesapta limit üzerindeki kullanım otomatik olarak faturaya yansır.","sourceIds":["azure-free-account"],"verifiedAt":"2026-08-13"
   },
 
   {
-    "id":"gcp-welcome-credit","providerId":"gcp","serviceName":"Google Cloud Free Trial Welcome credit","category":"compute","type":"new-account-credit","quota":{"amount":300,"unit":"USD credit","period":"once"},"durationMonths":3,
+    "id":"gcp-welcome-credit","providerId":"gcp","serviceName":"Google Cloud Free Trial Welcome credit","category":"compute","compatibleOfferIds":[],"compatiblePriceKinds":[],"type":"new-account-credit","quota":{"amount":300,"unit":"USD credit","period":"once"},"durationMonths":3,
     "eligibilityNote":"Uygun yeni müşteriler için kayıt tarihinden itibaren 90 gün; bazı ürünler ve kullanım türleri kapsam dışıdır.","overageNote":"300 USD veya 90 gün sınırına ulaşılınca yükseltilmemiş trial hesabı kapanır ve kaynaklar durur.","automaticChargeNote":"Ücretli faturalama hesabına kullanıcı açıkça yükseltmedikçe otomatik ücret yoktur.","sourceIds":["gcp-free-program"],"verifiedAt":"2026-08-13"
   },
   {
-    "id":"gcp-e2-micro-us","providerId":"gcp","serviceName":"Compute Engine e2-micro","category":"compute","type":"eligibility-limited","quota":{"amount":1,"unit":"instance-month","period":"month"},"durationMonths":null,
+    "id":"gcp-e2-micro-us","providerId":"gcp","serviceName":"Compute Engine e2-micro","category":"compute","compatibleOfferIds":[],"compatiblePriceKinds":[],"type":"eligibility-limited","quota":{"amount":1,"unit":"instance-month","period":"month"},"durationMonths":null,
     "eligibilityNote":"Yalnızca us-west1, us-central1 veya us-east1 bölgelerinde non-preemptible e2-micro; saat limiti takvim ayındaki toplam saat kadardır.","overageNote":"Desteklenmeyen bölge, ek süre/kaynak, GPU ve TPU kullanımı ücretlidir.","automaticChargeNote":"Paid billing hesabında ücretsiz limit üzerindeki kullanım otomatik ücretlendirilir; trial hesabında önce Welcome credit tüketilir.","sourceIds":["gcp-free-program"],"verifiedAt":"2026-08-13"
   },
   {
-    "id":"gcp-cloud-storage-5gb-us","providerId":"gcp","serviceName":"Cloud Storage regional Standard","category":"object-storage","type":"eligibility-limited","quota":{"amount":5,"unit":"storage-gb-month","period":"month"},"durationMonths":null,
+    "id":"gcp-cloud-storage-5gb-us","providerId":"gcp","serviceName":"Cloud Storage regional Standard","category":"object-storage","compatibleOfferIds":[],"compatiblePriceKinds":[],"type":"eligibility-limited","quota":{"amount":5,"unit":"storage-gb-month","period":"month"},"durationMonths":null,
     "eligibilityNote":"Yalnızca us-east1, us-west1 ve us-central1 bölgelerinde toplam 5 GB-ay bölgesel depolama.","overageNote":"Depolama sınırı, işlemler ve bölgesel ağ limitleri üzerindeki kullanım standart fiyatla ücretlendirilir.","automaticChargeNote":"Paid billing hesabında ücretsiz limit üzeri otomatik ücretlendirilir; trial hesabında Welcome credit kullanılır.","sourceIds":["gcp-free-program"],"verifiedAt":"2026-08-13"
   },
   {
-    "id":"gcp-cloud-run-2m-requests","providerId":"gcp","serviceName":"Cloud Run request-based billing","category":"serverless","type":"always-free","quota":{"amount":2,"unit":"million requests","period":"month"},"durationMonths":null,
+    "id":"gcp-cloud-run-2m-requests","providerId":"gcp","serviceName":"Cloud Run request-based billing","category":"serverless","compatibleOfferIds":["gcp-cloud-run-requests-belgium"],"compatiblePriceKinds":["requests-million"],"type":"always-free","quota":{"amount":2,"unit":"million requests","period":"month"},"durationMonths":null,
     "eligibilityNote":"Request-based billing için aylık 2 milyon istek; CPU, bellek ve Kuzey Amerika çıkışı için ayrı limitler vardır.","overageNote":"İstek, CPU, bellek veya ağ ücretsiz limitlerini aşan kullanım standart fiyatla ücretlendirilir.","automaticChargeNote":"Paid billing hesabında aşım otomatik faturalandırılır; trial hesabında Welcome credit tüketilir.","sourceIds":["gcp-free-program"],"verifiedAt":"2026-08-13"
   },
   {
-    "id":"gcp-cloud-run-functions-2m","providerId":"gcp","serviceName":"Cloud Run functions invocations","category":"serverless","type":"always-free","quota":{"amount":2,"unit":"million requests","period":"month"},"durationMonths":null,
+    "id":"gcp-cloud-run-functions-2m","providerId":"gcp","serviceName":"Cloud Run functions invocations","category":"serverless","compatibleOfferIds":[],"compatiblePriceKinds":[],"type":"always-free","quota":{"amount":2,"unit":"million requests","period":"month"},"durationMonths":null,
     "eligibilityNote":"Arka plan ve HTTP çağrılarını birlikte içeren aylık 2 milyon invocation; compute ve ağ için ayrı limitler vardır.","overageNote":"Invocation, compute veya ağ ücretsiz miktarları aşılırsa standart fiyat uygulanır.","automaticChargeNote":"Paid billing hesabında limit üzeri otomatik ücretlendirilir; trial hesabında Welcome credit kullanılır.","sourceIds":["gcp-free-program"],"verifiedAt":"2026-08-13"
   },
   {
-    "id":"gcp-gke-one-cluster","providerId":"gcp","serviceName":"Google Kubernetes Engine cluster management","category":"kubernetes","type":"always-free","quota":{"amount":1,"unit":"cluster-month","period":"month"},"durationMonths":null,
+    "id":"gcp-gke-one-cluster","providerId":"gcp","serviceName":"Google Kubernetes Engine cluster management","category":"kubernetes","compatibleOfferIds":[],"compatiblePriceKinds":[],"type":"always-free","quota":{"amount":1,"unit":"cluster-month","period":"month"},"durationMonths":null,
     "eligibilityNote":"Faturalama hesabı başına bir Autopilot veya zonal Standard cluster; kredi yalnızca cluster ücretine uygulanır.","overageNote":"Compute, ağ ve diğer kaynaklar ücretsiz değildir; ek cluster'lar standart fiyatla ücretlendirilir.","automaticChargeNote":"Paid billing hesabında kapsam dışı ve limit üzeri kullanım otomatik faturalandırılır.","sourceIds":["gcp-free-program"],"verifiedAt":"2026-08-13"
   },
 
   {
-    "id":"aws-lambda-million-requests","providerId":"aws","serviceName":"AWS Lambda requests","category":"serverless","type":"always-free","quota":{"amount":1,"unit":"million requests","period":"month"},"durationMonths":null,
+    "id":"aws-lambda-million-requests","providerId":"aws","serviceName":"AWS Lambda requests","category":"serverless","compatibleOfferIds":["aws-lambda-requests-frankfurt"],"compatiblePriceKinds":["requests-million"],"type":"always-free","quota":{"amount":1,"unit":"million requests","period":"month"},"durationMonths":null,
     "eligibilityNote":"AWS Lambda ücretsiz katmanı kapsamında aylık bir milyon istek.","overageNote":"Bir milyon üzerindeki istekler ile ayrı compute ve özellik ücretleri standart tarifeye tabidir.","automaticChargeNote":"AWS hesabında ücretsiz miktarı aşan kullanım otomatik olarak faturaya yansır.","sourceIds":["aws-lambda-free-tier"],"verifiedAt":"2026-08-13"
   },
   {
-    "id":"aws-lambda-400k-gb-seconds","providerId":"aws","serviceName":"AWS Lambda compute duration","category":"serverless","type":"always-free","quota":{"amount":400000,"unit":"GB-seconds","period":"month"},"durationMonths":null,
+    "id":"aws-lambda-400k-gb-seconds","providerId":"aws","serviceName":"AWS Lambda compute duration","category":"serverless","compatibleOfferIds":[],"compatiblePriceKinds":[],"type":"always-free","quota":{"amount":400000,"unit":"GB-seconds","period":"month"},"durationMonths":null,
     "eligibilityNote":"AWS Lambda ücretsiz katmanı kapsamında aylık 400.000 GB-saniye işlem süresi.","overageNote":"GB-saniye limiti üzerindeki işlem ile istek ve ek özellikler ayrıca ücretlendirilir.","automaticChargeNote":"AWS hesabında ücretsiz miktarı aşan kullanım otomatik olarak faturaya yansır.","sourceIds":["aws-lambda-free-tier"],"verifiedAt":"2026-08-13"
   },
   {
-    "id":"aws-dynamodb-25gb","providerId":"aws","serviceName":"Amazon DynamoDB Standard storage","category":"managed-database","type":"always-free","quota":{"amount":25,"unit":"database-gb-month","period":"month"},"durationMonths":null,
+    "id":"aws-dynamodb-25gb","providerId":"aws","serviceName":"Amazon DynamoDB Standard storage","category":"managed-database","compatibleOfferIds":[],"compatiblePriceKinds":[],"type":"always-free","quota":{"amount":25,"unit":"database-gb-month","period":"month"},"durationMonths":null,
     "eligibilityNote":"DynamoDB Standard table class için bölgede ilk 25 GB depolama AWS Free Tier kapsamındadır.","overageNote":"25 GB üzeri depolama, okuma/yazma, backup ve diğer özellikler standart fiyatla ücretlendirilir.","automaticChargeNote":"Ücretsiz miktarı aşan kullanım AWS hesabına otomatik faturalandırılır.","sourceIds":["aws-dynamodb-pricing"],"verifiedAt":"2026-08-13"
   },
   {
-    "id":"aws-sqs-million-requests","providerId":"aws","serviceName":"Amazon SQS requests","category":"serverless","type":"always-free","quota":{"amount":1,"unit":"million requests","period":"month"},"durationMonths":null,
+    "id":"aws-sqs-million-requests","providerId":"aws","serviceName":"Amazon SQS requests","category":"serverless","compatibleOfferIds":[],"compatiblePriceKinds":[],"type":"always-free","quota":{"amount":1,"unit":"million requests","period":"month"},"durationMonths":null,
     "eligibilityNote":"Tüm müşteriler için aylık bir milyon Amazon SQS isteği ücretsizdir.","overageNote":"Bir milyon üzerindeki istekler ile veri aktarımı ve ilgili servisler standart fiyatla ücretlendirilir.","automaticChargeNote":"Ücretsiz miktarı aşan kullanım AWS hesabına otomatik faturalandırılır.","sourceIds":["aws-sqs-pricing"],"verifiedAt":"2026-08-13"
   },
 
   {
-    "id":"oracle-a1-ocpu-hours","providerId":"oracle","serviceName":"OCI Ampere A1 OCPU","category":"compute","type":"always-free","quota":{"amount":1500,"unit":"OCPU-hours","period":"month"},"durationMonths":null,
+    "id":"oracle-a1-ocpu-hours","providerId":"oracle","serviceName":"OCI Ampere A1 OCPU","category":"compute","compatibleOfferIds":[],"compatiblePriceKinds":[],"type":"always-free","quota":{"amount":1500,"unit":"OCPU-hours","period":"month"},"durationMonths":null,
     "eligibilityNote":"Home region içinde A1 Flex için ayda ilk 1.500 OCPU-saat; kapasite bulunabilirliğine ve idle reclamation politikasına tabidir.","overageNote":"OCPU-saat ve diğer Always Free kaynak limitleri üzerindeki kullanım ücretli hesapta list price ile ücretlendirilir.","automaticChargeNote":"Ücretli hesaba yükseltildiyse limit üzeri otomatik faturalandırılır; Always Free-only hesapta ücretli kapasiteye yükseltme gerekir.","sourceIds":["oracle-always-free"],"verifiedAt":"2026-08-13"
   },
   {
-    "id":"oracle-a1-memory-hours","providerId":"oracle","serviceName":"OCI Ampere A1 memory","category":"compute","type":"always-free","quota":{"amount":9000,"unit":"GB-hours","period":"month"},"durationMonths":null,
+    "id":"oracle-a1-memory-hours","providerId":"oracle","serviceName":"OCI Ampere A1 memory","category":"compute","compatibleOfferIds":[],"compatiblePriceKinds":[],"type":"always-free","quota":{"amount":9000,"unit":"GB-hours","period":"month"},"durationMonths":null,
     "eligibilityNote":"Home region içinde A1 Flex için ayda ilk 9.000 GB-saat bellek; toplam eşdeğer 2 OCPU ve 12 GB'tır.","overageNote":"Bellek saati ve diğer kaynak limitleri üzerindeki kullanım ücretli hesapta list price ile ücretlendirilir.","automaticChargeNote":"Ücretli hesaba yükseltildiyse limit üzeri otomatik faturalandırılır.","sourceIds":["oracle-always-free"],"verifiedAt":"2026-08-13"
   },
   {
-    "id":"oracle-block-volume-200gb","providerId":"oracle","serviceName":"OCI Block Volume","category":"object-storage","type":"always-free","quota":{"amount":200,"unit":"storage-gb-month","period":"month"},"durationMonths":null,
+    "id":"oracle-block-volume-200gb","providerId":"oracle","serviceName":"OCI Block Volume","category":"object-storage","compatibleOfferIds":[],"compatiblePriceKinds":[],"type":"always-free","quota":{"amount":200,"unit":"storage-gb-month","period":"month"},"durationMonths":null,
     "eligibilityNote":"Home region içinde boot ve block volume toplamı 200 GB; boot volume'lar bu havuzdan düşer.","overageNote":"Toplam 200 GB veya beş backup sınırı üzerindeki kaynaklar ücretli hesapta standart fiyatla ücretlendirilir.","automaticChargeNote":"Ücretli hesapta Always Free olarak işaretlenmeyen veya limiti aşan kaynaklar otomatik faturalandırılabilir.","sourceIds":["oracle-always-free"],"verifiedAt":"2026-08-13"
   },
   {
-    "id":"oracle-object-storage-20gb","providerId":"oracle","serviceName":"OCI Object and Archive Storage","category":"object-storage","type":"always-free","quota":{"amount":20,"unit":"storage-gb-month","period":"month"},"durationMonths":null,
+    "id":"oracle-object-storage-20gb","providerId":"oracle","serviceName":"OCI Object and Archive Storage","category":"object-storage","compatibleOfferIds":["oracle-object-standard-frankfurt"],"compatiblePriceKinds":["storage-gb-month"],"type":"always-free","quota":{"amount":20,"unit":"storage-gb-month","period":"month"},"durationMonths":null,
     "eligibilityNote":"Always Free-only hesapta Standard, Infrequent Access ve Archive toplamı 20 GB; paid/trial hesapların katman dağılımı farklıdır.","overageNote":"20 GB ve 50.000 aylık API isteği limitleri dışındaki kullanım hesap türüne göre ücretlenir veya sınırlandırılır.","automaticChargeNote":"Ücretli hesapta ücretsiz katman dışındaki kullanım otomatik faturalandırılır; Always Free-only hesap kapasiteyle sınırlıdır.","sourceIds":["oracle-always-free"],"verifiedAt":"2026-08-13"
   },
   {
-    "id":"oracle-autonomous-two-databases","providerId":"oracle","serviceName":"Oracle Autonomous AI Database","category":"managed-database","type":"always-free","quota":{"amount":2,"unit":"databases","period":"month"},"durationMonths":null,
+    "id":"oracle-autonomous-two-databases","providerId":"oracle","serviceName":"Oracle Autonomous AI Database","category":"managed-database","compatibleOfferIds":[],"compatiblePriceKinds":[],"type":"always-free","quota":{"amount":2,"unit":"databases","period":"month"},"durationMonths":null,
     "eligibilityNote":"Tüm tenancies için home region ve Always Free etiketine tabi iki Autonomous AI Database.","overageNote":"Ek veritabanları, daha büyük kaynaklar veya Always Free kapsamı dışındaki özellikler ücretlidir.","automaticChargeNote":"Ücretli hesapta Always Free dışı kaynaklar otomatik faturalandırılabilir.","sourceIds":["oracle-always-free"],"verifiedAt":"2026-08-13"
   }
 ]

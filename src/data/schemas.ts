@@ -28,7 +28,7 @@ export const priceComponentSchema = z
     price: positiveNumber,
     currency: z.enum(['USD', 'EUR']),
     includedQuantity: nonNegativeNumber,
-    monthlyCap: nonNegativeNumber.optional(),
+    monthlyCap: positiveNumber.optional(),
   })
   .strict()
 
@@ -49,11 +49,20 @@ export const providerSchema = z
         .object({
           id: nonEmptyString,
           name: nonEmptyString,
-          countryCode: z.string().trim().length(2),
+          countryCode: z.string().trim().length(2).nullable(),
+          scope: z.enum(['regional', 'global']),
           sourceId: nonEmptyString,
         })
-        .strict(),
-    ),
+        .strict()
+        .superRefine((region, context) => {
+          if (region.scope === 'global' && region.countryCode !== null) {
+            context.addIssue({ code: 'custom', path: ['countryCode'], message: 'Global regions cannot claim one country' })
+          }
+          if (region.scope === 'regional' && region.countryCode === null) {
+            context.addIssue({ code: 'custom', path: ['countryCode'], message: 'Regional entries require a country code' })
+          }
+        }),
+    ).min(1),
   })
   .strict()
 
@@ -74,12 +83,14 @@ export const offerSchema = z
     providerId: z.enum(providerIds),
     serviceName: nonEmptyString,
     category: z.enum(serviceCategories),
+    rankable: z.boolean(),
     region: nonEmptyString,
     specs: z
       .object({
         vcpu: nonNegativeNumber.optional(),
         ramGb: nonNegativeNumber.optional(),
         storageGb: nonNegativeNumber.optional(),
+        outboundGb: nonNegativeNumber.optional(),
         gpuModel: nonEmptyString.optional(),
         gpuVramGb: nonNegativeNumber.optional(),
       })
@@ -97,6 +108,8 @@ export const freeTierSchema = z
     providerId: z.enum(providerIds),
     serviceName: nonEmptyString,
     category: z.enum(serviceCategories),
+    compatibleOfferIds: z.array(nonEmptyString),
+    compatiblePriceKinds: z.array(priceComponentSchema.shape.kind),
     type: z.enum(['new-account-credit', 'time-limited', 'always-free', 'eligibility-limited']),
     quota: z
       .object({
@@ -187,14 +200,62 @@ export const catalogSchema = z
         checkSource(region.sourceId, ['providers', providerIndex, 'regions', regionIndex, 'sourceId'])
       })
     })
+    const providersById = new Map(catalog.providers.map((provider) => [provider.id, provider]))
+    const offersById = new Map(catalog.offers.map((offer) => [offer.id, offer]))
     catalog.offers.forEach((offer, offerIndex) => {
       offer.sourceIds.forEach((sourceId, sourceIndex) => {
         checkSource(sourceId, ['offers', offerIndex, 'sourceIds', sourceIndex])
       })
+      const provider = providersById.get(offer.providerId)
+      if (!provider?.regions.some((region) => region.id === offer.region)) {
+        context.addIssue({
+          code: 'custom',
+          path: ['offers', offerIndex, 'region'],
+          message: `Offer region ${offer.region} is not declared by provider ${offer.providerId}`,
+        })
+      }
     })
     catalog.freeTiers.forEach((freeTier, freeTierIndex) => {
       freeTier.sourceIds.forEach((sourceId, sourceIndex) => {
         checkSource(sourceId, ['freeTiers', freeTierIndex, 'sourceIds', sourceIndex])
+      })
+      if (freeTier.compatibleOfferIds.length === 0 && freeTier.compatiblePriceKinds.length > 0) {
+        context.addIssue({
+          code: 'custom',
+          path: ['freeTiers', freeTierIndex, 'compatiblePriceKinds'],
+          message: 'Display-only free tiers cannot declare applicable price components',
+        })
+      }
+      if (freeTier.compatibleOfferIds.length > 0 && freeTier.compatiblePriceKinds.length === 0) {
+        context.addIssue({
+          code: 'custom',
+          path: ['freeTiers', freeTierIndex, 'compatiblePriceKinds'],
+          message: 'Engine-applicable free tiers require at least one price component kind',
+        })
+      }
+      freeTier.compatibleOfferIds.forEach((offerId, offerIdIndex) => {
+        const compatibleOffer = offersById.get(offerId)
+        const path = ['freeTiers', freeTierIndex, 'compatibleOfferIds', offerIdIndex]
+        if (!compatibleOffer) {
+          context.addIssue({ code: 'custom', path, message: `Unknown compatible offer ID: ${offerId}` })
+          return
+        }
+        if (compatibleOffer.providerId !== freeTier.providerId || compatibleOffer.category !== freeTier.category) {
+          context.addIssue({
+            code: 'custom',
+            path,
+            message: `Compatible offer ${offerId} must share provider and category`,
+          })
+        }
+        for (const priceKind of freeTier.compatiblePriceKinds) {
+          if (!compatibleOffer.prices.some((component) => component.kind === priceKind)) {
+            context.addIssue({
+              code: 'custom',
+              path: ['freeTiers', freeTierIndex, 'compatiblePriceKinds'],
+              message: `Compatible offer ${offerId} has no ${priceKind} component`,
+            })
+          }
+        }
       })
     })
     catalog.exchangeRates.forEach((exchangeRate, exchangeRateIndex) => {
