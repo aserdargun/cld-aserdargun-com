@@ -25,12 +25,12 @@ export interface ComparisonState {
 
 const scenarios = loadCatalog().scenarios
 
-function defaultScenario(): Scenario {
-  const firstScenario = scenarios[0]
-  if (!firstScenario) {
-    throw new Error('Comparison state requires at least one scenario')
+export function resolveInitialScenario(presets: readonly Scenario[]): Scenario {
+  const smallWebApp = presets.find((scenario) => scenario.id === 'small-web-app')
+  if (!smallWebApp) {
+    throw new Error('Comparison state requires the small-web-app scenario')
   }
-  return firstScenario
+  return smallWebApp
 }
 
 function scenarioForId(id: string): Scenario | undefined {
@@ -45,7 +45,7 @@ function toggleInSet<T>(selected: Set<T>, id: T): Set<T> {
 }
 
 export function useComparisonState(): ComparisonState {
-  const [scenario, setScenario] = useState<Scenario>(defaultScenario)
+  const [scenario, setScenario] = useState<Scenario>(() => resolveInitialScenario(scenarios))
   const [selectedProviderIds, setSelectedProviderIds] = useState<Set<ProviderId>>(() => new Set(providerIds))
   const [selectedCategories, setSelectedCategories] = useState<Set<ServiceCategory>>(
     () => new Set(serviceCategories),
@@ -71,7 +71,7 @@ export function useComparisonState(): ComparisonState {
   }, [])
 
   const resetScenario = useCallback(() => {
-    setScenario((current) => scenarioForId(current.id) ?? defaultScenario())
+    setScenario((current) => scenarioForId(current.id) ?? resolveInitialScenario(scenarios))
   }, [])
 
   return {

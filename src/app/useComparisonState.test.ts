@@ -1,7 +1,8 @@
 import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
+import { loadCatalog } from '../data/catalog'
 import { providerIds, serviceCategories } from '../domain/catalog'
-import { useComparisonState } from './useComparisonState'
+import { resolveInitialScenario, useComparisonState } from './useComparisonState'
 
 describe('useComparisonState', () => {
   it('starts with the small web app and every provider and category selected', () => {
@@ -12,6 +13,22 @@ describe('useComparisonState', () => {
     expect(result.current.selectedCategories).toEqual(new Set(serviceCategories))
     expect(result.current.freeOnly).toBe(false)
     expect(result.current.includeStale).toBe(false)
+  })
+
+  it('starts with the small web app when scenario presets are reordered', () => {
+    const reversedScenarios = [...loadCatalog().scenarios].reverse()
+
+    expect(resolveInitialScenario(reversedScenarios).id).toBe('small-web-app')
+  })
+
+  it('rejects scenario presets that omit the required small web app', () => {
+    const scenariosWithoutSmallWebApp = loadCatalog().scenarios.filter(
+      (scenario) => scenario.id !== 'small-web-app',
+    )
+
+    expect(() => resolveInitialScenario(scenariosWithoutSmallWebApp)).toThrow(
+      'Comparison state requires the small-web-app scenario',
+    )
   })
 
   it('selects the GPU scenario without narrowing the category filter', () => {
