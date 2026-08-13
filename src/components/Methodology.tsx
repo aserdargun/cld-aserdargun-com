@@ -3,7 +3,7 @@ import { BadgeDollarSign, CalendarClock, Clock3, Scale, ShieldCheck } from 'luci
 const principles = [
   {
     title: '730 saat / ay',
-    text: 'Sürekli çalışan kaynaklar için aylık tahmin 730 saatlik standart kullanım üzerinden hesaplanır.',
+    text: 'Sürekli çalışan kaynaklar için modellenen aylık tutar 730 saatlik standart kullanım üzerinden hesaplanır.',
     Icon: Clock3,
   },
   {

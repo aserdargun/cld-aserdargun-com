@@ -64,17 +64,39 @@ describe('App', () => {
     await user.selectOptions(screen.getByLabelText('Kullanım senaryosu'), 'high-traffic')
     const ranking = screen.getByRole('region', { name: 'Sağlayıcı sıralaması' })
     const azure = within(ranking).getByRole('listitem', { name: 'Microsoft Azure' })
-    const before = within(azure).getByLabelText('Aylık toplam').textContent
+    const before = within(azure).getByLabelText('Modellenen aylık tutar').textContent
 
     const outbound = screen.getByLabelText('Aylık dış trafik')
     await user.clear(outbound)
     await user.type(outbound, '1000')
 
-    const after = within(azure).getByLabelText('Aylık toplam').textContent
+    const after = within(azure).getByLabelText('Modellenen aylık tutar').textContent
     expect(outbound).toHaveValue(1000)
     expect(before).toMatch(/USD\/ay/)
     expect(after).toMatch(/USD\/ay/)
     expect(after).not.toBe(before)
+  })
+
+  it('applies a provider-region toggle to both ranking coverage and detailed offers', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    const filters = screen.getByRole('region', { name: 'Karşılaştırma filtreleri' })
+    const comparison = screen.getByRole('region', { name: 'Servis karşılaştırma tablosu' })
+    const ranking = screen.getByRole('region', { name: 'Sağlayıcı sıralaması' })
+    const aws = within(ranking).getByRole('listitem', { name: 'Amazon Web Services' })
+    const region = within(filters).getByRole('button', {
+      name: 'Amazon Web Services · CloudFront global edge network',
+    })
+
+    expect(comparison).toHaveTextContent('Amazon CloudFront Pro flat-rate plan')
+    expect(within(aws).getByLabelText('Modellenen aylık tutar')).not.toHaveTextContent('Doğrulanamadı')
+
+    await user.click(region)
+
+    expect(comparison).not.toHaveTextContent('Amazon CloudFront Pro flat-rate plan')
+    expect(within(aws).getByLabelText('Modellenen aylık tutar')).toHaveTextContent('Doğrulanamadı')
+    expect(aws).toHaveTextContent('Eksik kategoriler: CDN / ağ')
   })
 
   it('constrains rankings and detailed offers with provider and category filters', async () => {

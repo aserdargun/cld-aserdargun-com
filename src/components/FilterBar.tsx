@@ -18,10 +18,12 @@ interface FilterBarProps {
     ComparisonState,
     | 'selectedProviderIds'
     | 'selectedCategories'
+    | 'selectedRegionKeys'
     | 'freeOnly'
     | 'includeStale'
     | 'toggleProvider'
     | 'toggleCategory'
+    | 'toggleRegion'
     | 'setFreeOnly'
     | 'setIncludeStale'
   >
@@ -66,6 +68,27 @@ export function FilterBar({ state, providers: providedProviders }: FilterBarProp
               </button>
             )
           })}
+        </div>
+      </fieldset>
+
+      <fieldset className="filter-bar__group filter-bar__regions">
+        <legend>Bölgeler</legend>
+        <div className="filter-bar__choices">
+          {providers.flatMap((provider) => provider.regions.map((region) => {
+            const key = `${provider.id}:${region.id}` as const
+            return (
+              <button
+                className="filter-bar__button"
+                key={key}
+                type="button"
+                aria-label={`${provider.name} · ${region.name}`}
+                aria-pressed={state.selectedRegionKeys.has(key)}
+                onClick={() => state.toggleRegion(provider.id, region.id)}
+              >
+                {provider.shortName} · {region.name}
+              </button>
+            )
+          }))}
         </div>
       </fieldset>
 

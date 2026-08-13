@@ -256,6 +256,32 @@
   text-align: right;
 }
 
+.scenario-summary__notes {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--line);
+  background: var(--page);
+}
+
+.scenario-summary__notes h4 {
+  margin: 0 0 5px;
+  color: var(--navy-900);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.scenario-summary__notes ul {
+  padding-left: 18px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 18px;
+  list-style: disc;
+}
+
+.scenario-summary__notes li + li {
+  margin-top: 3px;
+}
+
 @media (max-width: 699px) {
   .scenario-summary {
     max-height: none;

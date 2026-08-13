@@ -1,7 +1,13 @@
 import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it } from 'vitest'
-import type { Offer, PriceComponent, ServiceCategory, VerificationStatus } from '../domain/catalog'
+import type {
+  Offer,
+  PriceComponent,
+  ScenarioUsageDimension,
+  ServiceCategory,
+  VerificationStatus,
+} from '../domain/catalog'
 import type { OfferEstimate, PriceLineItemEstimate } from '../domain/pricing'
 import type { RankedProviderEstimate } from '../domain/ranking'
 import { ScenarioSummary } from './ScenarioSummary'
@@ -82,6 +88,7 @@ function rankedEstimate({
   subtotalBeforeFreeTierUsd = totalUsd,
   lineItems = [],
   missingCategories = [],
+  missingDimensions = [],
 }: {
   providerId: RankedProviderEstimate['providerId']
   rank?: RankedProviderEstimate['rank']
@@ -90,6 +97,7 @@ function rankedEstimate({
   subtotalBeforeFreeTierUsd?: number | null
   lineItems?: OfferEstimate[]
   missingCategories?: ServiceCategory[]
+  missingDimensions?: ScenarioUsageDimension[]
 }): RankedProviderEstimate {
   return {
     providerId,
@@ -99,7 +107,7 @@ function rankedEstimate({
     subtotalBeforeFreeTierUsd,
     lineItems,
     missingCategories,
-    missingDimensions: [],
+    missingDimensions,
   }
 }
 
@@ -126,7 +134,7 @@ describe('ScenarioSummary', () => {
     expect(stale).toHaveAttribute('data-status', 'stale')
   })
 
-  it('lists missing categories and never turns a null total into zero dollars', () => {
+  it('lists missing categories and dimensions and never turns a null total into zero dollars', () => {
     render(
       <ScenarioSummary
         estimates={[
@@ -136,6 +144,7 @@ describe('ScenarioSummary', () => {
             totalUsd: null,
             subtotalBeforeFreeTierUsd: null,
             missingCategories: ['compute', 'object-storage'],
+            missingDimensions: ['hoursPerMonth', 'storageGb'],
           }),
         ]}
       />,
@@ -144,6 +153,7 @@ describe('ScenarioSummary', () => {
     const oracle = screen.getByRole('listitem', { name: 'Oracle Cloud Infrastructure' })
     expect(oracle).toHaveTextContent('Doğrulanamadı')
     expect(oracle).toHaveTextContent('Eksik kategoriler: Hesaplama, Nesne depolama')
+    expect(oracle).toHaveTextContent('Eksik kullanım boyutları: Çalışma süresi, Depolama')
     expect(oracle).not.toHaveTextContent('$0')
     expect(oracle).not.toHaveTextContent('0,00 USD/ay')
   })
@@ -165,6 +175,7 @@ describe('ScenarioSummary', () => {
     render(<ScenarioSummary estimates={[estimate]} />)
 
     const azure = screen.getByRole('listitem', { name: 'Microsoft Azure' })
+    expect(within(azure).getByLabelText('Modellenen aylık tutar')).toHaveTextContent('10,13 USD/ay')
     expect(azure).toHaveTextContent('10,13 USD/ay')
     expect(azure).toHaveTextContent('Ücretsiz katman öncesi 12,35 USD/ay')
     expect(azure).toHaveTextContent('Uygulanan ücretsiz katman indirimi 2,22 USD/ay')
@@ -181,5 +192,21 @@ describe('ScenarioSummary', () => {
     expect(azure).toHaveTextContent('Dış trafik')
     expect(azure).toHaveTextContent('100 birim')
     expect(within(disclosure!).getByText('Ücretsiz katman öncesi')).toBeInTheDocument()
+  })
+
+  it('shows every selected offer note under a clear coverage heading', async () => {
+    const user = userEvent.setup()
+    const line = offerLine('azure', [priceLine(computeComponent, 10, 0, 10)])
+    line.offer.notes = ['Yedekleme ve lisans dahil değildir.', 'Vergiler hariçtir.']
+    render(<ScenarioSummary estimates={[
+      rankedEstimate({ providerId: 'azure', totalUsd: 10, lineItems: [line] }),
+    ]} />)
+
+    const azure = screen.getByRole('listitem', { name: 'Microsoft Azure' })
+    await user.click(within(azure).getByText('Maliyet ayrıntılarını göster'))
+
+    expect(azure).toHaveTextContent('Kapsam ve hariçler')
+    expect(azure).toHaveTextContent('Yedekleme ve lisans dahil değildir.')
+    expect(azure).toHaveTextContent('Vergiler hariçtir.')
   })
 })

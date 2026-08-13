@@ -54,9 +54,15 @@
 }
 
 .filter-bar__toggles {
+  grid-column: 3;
+  grid-row: 1;
   display: grid;
   gap: 8px;
   white-space: nowrap;
+}
+
+.filter-bar__regions {
+  grid-column: 1 / -1;
 }
 
 .filter-bar__toggles label {
@@ -86,6 +92,12 @@
   .filter-bar__toggles label {
     font-size: 14px;
     line-height: 20px;
+  }
+
+  .filter-bar__regions,
+  .filter-bar__toggles {
+    grid-column: auto;
+    grid-row: auto;
   }
 
   .filter-bar__button {

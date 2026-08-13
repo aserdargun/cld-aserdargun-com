@@ -37,6 +37,9 @@ describe('ScenarioCalculator', () => {
 
     expect(screen.getByRole('spinbutton', { name: 'Aylık GPU kullanımı' })).toHaveValue(100)
     expect(screen.getByLabelText('Test senaryo durumu')).toHaveTextContent('"id":"ai-gpu"')
+    expect(screen.getByRole('note', { name: 'Modelleme kapsamı' })).toHaveTextContent(
+      '100 GPU-saat ve en az 24 GB GPU belleğini kapsar',
+    )
   })
 
   it('updates outbound traffic to 100 GB without losing the other requirements', async () => {

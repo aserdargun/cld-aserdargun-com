@@ -18,10 +18,13 @@ test('high-traffic scenario recomputes major-provider ranking and exposes source
   const scenarios = page.getByRole('region', { name: 'Senaryolar' })
   await scenarios.getByRole('tab', { name: 'Yüksek trafik' }).click()
   await expect(scenarios.getByLabel('Kullanım senaryosu')).toHaveValue('high-traffic')
+  await expect(scenarios.getByRole('note', { name: 'Modelleme kapsamı' })).toContainText(
+    '2.000 GB CDN çıkış trafiğini kapsar',
+  )
 
   const ranking = page.getByRole('region', { name: 'Sağlayıcı sıralaması' })
   const azureRanking = ranking.getByRole('listitem', { name: 'Microsoft Azure', exact: true })
-  const azureMonthlyTotal = azureRanking.getByRole('status', { name: 'Aylık toplam' })
+  const azureMonthlyTotal = azureRanking.getByRole('status', { name: 'Modellenen aylık tutar' })
   const presetMonthlyTotal = await azureMonthlyTotal.innerText()
   expect(presetMonthlyTotal).toMatch(/^\d[\d.,]* USD\/ay$/)
 
@@ -32,6 +35,21 @@ test('high-traffic scenario recomputes major-provider ranking and exposes source
   await expect(azureMonthlyTotal).toHaveText(/^\d[\d.,]* USD\/ay$/)
 
   const filters = page.getByRole('region', { name: 'Karşılaştırma filtreleri' })
+  const comparison = page.getByRole('region', { name: 'Servis karşılaştırma tablosu' })
+  const awsRanking = ranking.getByRole('listitem', { name: 'Amazon Web Services', exact: true })
+  const awsGlobal = filters.getByRole('button', {
+    name: 'Amazon Web Services · CloudFront global edge network',
+  })
+  await expect(comparison).toContainText('Amazon CloudFront Pro flat-rate plan')
+  await awsGlobal.click()
+  await expect(awsGlobal).toHaveAttribute('aria-pressed', 'false')
+  await expect(comparison).not.toContainText('Amazon CloudFront Pro flat-rate plan')
+  await expect(awsRanking.getByRole('status', { name: 'Modellenen aylık tutar' })).toHaveText(
+    'Doğrulanamadı',
+  )
+  await awsGlobal.click()
+  await expect(comparison).toContainText('Amazon CloudFront Pro flat-rate plan')
+
   for (const provider of ['Hetzner', 'Oracle', 'Cloudflare', 'DigitalOcean', 'Vultr']) {
     await filters.getByRole('button', { name: provider, exact: true }).click()
   }
@@ -47,8 +65,7 @@ test('high-traffic scenario recomputes major-provider ranking and exposes source
   await expect(ranking.locator('details').first()).toHaveAttribute('open', '')
   await expect(ranking).toContainText('Kalem')
 
-  const source = page
-    .getByRole('region', { name: 'Servis karşılaştırma tablosu' })
+  const source = comparison
     .getByRole('link')
     .first()
   await expect(source).toHaveAttribute('href', /^https:\/\//)

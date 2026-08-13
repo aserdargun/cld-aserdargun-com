@@ -8,7 +8,7 @@ Bu çalışma teklif, fatura tahmini garantisi, vergi danışmanlığı veya sa�
 
 ## Fiyat normalizasyonu
 
-- Sürekli çalışan işlem kaynaklarında aylık süre **730 saat** kabul edilir.
+- Sürekli çalışan işlem kaynaklarında aylık süre **730 saat** kabul edilir. Arayüzdeki “Modellenen aylık tutar”, yalnız seçili senaryonun görünür kapsam notunda sayılan ve katalogda fiyatı bulunan bileşenlerin toplamıdır; tam fatura vaadi değildir.
 - Sağlayıcının resmî USD fiyatı varsa doğrudan kullanılır.
 - EUR fiyatlarda özgün tutar, ölçüm birimi ve varsa aylık üst sınır korunur. USD karşılığı, teklifin doğrulama gününde geçerli olan ECB EUR→USD referans kuru ile hesaplanır. Arayüz hem özgün EUR değerini hem dönüşmüş USD değerini hem de kur tarihini gösterir.
 - Uygun tarihli ECB kuru yoksa özgün fiyat gösterilebilir; USD toplamı üretilemez ve teklif sıralamaya alınmaz.
@@ -36,6 +36,8 @@ Her ücretsiz satır kota, dönem, süre, uygunluk, aşım davranışı ve otoma
 ## Karşılaştırılabilirlik ve sıralama
 
 Bir sağlayıcı tahmini ancak senaryonun açıkça beyan edilen bütün kullanım boyutları gerekli kategorilere atanmış, bu boyutları karşılayan güncel ve sıralanabilir teklifler bulunmuş ve tüm fiyat bileşenleri hesaplanmışsa eksiksiz kabul edilir. Eksik kaynak veya kapasite bilinmeyen değer sıfır sayılmaz; toplam üretilmez. Eksiksiz ve güncel USD toplamları içinde en düşük ve ikinci en düşük sonuç etiketlenir.
+
+Sağlayıcıya bağlı bölge filtresi, aynı bölge kimliğini kullanan sağlayıcıları birbirinden bağımsız tutar ve hem sıralama adaylarını hem servis tablosunu aynı anda daraltır. Gerekli kategoriyi karşılayan bölge kapatılırsa sağlayıcı seçili kalabilir; ancak eksik kategori ve kullanım boyutları ayrı gösterilir, modellenen aylık tutar üretilmez ve sonuç sıralanmaz.
 
 Kategori-tam kapsama değerlendirmesi senaryonun o kategoriye yansıttığı kullanım boyutlarına göre yapılır. İşlemde çalışma süresi/vCPU/RAM, GPU'da GPU-saat ve GPU belleği, depolama ve CDN'de ise elastik sayaç veya belgeli sabit GB sınırı dikkate alınır. Bir boyut yalnız atandığı kategori projeksiyonunda hesaplanır; örneğin depolama miktarı CDN çıkış fiyatına taşınmaz. Elastik ve sabit paketler ancak tanımlı kapasite ve gerçek senaryo miktarıyla savunulabilir olduğunda karşılaştırılır.
 

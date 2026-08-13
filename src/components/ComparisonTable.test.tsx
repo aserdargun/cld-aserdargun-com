@@ -124,7 +124,7 @@ const offers: Offer[] = [
     prices: [{ kind: 'instance-hour', price: 0.05, currency: 'USD', includedQuantity: 0 }],
     sourceIds: ['azure-price'],
     verifiedAt: '2026-08-13',
-    notes: [],
+    notes: ['Disk, yedekleme ve lisans dahil değildir.'],
   },
   {
     id: 'cloudflare-workers',
@@ -140,7 +140,7 @@ const offers: Offer[] = [
     ],
     sourceIds: ['cloudflare-price'],
     verifiedAt: '2026-08-12',
-    notes: [],
+    notes: ['Worker yürütme süresi ve ek depolama dahil değildir.'],
   },
 ]
 
@@ -224,10 +224,11 @@ describe('ComparisonTable', () => {
       'Bölge',
       'Kapasite',
       'Saatlik / birim fiyat',
-      'Aylık tahmin',
+      'Modellenen aylık tutar',
       'Ücretsiz kota',
       'Trafik',
       'Doğrulama',
+      'Kapsam / hariçler',
       'Kaynak',
     ]) {
       expect(within(table).getByRole('columnheader', { name: column })).toBeInTheDocument()
@@ -241,6 +242,7 @@ describe('ComparisonTable', () => {
     expect(azure).toHaveTextContent('750 instance-hours/ay')
     expect(azure).toHaveTextContent('100 GB dahil')
     expect(azure).toHaveTextContent('Sıralanabilir')
+    expect(azure).toHaveTextContent('Disk, yedekleme ve lisans dahil değildir.')
 
     const cloudflare = within(table).getByRole('row', { name: /Cloudflare Workers Paid/ })
     expect(cloudflare).toHaveTextContent('Global edge network · Global')
@@ -248,6 +250,10 @@ describe('ComparisonTable', () => {
     expect(cloudflare).toHaveTextContent('$5.00/ay')
     expect(cloudflare).toHaveTextContent('$0.30/milyon istek · 10 dahil')
     expect(cloudflare).toHaveTextContent('$5.60/ay')
+    expect(cloudflare).toHaveTextContent('Esnek / kullanıma göre')
+    expect(cloudflare).toHaveTextContent('Yok')
+    expect(cloudflare).toHaveTextContent('Kaynaklı trafik bileşeni yok')
+    expect(cloudflare).toHaveTextContent('Worker yürütme süresi ve ek depolama dahil değildir.')
     expect(cloudflare).not.toHaveTextContent('$5.00/saat')
 
     const source = within(azure).getByRole('link', { name: /Azure resmi fiyatlandırma/ })
@@ -262,8 +268,8 @@ describe('ComparisonTable', () => {
     const user = userEvent.setup()
     renderTable()
     const table = screen.getByRole('table', { name: 'Servis karşılaştırması' })
-    const monthlyHeader = within(table).getByRole('columnheader', { name: 'Aylık tahmin' })
-    const monthlySort = within(monthlyHeader).getByRole('button', { name: 'Aylık tahmine göre sırala' })
+    const monthlyHeader = within(table).getByRole('columnheader', { name: 'Modellenen aylık tutar' })
+    const monthlySort = within(monthlyHeader).getByRole('button', { name: 'Modellenen aylık tutara göre sırala' })
 
     expect(monthlyHeader).toHaveAttribute('aria-sort', 'none')
     await user.click(monthlySort)
@@ -323,10 +329,12 @@ describe('ComparisonTable', () => {
     })
 
     const invalidRow = screen.getByRole('row', { name: /Invalid cheap offer/ })
+    expect(within(invalidRow).getAllByRole('cell')[3]).toHaveTextContent('Doğrulanamadı')
+    expect(within(invalidRow).getAllByRole('cell')[3]).not.toHaveTextContent('$0.01/saat')
     expect(within(invalidRow).getAllByRole('cell')[4]).toHaveTextContent('Doğrulanamadı')
     expect(within(invalidRow).getAllByRole('cell')[4]).not.toHaveTextContent('$1.00/ay')
 
-    await user.click(screen.getByRole('button', { name: 'Aylık tahmine göre sırala' }))
+    await user.click(screen.getByRole('button', { name: 'Modellenen aylık tutara göre sırala' }))
     expect(screen.getAllByRole('row')[1]).toHaveTextContent('Verified monthly offer')
   })
 
@@ -387,6 +395,7 @@ describe('ComparisonTable', () => {
 
     const row = screen.getByRole('row', { name: /Hetzner Cloud CX23/ })
     expect(row).toHaveTextContent('€0.0088/saat · $0.00968/saat')
+    expect(row).toHaveTextContent('aylık üst sınır €5.49 · $6.04')
     expect(row).toHaveTextContent('Kur: 1 EUR = 1.10 USD · 2026-08-13')
     expect(row).toHaveTextContent('$6.04/ay')
     expect(row).toHaveTextContent('Yeniden doğrulanmalı')
@@ -401,7 +410,13 @@ describe('ComparisonTable', () => {
       rankable: true,
       region: 'nbg1',
       specs: { vcpu: 2, ramGb: 4 },
-      prices: [{ kind: 'instance-hour', price: 0.0088, currency: 'EUR', includedQuantity: 0 }],
+      prices: [{
+        kind: 'instance-hour',
+        price: 0.0088,
+        currency: 'EUR',
+        includedQuantity: 0,
+        monthlyCap: 5.49,
+      }],
       sourceIds: ['hetzner-price'],
       verifiedAt: '2026-08-13',
       notes: [],
@@ -430,10 +445,40 @@ describe('ComparisonTable', () => {
     const row = screen.getByRole('row', { name: /Hetzner invalid exchange rate/ })
     const cells = within(row).getAllByRole('cell')
     expect(cells[3]).toHaveTextContent('€0.0088/saat · Doğrulanamadı')
+    expect(cells[3]).toHaveTextContent('aylık üst sınır €5.49')
     expect(cells[3]).not.toHaveTextContent('$0.00968/saat')
+    expect(cells[3]).not.toHaveTextContent('$6.04')
     expect(cells[3]).not.toHaveTextContent('Kur:')
     expect(cells[4]).toHaveTextContent('Doğrulanamadı')
     expect(row).toHaveTextContent('Doğrulanamadı')
+  })
+
+  it('shows a USD monthly cap beside its metered unit price', () => {
+    const cappedOffer: Offer = {
+      ...offers[0]!,
+      id: 'azure-capped-hourly',
+      serviceName: 'Azure capped hourly offer',
+      prices: [{
+        kind: 'instance-hour',
+        price: 0.05,
+        currency: 'USD',
+        includedQuantity: 0,
+        monthlyCap: 4,
+      }],
+    }
+
+    renderTable({
+      offers: [cappedOffer],
+      freeTiers: [],
+      health: health({
+        statusByOfferId: { 'azure-capped-hourly': 'current' },
+        statusByFreeTierId: {},
+      }),
+    })
+
+    const row = screen.getByRole('row', { name: /Azure capped hourly offer/ })
+    expect(row).toHaveTextContent('$0.05/saat · aylık üst sınır $4.00')
+    expect(row).toHaveTextContent('$4.00/ay')
   })
 
   it('uses the estimate status when an eligible stale free tier changes the estimate', () => {

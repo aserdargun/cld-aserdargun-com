@@ -4,7 +4,7 @@
 
 ## Neler sunar?
 
-- Altı hazır senaryo ve değiştirilebilir kullanım değerleriyle aylık maliyet hesaplayıcı
+- Altı hazır senaryo, görünür kapsam notları ve değiştirilebilir kullanım değerleriyle modellenen aylık tutarlar
 - Resmî kaynağa, bölgeye, birime ve doğrulama tarihine bağlı USD karşılaştırması
 - Azure ve Google Cloud odaklı; AWS ve Oracle Cloud'u da kapsayan ücretsiz katman görünümü
 - Karşılaştırılabilir ve eksiksiz sonuçlarda en düşük ve ikinci en düşük fiyat etiketleri
@@ -60,7 +60,7 @@ npm run e2e
 
 Katalog çalışma zamanında fiyat API'lerine bağlanmaz. Fiyatlar, ücretsiz katmanlar, bölgeler, satın alma notları ve ECB döviz kuru sürümlü JSON dosyalarında tarihli olarak saklanır. Teknik ve ticari iddialarda yalnız sağlayıcının kendi resmî sayfaları/API'leri ile ECB kaynağı kabul edilir; üçüncü taraf fiyat siteleri kullanılmaz.
 
-Sürekli çalışan işlem kaynakları ayda 730 saat üzerinden hesaplanır. EUR fiyatlar özgün para birimi ve aylık üst sınırıyla korunur, geçerli tarihli ECB EUR→USD referans kuru ile çevrilir ve kur tarihi arayüzde gösterilir. Bir kayıt 30 günden eskiyse yeniden doğrulanmalı olarak işaretlenir. Eksik kaynak, eksik kur veya geçersiz fiyat hiçbir zaman `0 USD` sayılmaz ve sıralamaya girmez.
+Sürekli çalışan işlem kaynakları ayda 730 saat üzerinden hesaplanır. Gösterilen tutarlar tam fatura değil, her senaryonun görünür kapsam notunda sayılan bileşenlerin modellenen aylık tutarıdır; seçilen tekliflerin kapsam ve hariçleri hem sıralama ayrıntılarında hem servis tablosunda gösterilir. Bölge filtresi teklif havuzunu hem sıralamada hem ayrıntılı tabloda birlikte daraltır; gerekli bir bölge kapatıldığında sağlayıcı seçili kalsa bile sonuç eksik ve doğrulanamaz olabilir. EUR fiyatlar özgün para birimi ve aylık üst sınırıyla korunur, geçerli tarihli ECB EUR→USD referans kuru ile çevrilir ve kur tarihi arayüzde gösterilir. Bir kayıt 30 günden eskiyse yeniden doğrulanmalı olarak işaretlenir. Eksik kaynak, eksik kur veya geçersiz fiyat hiçbir zaman `0 USD` sayılmaz ve sıralamaya girmez.
 
 Ayrıntılar için [fiyat metodolojisini](docs/methodology.md) ve [veri güncelleme rehberini](docs/updating-data.md) okuyun.
 

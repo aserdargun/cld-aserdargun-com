@@ -6,13 +6,40 @@ import { resolveInitialScenario, useComparisonState } from './useComparisonState
 
 describe('useComparisonState', () => {
   it('starts with the small web app and every provider and category selected', () => {
-    const { result } = renderHook(() => useComparisonState())
+    const catalog = loadCatalog()
+    const { result } = renderHook(() => useComparisonState(catalog.scenarios, catalog.providers))
 
     expect(result.current.scenario.id).toBe('small-web-app')
     expect(result.current.selectedProviderIds).toEqual(new Set(providerIds))
     expect(result.current.selectedCategories).toEqual(new Set(serviceCategories))
+    expect(result.current.selectedRegionKeys).toEqual(new Set([
+      'azure:westeurope',
+      'gcp:europe-west1',
+      'aws:eu-central-1',
+      'aws:global',
+      'hetzner:nbg1',
+      'oracle:eu-frankfurt-1',
+      'cloudflare:global',
+      'digitalocean:fra1',
+      'vultr:fra',
+      'vultr:ams',
+    ]))
     expect(result.current.freeOnly).toBe(false)
     expect(result.current.includeStale).toBe(false)
+  })
+
+  it('toggles provider-qualified regions without colliding on shared global ids', () => {
+    const catalog = loadCatalog()
+    const { result } = renderHook(() => useComparisonState(catalog.scenarios, catalog.providers))
+
+    act(() => result.current.toggleRegion('aws', 'global'))
+
+    expect(result.current.selectedRegionKeys.has('aws:global')).toBe(false)
+    expect(result.current.selectedRegionKeys.has('cloudflare:global')).toBe(true)
+
+    act(() => result.current.toggleRegion('aws', 'global'))
+
+    expect(result.current.selectedRegionKeys.has('aws:global')).toBe(true)
   })
 
   it('starts with the small web app when scenario presets are reordered', () => {

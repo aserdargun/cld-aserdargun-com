@@ -1,11 +1,13 @@
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it } from 'vitest'
 import { useComparisonState } from '../app/useComparisonState'
+import { loadCatalog } from '../data/catalog'
 import { FilterBar } from './FilterBar'
 
 function FilterFixture() {
-  return <FilterBar state={useComparisonState()} />
+  const catalog = loadCatalog()
+  return <FilterBar state={useComparisonState(catalog.scenarios, catalog.providers)} providers={catalog.providers} />
 }
 
 afterEach(cleanup)
@@ -46,5 +48,26 @@ describe('FilterBar', () => {
     await user.click(staleData)
 
     expect(staleData).toBeChecked()
+  })
+
+  it('lists provider-qualified regions and toggles AWS global independently', async () => {
+    const user = userEvent.setup()
+    render(<FilterFixture />)
+
+    const regions = screen.getByRole('group', { name: 'Bölgeler' })
+    const awsGlobal = within(regions).getByRole('button', {
+      name: 'Amazon Web Services · CloudFront global edge network',
+    })
+    const cloudflareGlobal = within(regions).getByRole('button', {
+      name: 'Cloudflare · Global edge network',
+    })
+
+    expect(awsGlobal).toHaveAttribute('aria-pressed', 'true')
+    expect(cloudflareGlobal).toHaveAttribute('aria-pressed', 'true')
+
+    await user.click(awsGlobal)
+
+    expect(awsGlobal).toHaveAttribute('aria-pressed', 'false')
+    expect(cloudflareGlobal).toHaveAttribute('aria-pressed', 'true')
   })
 })

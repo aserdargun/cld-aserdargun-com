@@ -9,7 +9,7 @@ import { Methodology } from '../components/Methodology'
 import { ProviderDetails } from '../components/ProviderDetails'
 import { ScenarioCalculator } from '../components/ScenarioCalculator'
 import { ScenarioSummary } from '../components/ScenarioSummary'
-import { useComparisonState } from './useComparisonState'
+import { providerRegionKey, useComparisonState } from './useComparisonState'
 
 interface AppProps {
   loadCatalogData?: () => Catalog
@@ -34,7 +34,7 @@ function tryLoadCatalog(loader: () => Catalog): Catalog | null {
 }
 
 function Dashboard({ catalog, today }: { catalog: Catalog; today: Date }) {
-  const state = useComparisonState(catalog.scenarios)
+  const state = useComparisonState(catalog.scenarios, catalog.providers)
   const health = getCatalogHealth(catalog, today)
   const usableExchangeRates = getUsableExchangeRates(catalog, health)
   const eligibleFreeTierIds: readonly string[] = []
@@ -45,7 +45,11 @@ function Dashboard({ catalog, today }: { catalog: Catalog; today: Date }) {
   }
 
   const rankingOffers = catalog.offers.filter(
-    (offer) => state.selectedProviderIds.has(offer.providerId) && eligibleByStatus(offer),
+    (offer) => (
+      state.selectedProviderIds.has(offer.providerId) &&
+      state.selectedRegionKeys.has(providerRegionKey(offer.providerId, offer.region)) &&
+      eligibleByStatus(offer)
+    ),
   )
   const pricingContext = {
     exchangeRates: usableExchangeRates,
@@ -63,6 +67,7 @@ function Dashboard({ catalog, today }: { catalog: Catalog; today: Date }) {
 
   const detailedOffers = catalog.offers.filter((offer) => {
     if (!state.selectedProviderIds.has(offer.providerId)) return false
+    if (!state.selectedRegionKeys.has(providerRegionKey(offer.providerId, offer.region))) return false
     if (!state.selectedCategories.has(offer.category)) return false
     if (!eligibleByStatus(offer)) return false
     if (!state.freeOnly) return true

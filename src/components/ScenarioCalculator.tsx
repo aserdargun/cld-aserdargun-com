@@ -227,6 +227,14 @@ export function ScenarioCalculator({
           <span>{state.scenario.storageGb} GB depolama, </span>
           <span>{state.scenario.outboundGb} GB dış trafik</span>
         </div>
+        <aside
+          className="scenario-calculator__scope-note"
+          role="note"
+          aria-label="Modelleme kapsamı"
+        >
+          <strong>Modelleme kapsamı</strong>
+          <span>{state.scenario.scopeNote}</span>
+        </aside>
       </div>
     </section>
   )

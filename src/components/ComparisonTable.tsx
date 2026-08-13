@@ -74,6 +74,9 @@ function priceText(
   const unit = unitByKind[component.kind]
   const included = component.includedQuantity > 0 ? ` · ${component.includedQuantity} dahil` : ''
   const conversion = convertToUsd(component.price, component.currency, exchangeRates, offer.verifiedAt)
+  const capConversion = component.monthlyCap === undefined
+    ? null
+    : convertToUsd(component.monthlyCap, component.currency, exchangeRates, offer.verifiedAt)
 
   if (component.currency === 'EUR') {
     const original = `${eurFormatter.format(component.price)}/${unit}`
@@ -91,10 +94,18 @@ function priceText(
     const rateNote = selectedRate
       ? ` · Kur: 1 EUR = ${exchangeRateFormatter.format(selectedRate.rate)} USD · ${selectedRate.date}${rateSource ? ` · ${rateSource.title}` : ''}`
       : ''
-    return `${original} · ${usd}${included}${rateNote}`
+    const cap = component.monthlyCap === undefined
+      ? ''
+      : capConversion?.amountUsd == null
+        ? ` · aylık üst sınır ${eurFormatter.format(component.monthlyCap)}`
+        : ` · aylık üst sınır ${eurFormatter.format(component.monthlyCap)} · ${monthlyUsdFormatter.format(capConversion.amountUsd)}`
+    return `${original} · ${usd}${included}${cap}${rateNote}`
   }
 
-  return `${usdFormatter.format(component.price)}/${unit}${included}`
+  const cap = component.monthlyCap === undefined
+    ? ''
+    : ` · aylık üst sınır ${monthlyUsdFormatter.format(component.monthlyCap)}`
+  return `${usdFormatter.format(component.price)}/${unit}${included}${cap}`
 }
 
 function capacityText(offer: Offer): string {
@@ -104,7 +115,7 @@ function capacityText(offer: Offer): string {
   if (offer.specs.storageGb !== undefined) parts.push(`${offer.specs.storageGb} GB depolama`)
   if (offer.specs.gpuModel !== undefined) parts.push(offer.specs.gpuModel)
   if (offer.specs.gpuVramGb !== undefined) parts.push(`${offer.specs.gpuVramGb} GB VRAM`)
-  return parts.length > 0 ? parts.join(' · ') : 'Doğrulanamadı'
+  return parts.length > 0 ? parts.join(' · ') : 'Esnek / kullanıma göre'
 }
 
 function trafficText(
@@ -114,7 +125,7 @@ function trafficText(
 ): string {
   if (offer.specs.outboundGb !== undefined) return `${offer.specs.outboundGb.toLocaleString('en-US')} GB dahil`
   const outbound = offer.prices.find((component) => component.kind === 'outbound-gb')
-  return outbound ? priceText(outbound, offer, exchangeRates, sources) : 'Doğrulanamadı'
+  return outbound ? priceText(outbound, offer, exchangeRates, sources) : 'Kaynaklı trafik bileşeni yok'
 }
 
 function regionText(offer: Offer, providers: readonly Provider[]): string {
@@ -128,7 +139,7 @@ function regionText(offer: Offer, providers: readonly Provider[]): string {
 function quotaText(offer: Offer, freeTiers: readonly FreeTier[]): string[] {
   const compatible = freeTiers.filter((freeTier) => freeTier.compatibleOfferIds.includes(offer.id))
   return compatible.length === 0
-    ? ['Doğrulanamadı']
+    ? ['Yok']
     : compatible.map((freeTier) => {
       const period = freeTier.quota.period === 'month' ? 'ay' : 'tek sefer'
       return `${freeTier.quota.amount.toLocaleString('en-US')} ${freeTier.quota.unit}/${period}`
@@ -262,8 +273,8 @@ export function ComparisonTable({
             <th scope="col">Kapasite</th>
             <th scope="col">Saatlik / birim fiyat</th>
             <SortHeader
-              label="Aylık tahmin"
-              buttonLabel="Aylık tahmine göre sırala"
+              label="Modellenen aylık tutar"
+              buttonLabel="Modellenen aylık tutara göre sırala"
               sortKey="monthly"
               sort={sort}
               onSort={handleSort}
@@ -271,12 +282,14 @@ export function ComparisonTable({
             <th scope="col">Ücretsiz kota</th>
             <th scope="col">Trafik</th>
             <th scope="col">Doğrulama</th>
+            <th scope="col">Kapsam / hariçler</th>
             <th scope="col">Kaynak</th>
           </tr>
         </thead>
         <tbody>
           {sortedRows.map(({ offer, provider, estimate }) => {
             const status = estimate.status
+            const offerEvidenceStatus = health.statusByOfferId[offer.id] ?? 'invalid'
             return (
               <tr key={offer.id}>
                 <th className="data-table__sticky" scope="row">{provider?.name ?? 'Doğrulanamadı'}</th>
@@ -287,7 +300,7 @@ export function ComparisonTable({
                 <td>{regionText(offer, providers)}</td>
                 <td>{capacityText(offer)}</td>
                 <td>
-                  {offer.prices.length === 0
+                  {offerEvidenceStatus === 'invalid' || offer.prices.length === 0
                     ? 'Doğrulanamadı'
                     : offer.prices.map((component, index) => (
                       <span className="data-table__line" key={`${component.kind}-${index}`}>
@@ -311,6 +324,13 @@ export function ComparisonTable({
                     {statusLabels[status]}
                   </span>
                   <time className="data-table__meta" dateTime={offer.verifiedAt}>{offer.verifiedAt}</time>
+                </td>
+                <td>
+                  {offer.notes.length === 0
+                    ? 'Yok'
+                    : offer.notes.map((note) => (
+                      <span className="data-table__line" key={note}>{note}</span>
+                    ))}
                 </td>
                 <td>
                   {offer.sourceIds.map((sourceId) => (

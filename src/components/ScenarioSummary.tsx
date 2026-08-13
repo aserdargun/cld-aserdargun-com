@@ -1,6 +1,11 @@
 import { ChevronDown } from 'lucide-react'
 import { loadCatalog } from '../data/catalog'
-import type { PriceKind, Provider, ServiceCategory } from '../domain/catalog'
+import type {
+  PriceKind,
+  Provider,
+  ScenarioUsageDimension,
+  ServiceCategory,
+} from '../domain/catalog'
 import type { PriceLineItemEstimate } from '../domain/pricing'
 import type { RankedProviderEstimate } from '../domain/ranking'
 import { StatusBadge } from './StatusBadge'
@@ -24,6 +29,18 @@ const priceKindLabels: Record<PriceKind, string> = {
   'requests-million': 'İstekler',
   'database-gb-month': 'Veritabanı',
   'gpu-hour': 'GPU kullanımı',
+}
+
+const dimensionLabels: Record<ScenarioUsageDimension, string> = {
+  hoursPerMonth: 'Çalışma süresi',
+  vcpu: 'vCPU',
+  ramGb: 'RAM',
+  storageGb: 'Depolama',
+  outboundGb: 'Dış trafik',
+  requestsMillion: 'İstek sayısı',
+  databaseGb: 'Veritabanı depolaması',
+  gpuHours: 'GPU kullanımı',
+  gpuVramGb: 'GPU VRAM',
 }
 
 const rankLabels: Record<Exclude<RankedProviderEstimate['rank'], null>, string> = {
@@ -171,7 +188,7 @@ export function ScenarioSummary({ estimates, providers: providedProviders }: Sce
                   <StatusBadge status={estimate.status} />
                 </div>
 
-                <output className="scenario-summary__total" aria-label="Aylık toplam">
+                <output className="scenario-summary__total" aria-label="Modellenen aylık tutar">
                   {formatUsd(estimate.totalUsd)}
                 </output>
               </div>
@@ -188,6 +205,13 @@ export function ScenarioSummary({ estimates, providers: providedProviders }: Sce
                 <p className="scenario-summary__missing">
                   <strong>Eksik kategoriler:</strong>{' '}
                   {estimate.missingCategories.map((category) => categoryLabels[category]).join(', ')}
+                </p>
+              ) : null}
+
+              {estimate.missingDimensions.length > 0 ? (
+                <p className="scenario-summary__missing">
+                  <strong>Eksik kullanım boyutları:</strong>{' '}
+                  {estimate.missingDimensions.map((dimension) => dimensionLabels[dimension]).join(', ')}
                 </p>
               ) : null}
 
@@ -236,6 +260,16 @@ export function ScenarioSummary({ estimates, providers: providedProviders }: Sce
                             />
                           ))}
                         </ul>
+                        {offerEstimate.offer.notes.length > 0 ? (
+                          <aside className="scenario-summary__notes">
+                            <h4>Kapsam ve hariçler</h4>
+                            <ul>
+                              {offerEstimate.offer.notes.map((note) => (
+                                <li key={note}>{note}</li>
+                              ))}
+                            </ul>
+                          </aside>
+                        ) : null}
                       </section>
                     ))}
                   </div>
