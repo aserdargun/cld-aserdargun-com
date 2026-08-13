@@ -116,6 +116,14 @@ export function ScenarioCalculator({ state }: ScenarioCalculatorProps) {
     if (Object.keys(nextErrors).length === 0) state.updateScenario(patch)
   }
 
+  function resetToSelectedPreset() {
+    const preset = scenarios.find((scenario) => scenario.id === state.scenario.id) ?? state.scenario
+    setScenarioSnapshot(preset)
+    setDrafts(draftValuesFor(preset))
+    setErrors({})
+    state.resetScenario()
+  }
+
   const categorySummary = state.scenario.requiredCategories
     .map((category) => categoryLabels[category])
     .join(', ')
@@ -177,7 +185,7 @@ export function ScenarioCalculator({ state }: ScenarioCalculatorProps) {
         </div>
 
         <div className="scenario-calculator__actions">
-          <button className="scenario-calculator__reset" type="button" onClick={state.resetScenario}>
+          <button className="scenario-calculator__reset" type="button" onClick={resetToSelectedPreset}>
             <RotateCcw aria-hidden="true" size={16} strokeWidth={2} />
             Varsayılan değerlere sıfırla
           </button>

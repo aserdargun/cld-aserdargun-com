@@ -88,6 +88,23 @@ describe('ScenarioCalculator', () => {
     expect(screen.getByLabelText('Test senaryo durumu')).toHaveTextContent('"hoursPerMonth":730')
   })
 
+  it('clears an invalid local draft even when the preset state does not rerender', async () => {
+    const user = userEvent.setup()
+    render(<CalculatorFixture />)
+
+    const storage = screen.getByRole('spinbutton', { name: 'Depolama' })
+    await user.clear(storage)
+
+    expect(storage).toHaveValue(null)
+    expect(screen.getByRole('alert')).toHaveTextContent('0 veya daha büyük bir sayı girin')
+
+    await user.click(screen.getByRole('button', { name: 'Varsayılan değerlere sıfırla' }))
+
+    expect(storage).toHaveValue(50)
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Test senaryo durumu')).toHaveTextContent('"storageGb":50')
+  })
+
   it('keeps every pricing and capacity input visible with units and a non-negative bound', () => {
     render(<CalculatorFixture />)
 
