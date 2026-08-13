@@ -1,0 +1,10 @@
+[
+  {"id":"azure-pricing-overview","owner":"azure","title":"Azure pricing","url":"https://azure.microsoft.com/en-us/pricing/","kind":"pricing","accessedAt":"2026-08-13"},
+  {"id":"gcp-pricing-overview","owner":"gcp","title":"Google Cloud pricing","url":"https://cloud.google.com/pricing","kind":"pricing","accessedAt":"2026-08-13"},
+  {"id":"aws-pricing-overview","owner":"aws","title":"AWS pricing","url":"https://aws.amazon.com/pricing/","kind":"pricing","accessedAt":"2026-08-13"},
+  {"id":"hetzner-cloud-overview","owner":"hetzner","title":"Hetzner Cloud","url":"https://www.hetzner.com/cloud/","kind":"pricing","accessedAt":"2026-08-13"},
+  {"id":"oracle-cloud-pricing","owner":"oracle","title":"Oracle Cloud pricing","url":"https://www.oracle.com/cloud/pricing/","kind":"pricing","accessedAt":"2026-08-13"},
+  {"id":"cloudflare-plans","owner":"cloudflare","title":"Cloudflare plans","url":"https://www.cloudflare.com/plans/","kind":"pricing","accessedAt":"2026-08-13"},
+  {"id":"digitalocean-pricing","owner":"digitalocean","title":"DigitalOcean pricing","url":"https://www.digitalocean.com/pricing","kind":"pricing","accessedAt":"2026-08-13"},
+  {"id":"vultr-pricing","owner":"vultr","title":"Vultr pricing","url":"https://www.vultr.com/pricing/","kind":"pricing","accessedAt":"2026-08-13"}
+]

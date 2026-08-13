@@ -1,0 +1,8 @@
+[
+  {"id":"small-web-app","name":"Küçük web uygulaması","description":"Sürekli çalışan küçük bir web uygulaması.","requiredCategories":["compute"],"hoursPerMonth":730,"vcpu":2,"ramGb":4,"storageGb":50,"outboundGb":100,"requestsMillion":0,"databaseGb":0,"gpuHours":0,"gpuVramGb":0},
+  {"id":"api-backend","name":"API arka ucu","description":"İstek tabanlı API hizmeti.","requiredCategories":["serverless"],"hoursPerMonth":0,"vcpu":1,"ramGb":1,"storageGb":10,"outboundGb":250,"requestsMillion":10,"databaseGb":0,"gpuHours":0,"gpuVramGb":0},
+  {"id":"database-saas","name":"Veritabanlı SaaS","description":"Uygulama ve yönetilen veritabanı gerektiren SaaS.","requiredCategories":["compute","managed-database"],"hoursPerMonth":730,"vcpu":4,"ramGb":8,"storageGb":100,"outboundGb":250,"requestsMillion":5,"databaseGb":50,"gpuHours":0,"gpuVramGb":0},
+  {"id":"static-site","name":"Statik site","description":"Depolama ve CDN kullanan statik site.","requiredCategories":["object-storage","cdn-network"],"hoursPerMonth":0,"vcpu":0,"ramGb":0,"storageGb":50,"outboundGb":500,"requestsMillion":5,"databaseGb":0,"gpuHours":0,"gpuVramGb":0},
+  {"id":"ai-gpu","name":"Yapay zeka GPU","description":"GPU ile yapay zeka iş yükü.","requiredCategories":["gpu-ai"],"hoursPerMonth":0,"vcpu":0,"ramGb":0,"storageGb":100,"outboundGb":100,"requestsMillion":0,"databaseGb":0,"gpuHours":100,"gpuVramGb":24},
+  {"id":"high-traffic","name":"Yüksek trafikli uygulama","description":"Sürekli çalışan ve yüksek çıkış trafiği olan uygulama.","requiredCategories":["compute","cdn-network"],"hoursPerMonth":730,"vcpu":8,"ramGb":16,"storageGb":500,"outboundGb":2000,"requestsMillion":25,"databaseGb":0,"gpuHours":0,"gpuVramGb":0}
+]
