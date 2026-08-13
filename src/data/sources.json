@@ -58,7 +58,6 @@
   {"id":"cloudflare-network","owner":"cloudflare","title":"Cloudflare global network","url":"https://www.cloudflare.com/network/","kind":"regions","accessedAt":"2026-08-13"},
   {"id":"cloudflare-workers-pricing","owner":"cloudflare","title":"Cloudflare Workers pricing","url":"https://developers.cloudflare.com/workers/platform/pricing/","kind":"pricing","accessedAt":"2026-08-13"},
   {"id":"cloudflare-r2-pricing","owner":"cloudflare","title":"Cloudflare R2 pricing","url":"https://developers.cloudflare.com/r2/pricing/","kind":"pricing","accessedAt":"2026-08-13"},
-  {"id":"cloudflare-pro-plan","owner":"cloudflare","title":"Cloudflare Pro application services plan","url":"https://www.cloudflare.com/plans/pro/","kind":"pricing","accessedAt":"2026-08-13"},
 
   {"id":"digitalocean-payment","owner":"digitalocean","title":"DigitalOcean payment methods","url":"https://docs.digitalocean.com/platform/billing/manage-payment-methods/","kind":"purchase","accessedAt":"2026-08-13"},
   {"id":"digitalocean-regions","owner":"digitalocean","title":"DigitalOcean regional availability","url":"https://docs.digitalocean.com/platform/regional-availability/","kind":"regions","accessedAt":"2026-08-13"},

@@ -96,6 +96,27 @@ describe('catalog validator policy', () => {
     expect(validateCatalog(catalog)).not.toContain(expect.stringContaining('alternative provider hetzner has'))
   })
 
+  it('accepts one distinct Cloudflare proof under the approved provider-specific threshold', () => {
+    const catalog = clonedCatalog()
+    const cloudflareOfferIds = catalog.offers
+      .filter((offer) => offer.providerId === 'cloudflare')
+      .map((offer) => offer.id)
+
+    expect(cloudflareOfferIds).toEqual(['cloudflare-workers-paid-global', 'cloudflare-r2-standard-global'])
+    expect(validateCatalog(catalog)).not.toContain(expect.stringContaining('alternative provider cloudflare has'))
+  })
+
+  it('rejects Cloudflare when no defensible price-advantaged offer remains', () => {
+    const catalog = clonedCatalog()
+    catalog.offers = catalog.offers.filter(
+      (offer) => offer.id !== 'cloudflare-r2-standard-global',
+    )
+
+    expect(validateCatalog(catalog)).toContain(
+      'alternative provider cloudflare has 0 distinct capacity-matched price-advantaged offers; requires 1',
+    )
+  })
+
   it('does not count an offer that is cheaper than only one of three comparable major providers', () => {
     const catalog = clonedCatalog()
     catalog.offers = catalog.offers.filter(

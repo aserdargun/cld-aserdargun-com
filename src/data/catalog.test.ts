@@ -69,12 +69,12 @@ describe('catalog schemas', () => {
     expect(offerSchema.safeParse(withoutRankability).success).toBe(false)
   })
 
-  it('accepts an explicit unlimited outbound capacity claim', () => {
+  it('rejects an uncorroborated unlimited outbound capacity claim', () => {
     expect(offerSchema.safeParse({
       ...sourceBackedOffer,
       category: 'cdn-network',
       specs: { outboundGbUnlimited: true },
-    }).success).toBe(true)
+    }).success).toBe(false)
   })
 
   it('accepts an explicitly scoped global provider region without a fabricated country', () => {

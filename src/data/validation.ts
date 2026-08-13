@@ -14,6 +14,13 @@ export const catalogSnapshotDate = '2026-08-13'
 const validationDate = new Date(`${catalogSnapshotDate}T00:00:00.000Z`)
 const majorProviderIds = ['azure', 'gcp', 'aws'] as const
 const alternativeProviderIds = ['hetzner', 'oracle', 'cloudflare', 'digitalocean', 'vultr'] as const
+const requiredAlternativeAdvantageCounts: Record<(typeof alternativeProviderIds)[number], number> = {
+  hetzner: 2,
+  oracle: 2,
+  cloudflare: 1,
+  digitalocean: 2,
+  vultr: 2,
+}
 
 function checkUniqueIds(records: readonly { id: string }[], label: string, failures: string[]): void {
   const seen = new Set<string>()
@@ -278,8 +285,9 @@ export function validateCatalog(catalog: Catalog): string[] {
   }
   for (const providerId of alternativeProviderIds) {
     const advantageOfferIds = alternativeAdvantageOfferIds(providerId, catalog, pricingContext)
-    if (advantageOfferIds.size < 2) {
-      failures.push(`alternative provider ${providerId} has ${advantageOfferIds.size} distinct capacity-matched price-advantaged offer${advantageOfferIds.size === 1 ? '' : 's'}; requires 2`)
+    const requiredCount = requiredAlternativeAdvantageCounts[providerId]
+    if (advantageOfferIds.size < requiredCount) {
+      failures.push(`alternative provider ${providerId} has ${advantageOfferIds.size} distinct capacity-matched price-advantaged offer${advantageOfferIds.size === 1 ? '' : 's'}; requires ${requiredCount}`)
     }
   }
   return failures

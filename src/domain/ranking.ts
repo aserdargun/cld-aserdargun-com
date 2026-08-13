@@ -24,8 +24,7 @@ export function meetsCapacityRequirements(offer: Offer, scenario: Scenario): boo
 
   if (offer.category === 'cdn-network') {
     const isElastic = offer.prices.some((component) => component.kind === 'outbound-gb')
-    return isElastic || offer.specs.outboundGbUnlimited === true ||
-      scenario.outboundGb === 0 || (offer.specs.outboundGb ?? 0) >= scenario.outboundGb
+    return isElastic || scenario.outboundGb === 0 || (offer.specs.outboundGb ?? 0) >= scenario.outboundGb
   }
 
   if (offer.category !== 'compute' && offer.category !== 'gpu-ai') return true

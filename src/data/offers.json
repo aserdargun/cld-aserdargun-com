@@ -179,11 +179,6 @@
     "prices":[{"kind":"storage-gb-month","price":0.015,"currency":"USD","includedQuantity":10}],"sourceIds":["cloudflare-r2-pricing"],"verifiedAt":"2026-08-13",
     "notes":["İlk 10 GB-ay sonrası standart depolamadır ve internet egress ücretsizdir; Class A/B işlemleri, Infrequent Access ücretleri ve vergi hariçtir."]
   },
-  {
-    "id":"cloudflare-pro-cdn-global","providerId":"cloudflare","serviceName":"Cloudflare Pro application services plan","category":"cdn-network","rankable":true,"region":"global","specs":{"outboundGbUnlimited":true},
-    "prices":[{"kind":"flat-month","price":25,"currency":"USD","includedQuantity":0}],"sourceIds":["cloudflare-pro-plan"],"verifiedAt":"2026-08-13",
-    "notes":["Aylık Pro plan, CDN ve resmi sayfada belirtilen ek kullanım ücreti olmamasını içerir; alan adı kaydı, origin, Argo, Load Balancing, ücretli eklentiler ve vergi hariçtir."]
-  },
 
   {
     "id":"digitalocean-basic-4gb-fra1","providerId":"digitalocean","serviceName":"DigitalOcean Basic Droplet 4 GiB","category":"compute","rankable":true,"region":"fra1","specs":{"vcpu":2,"ramGb":4,"storageGb":80,"outboundGb":4000},
