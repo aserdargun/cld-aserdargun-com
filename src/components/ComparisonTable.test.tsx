@@ -102,6 +102,14 @@ const sources: Source[] = [
     kind: 'pricing',
     accessedAt: '2026-08-11',
   },
+  {
+    id: 'ecb-rate',
+    owner: 'ecb',
+    title: 'ECB euro reference exchange rate',
+    url: 'https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/',
+    kind: 'exchange-rate',
+    accessedAt: '2026-08-13',
+  },
 ]
 
 const offers: Offer[] = [
@@ -285,6 +293,40 @@ describe('ComparisonTable', () => {
     expect(within(table).getAllByRole('row')[1]).toHaveTextContent('Azure VM B2s')
   })
 
+  it('hides an invalid estimate monthly value and keeps it below verified values when sorting', async () => {
+    const user = userEvent.setup()
+    const invalidOffer: Offer = {
+      ...offers[0]!,
+      id: 'azure-invalid-estimate',
+      serviceName: 'Invalid cheap offer',
+      prices: [{ kind: 'instance-hour', price: 0.01, currency: 'USD', includedQuantity: 0 }],
+    }
+    const verifiedOffer: Offer = {
+      ...offers[1]!,
+      id: 'cloudflare-verified-estimate',
+      serviceName: 'Verified monthly offer',
+      prices: [{ kind: 'flat-month', price: 5, currency: 'USD', includedQuantity: 0 }],
+    }
+    renderTable({
+      offers: [invalidOffer, verifiedOffer],
+      freeTiers: [],
+      health: health({
+        statusByOfferId: {
+          'azure-invalid-estimate': 'invalid',
+          'cloudflare-verified-estimate': 'current',
+        },
+        statusByFreeTierId: {},
+      }),
+    })
+
+    const invalidRow = screen.getByRole('row', { name: /Invalid cheap offer/ })
+    expect(within(invalidRow).getAllByRole('cell')[4]).toHaveTextContent('Doğrulanamadı')
+    expect(within(invalidRow).getAllByRole('cell')[4]).not.toHaveTextContent('$1.00/ay')
+
+    await user.click(screen.getByRole('button', { name: 'Aylık tahmine göre sırala' }))
+    expect(screen.getAllByRole('row')[1]).toHaveTextContent('Verified monthly offer')
+  })
+
   it('uses dated exchange rates and monthly caps while preserving original EUR values', () => {
     const hetznerOffer: Offer = {
       id: 'hetzner-cx23',
@@ -321,14 +363,77 @@ describe('ComparisonTable', () => {
           date: '2026-08-13',
           sourceId: 'ecb-rate',
         },
+        {
+          id: 'eur-usd-2026-08-14',
+          base: 'EUR',
+          quote: 'USD',
+          rate: 1.25,
+          date: '2026-08-14',
+          sourceId: 'ecb-rate',
+        },
       ],
       health: health({ statusByOfferId: { 'hetzner-cx23': 'stale' }, statusByFreeTierId: {} }),
     })
 
     const row = screen.getByRole('row', { name: /Hetzner Cloud CX23/ })
     expect(row).toHaveTextContent('€0.0088/saat · $0.00968/saat')
+    expect(row).toHaveTextContent('Kur: 1 EUR = 1.10 USD · 2026-08-13')
     expect(row).toHaveTextContent('$6.04/ay')
     expect(row).toHaveTextContent('Yeniden doğrulanmalı')
+  })
+
+  it('uses the estimate status when an eligible stale free tier changes the estimate', () => {
+    renderTable({
+      offers: [offers[0]!],
+      freeTiers,
+      eligibleFreeTierIds: ['azure-vm-free'],
+      monthsSinceAccountCreation: 1,
+      health: health({
+        statusByOfferId: { 'azure-vm': 'current' },
+        statusByFreeTierId: { 'azure-vm-free': 'stale' },
+      }),
+    })
+
+    const row = screen.getByRole('row', { name: /Azure VM B2s/ })
+    expect(row).toHaveTextContent('Yeniden doğrulanmalı')
+    expect(within(row).getByText('Yeniden doğrulanmalı')).toHaveAttribute('data-status', 'stale')
+    expect(row).not.toHaveTextContent('Güncel')
+  })
+
+  it('converts EUR outbound traffic with the selected dated exchange rate', () => {
+    const eurOutboundOffer: Offer = {
+      id: 'hetzner-eur-outbound',
+      providerId: 'hetzner',
+      serviceName: 'Hetzner EUR outbound',
+      category: 'cdn-network',
+      rankable: true,
+      region: 'nbg1',
+      specs: {},
+      prices: [{ kind: 'outbound-gb', price: 0.1, currency: 'EUR', includedQuantity: 0 }],
+      sourceIds: ['hetzner-price'],
+      verifiedAt: '2026-08-13',
+      notes: [],
+    }
+    renderTable({
+      offers: [eurOutboundOffer],
+      freeTiers: [],
+      exchangeRates: [
+        {
+          id: 'eur-usd-2026-08-13',
+          base: 'EUR',
+          quote: 'USD',
+          rate: 1.1,
+          date: '2026-08-13',
+          sourceId: 'ecb-rate',
+        },
+      ],
+      health: health({ statusByOfferId: { 'hetzner-eur-outbound': 'current' }, statusByFreeTierId: {} }),
+    })
+
+    const row = screen.getByRole('row', { name: /Hetzner EUR outbound/ })
+    const trafficCell = within(row).getAllByRole('cell')[6]
+    expect(trafficCell).toHaveTextContent('€0.10/GB · $0.11/GB')
+    expect(trafficCell).not.toHaveTextContent('Doğrulanamadı')
   })
 
   it('shows Doğrulanamadı rather than zero for missing prices, regions and source records', () => {

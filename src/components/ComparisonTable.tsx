@@ -44,6 +44,11 @@ const eurFormatter = new Intl.NumberFormat('en-US', {
   maximumFractionDigits: 6,
 })
 
+const exchangeRateFormatter = new Intl.NumberFormat('en-US', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 6,
+})
+
 const unitByKind: Record<PriceComponent['kind'], string> = {
   'instance-hour': 'saat',
   'gpu-hour': 'GPU-saat',
@@ -64,6 +69,7 @@ function priceText(
   component: PriceComponent,
   offer: Offer,
   exchangeRates: readonly ExchangeRate[],
+  sources: readonly Source[],
 ): string {
   const unit = unitByKind[component.kind]
   const included = component.includedQuantity > 0 ? ` · ${component.includedQuantity} dahil` : ''
@@ -74,7 +80,18 @@ function priceText(
     const usd = conversion.amountUsd === null
       ? 'Doğrulanamadı'
       : `${usdFormatter.format(conversion.amountUsd)}/${unit}`
-    return `${original} · ${usd}${included}`
+    const selectedRate = exchangeRates
+      .filter((exchangeRate) => exchangeRate.date <= offer.verifiedAt)
+      .reduce<ExchangeRate | undefined>((latest, exchangeRate) => (
+        !latest || exchangeRate.date > latest.date ? exchangeRate : latest
+      ), undefined)
+    const rateSource = selectedRate
+      ? sources.find((source) => source.id === selectedRate.sourceId)
+      : undefined
+    const rateNote = selectedRate
+      ? ` · Kur: 1 EUR = ${exchangeRateFormatter.format(selectedRate.rate)} USD · ${selectedRate.date}${rateSource ? ` · ${rateSource.title}` : ''}`
+      : ''
+    return `${original} · ${usd}${included}${rateNote}`
   }
 
   return `${usdFormatter.format(component.price)}/${unit}${included}`
@@ -90,10 +107,14 @@ function capacityText(offer: Offer): string {
   return parts.length > 0 ? parts.join(' · ') : 'Doğrulanamadı'
 }
 
-function trafficText(offer: Offer): string {
+function trafficText(
+  offer: Offer,
+  exchangeRates: readonly ExchangeRate[],
+  sources: readonly Source[],
+): string {
   if (offer.specs.outboundGb !== undefined) return `${offer.specs.outboundGb.toLocaleString('en-US')} GB dahil`
   const outbound = offer.prices.find((component) => component.kind === 'outbound-gb')
-  return outbound ? `${priceText(outbound, offer, [])}` : 'Doğrulanamadı'
+  return outbound ? priceText(outbound, offer, exchangeRates, sources) : 'Doğrulanamadı'
 }
 
 function regionText(offer: Offer, providers: readonly Provider[]): string {
@@ -160,7 +181,6 @@ export function ComparisonTable({
   const [sort, setSort] = useState<SortState | null>(null)
   const rows = useMemo(() => offers.map((offer, index) => {
     const provider = providers.find((candidate) => candidate.id === offer.providerId)
-    const status = health.statusByOfferId[offer.id] ?? 'invalid'
     const estimate = estimateOffer(offer, scenario, {
       exchangeRates,
       freeTiers,
@@ -169,7 +189,7 @@ export function ComparisonTable({
       statusByOfferId: health.statusByOfferId,
       statusByFreeTierId: health.statusByFreeTierId,
     })
-    return { offer, provider, status, estimate, index }
+    return { offer, provider, estimate, index }
   }), [
     offers,
     providers,
@@ -186,8 +206,8 @@ export function ComparisonTable({
     const direction = sort.direction === 'ascending' ? 1 : -1
     return [...rows].sort((left, right) => {
       if (sort.key === 'monthly') {
-        const leftValue = left.estimate.totalUsd
-        const rightValue = right.estimate.totalUsd
+        const leftValue = left.estimate.status === 'invalid' ? null : left.estimate.totalUsd
+        const rightValue = right.estimate.status === 'invalid' ? null : right.estimate.totalUsd
         if (leftValue === null && rightValue === null) return left.index - right.index
         if (leftValue === null) return 1
         if (rightValue === null) return -1
@@ -248,7 +268,8 @@ export function ComparisonTable({
           </tr>
         </thead>
         <tbody>
-          {sortedRows.map(({ offer, provider, status, estimate }) => {
+          {sortedRows.map(({ offer, provider, estimate }) => {
+            const status = estimate.status
             return (
               <tr key={offer.id}>
                 <th className="data-table__sticky" scope="row">{provider?.name ?? 'Doğrulanamadı'}</th>
@@ -263,12 +284,12 @@ export function ComparisonTable({
                     ? 'Doğrulanamadı'
                     : offer.prices.map((component, index) => (
                       <span className="data-table__line" key={`${component.kind}-${index}`}>
-                        {priceText(component, offer, exchangeRates)}
+                        {priceText(component, offer, exchangeRates, sources)}
                       </span>
                     ))}
                 </td>
                 <td className="data-table__numeric">
-                  {estimate.totalUsd === null
+                  {estimate.status === 'invalid' || estimate.totalUsd === null
                     ? 'Doğrulanamadı'
                     : `${monthlyUsdFormatter.format(estimate.totalUsd)}/ay`}
                 </td>
@@ -277,7 +298,7 @@ export function ComparisonTable({
                     <span className="data-table__line" key={quota}>{quota}</span>
                   ))}
                 </td>
-                <td>{trafficText(offer)}</td>
+                <td>{trafficText(offer, exchangeRates, sources)}</td>
                 <td>
                   <span className={`data-table__status data-table__status--${status}`} data-status={status}>
                     {statusLabels[status]}
