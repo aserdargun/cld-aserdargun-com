@@ -152,4 +152,70 @@ describe('ScenarioCalculator', () => {
     expect(screen.getByText('milyon istek/ay')).toBeInTheDocument()
     expect(screen.getByText('GPU saat/ay')).toBeInTheDocument()
   })
+
+  it.each([
+    ['small-web-app', ['730 saat/ay', '2 vCPU', '4 GB RAM', '50 GB depolama', '100 GB dış trafik']],
+    ['api-backend', ['10 milyon istek/ay']],
+    ['database-saas', ['730 saat/ay', '4 vCPU', '8 GB RAM']],
+    ['static-site', ['50 GB depolama', '500 GB dış trafik']],
+    ['ai-gpu', ['100 GPU saat/ay', '24 GB GPU VRAM']],
+    ['high-traffic', ['730 saat/ay', '8 vCPU', '16 GB RAM', '2.000 GB dış trafik']],
+  ] as const)('summarizes every nonzero requirement for %s', async (scenarioId, expectedRequirements) => {
+    const user = userEvent.setup()
+    render(<CalculatorFixture />)
+
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Kullanım senaryosu' }), scenarioId)
+    const summary = screen.getByRole('status', { name: 'Senaryo gereksinim özeti' })
+    for (const requirement of expectedRequirements) {
+      expect(summary).toHaveTextContent(requirement)
+    }
+    expect(summary).not.toHaveTextContent(/(?:^|\D)0 (?:saat|vCPU|GB|milyon|GPU)/)
+  })
+
+  it('updates the typed requirement summary immediately after an edit', async () => {
+    const user = userEvent.setup()
+    render(<CalculatorFixture />)
+
+    const vcpu = screen.getByRole('spinbutton', { name: 'vCPU' })
+    await user.clear(vcpu)
+    await user.type(vcpu, '6')
+
+    expect(screen.getByRole('status', { name: 'Senaryo gereksinim özeti' })).toHaveTextContent('6 vCPU')
+  })
+
+  it('supports wrapping arrow, Home and End navigation with linked tabs and tabpanel', async () => {
+    const user = userEvent.setup()
+    render(<CalculatorFixture />)
+
+    const tablist = screen.getByRole('tablist', { name: 'Kullanım senaryoları' })
+    const tabs = within(tablist).getAllByRole('tab')
+    const smallWeb = within(tablist).getByRole('tab', { name: 'Küçük web uygulaması' })
+    smallWeb.focus()
+
+    await user.keyboard('{ArrowRight}')
+    const api = within(tablist).getByRole('tab', { name: 'API / backend' })
+    expect(api).toHaveFocus()
+    expect(api).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('tabpanel', { name: 'API / backend' })).toHaveTextContent('10 milyon istek/ay')
+
+    await user.keyboard('{ArrowDown}')
+    expect(within(tablist).getByRole('tab', { name: 'Veritabanlı SaaS' })).toHaveFocus()
+    await user.keyboard('{End}')
+    expect(within(tablist).getByRole('tab', { name: 'Yüksek trafik' })).toHaveFocus()
+    await user.keyboard('{ArrowRight}')
+    expect(smallWeb).toHaveFocus()
+    await user.keyboard('{ArrowLeft}')
+    expect(within(tablist).getByRole('tab', { name: 'Yüksek trafik' })).toHaveFocus()
+    await user.keyboard('{Home}')
+    expect(smallWeb).toHaveFocus()
+    await user.keyboard('{ArrowUp}')
+    const highTraffic = within(tablist).getByRole('tab', { name: 'Yüksek trafik' })
+    expect(highTraffic).toHaveFocus()
+    expect(highTraffic).toHaveAttribute('aria-selected', 'true')
+
+    const panelId = highTraffic.getAttribute('aria-controls')
+    expect(panelId).toBeTruthy()
+    expect(tabs.every((tab) => tab.getAttribute('aria-controls') === panelId)).toBe(true)
+    expect(screen.getByRole('tabpanel', { name: 'Yüksek trafik' })).toHaveAttribute('id', panelId)
+  })
 })

@@ -1,4 +1,4 @@
-import { useId, useState, type FormEvent } from 'react'
+import { useId, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
 import { RotateCcw } from 'lucide-react'
 import type { ComparisonState } from '../app/useComparisonState'
 import { loadCatalog } from '../data/catalog'
@@ -48,6 +48,18 @@ const fields: readonly FieldDefinition[] = [
   { key: 'gpuVramGb', label: 'GPU VRAM', unit: 'GB' },
 ]
 
+const requirementTextByField: Record<NumericScenarioField, (value: number) => string> = {
+  hoursPerMonth: (value) => `${value.toLocaleString('tr-TR')} saat/ay`,
+  vcpu: (value) => `${value.toLocaleString('tr-TR')} vCPU`,
+  ramGb: (value) => `${value.toLocaleString('tr-TR')} GB RAM`,
+  storageGb: (value) => `${value.toLocaleString('tr-TR')} GB depolama`,
+  outboundGb: (value) => `${value.toLocaleString('tr-TR')} GB dış trafik`,
+  requestsMillion: (value) => `${value.toLocaleString('tr-TR')} milyon istek/ay`,
+  databaseGb: (value) => `${value.toLocaleString('tr-TR')} GB veritabanı depolaması`,
+  gpuHours: (value) => `${value.toLocaleString('tr-TR')} GPU saat/ay`,
+  gpuVramGb: (value) => `${value.toLocaleString('tr-TR')} GB GPU VRAM`,
+}
+
 type DraftValues = Record<NumericScenarioField, string>
 type ValidationErrors = Partial<Record<NumericScenarioField, string>>
 
@@ -77,6 +89,8 @@ export function ScenarioCalculator({
 }: ScenarioCalculatorProps) {
   const scenarios = providedScenarios ?? loadCatalog().scenarios
   const formId = useId()
+  const panelId = `${formId}-panel`
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([])
   const [scenarioSnapshot, setScenarioSnapshot] = useState(state.scenario)
   const [drafts, setDrafts] = useState<DraftValues>(() => draftValuesFor(state.scenario))
   const [errors, setErrors] = useState<ValidationErrors>({})
@@ -127,29 +141,63 @@ export function ScenarioCalculator({
     state.resetScenario()
   }
 
+  function handleTabKeyDown(event: KeyboardEvent<HTMLButtonElement>, index: number) {
+    let nextIndex: number | null = null
+    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+      nextIndex = (index + 1) % scenarios.length
+    } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+      nextIndex = (index - 1 + scenarios.length) % scenarios.length
+    } else if (event.key === 'Home') {
+      nextIndex = 0
+    } else if (event.key === 'End') {
+      nextIndex = scenarios.length - 1
+    }
+
+    if (nextIndex === null) return
+    event.preventDefault()
+    const nextScenario = scenarios[nextIndex]
+    if (!nextScenario) return
+    state.selectScenario(nextScenario.id)
+    tabRefs.current[nextIndex]?.focus()
+  }
+
   const categorySummary = state.scenario.requiredCategories
     .map((category) => categoryLabels[category])
     .join(', ')
+  const requirementSummary = fields.flatMap((field) => {
+    const value = state.scenario[field.key]
+    return value > 0 ? [requirementTextByField[field.key](value)] : []
+  })
+  const activeTabId = `${formId}-tab-${state.scenario.id}`
 
   return (
     <section className="scenario-calculator" aria-labelledby={`${formId}-heading`}>
       <div className="scenario-tabs" role="tablist" aria-label="Kullanım senaryoları">
-        {scenarios.map((scenario) => (
+        {scenarios.map((scenario, index) => (
           <button
             className="scenario-tabs__tab"
             key={scenario.id}
+            id={`${formId}-tab-${scenario.id}`}
             type="button"
             role="tab"
             aria-selected={state.scenario.id === scenario.id}
+            aria-controls={panelId}
             tabIndex={state.scenario.id === scenario.id ? 0 : -1}
+            ref={(element) => { tabRefs.current[index] = element }}
             onClick={() => state.selectScenario(scenario.id)}
+            onKeyDown={(event) => handleTabKeyDown(event, index)}
           >
             {scenarioLabels[scenario.id] ?? scenario.name}
           </button>
         ))}
       </div>
 
-      <div className="scenario-calculator__panel">
+      <div
+        className="scenario-calculator__panel"
+        id={panelId}
+        role="tabpanel"
+        aria-labelledby={activeTabId}
+      >
         <h2 id={`${formId}-heading`}>Senaryo hesaplayıcı</h2>
 
         <form onSubmit={submitValidValues} noValidate>
@@ -223,9 +271,11 @@ export function ScenarioCalculator({
         >
           <span className="scenario-calculator__requirements-label">Gereken hizmetler</span>
           <span>{categorySummary}; </span>
-          <span>{state.scenario.hoursPerMonth} saat/ay, </span>
-          <span>{state.scenario.storageGb} GB depolama, </span>
-          <span>{state.scenario.outboundGb} GB dış trafik</span>
+          {requirementSummary.map((requirement, index) => (
+            <span key={requirement}>
+              {requirement}{index < requirementSummary.length - 1 ? ', ' : ''}
+            </span>
+          ))}
         </div>
         <aside
           className="scenario-calculator__scope-note"

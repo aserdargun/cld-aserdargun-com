@@ -11,7 +11,7 @@ import {
 } from '../domain/coverage'
 import { estimateOffer, priceKindForFreeTierUnit, type PricingContext } from '../domain/pricing'
 import { estimateProvider } from '../domain/ranking'
-import { getCatalogHealth, getUsableExchangeRates } from './catalog'
+import { getCatalogHealth, getUsableExchangeRates, sourceEvidenceIssue } from './catalog'
 
 export const catalogSnapshotDate = '2026-08-14'
 const validationDate = new Date(`${catalogSnapshotDate}T00:00:00.000Z`)
@@ -122,7 +122,7 @@ export function validateCatalog(catalog: Catalog): string[] {
     for (const sourceId of provider.purchaseSourceIds) {
       const source = sourcesById.get(sourceId)
       if (!source) failures.push(`provider ${provider.id} references missing purchase source ${sourceId}`)
-      else if (source.owner !== provider.id || source.kind !== 'purchase') {
+      else if (sourceEvidenceIssue(source, provider.id, 'purchase')) {
         failures.push(`provider ${provider.id} purchase source ${sourceId} has wrong owner or kind`)
       }
     }
@@ -135,7 +135,7 @@ export function validateCatalog(catalog: Catalog): string[] {
       }
       const source = sourcesById.get(region.sourceId)
       if (!source) failures.push(`provider ${provider.id} region ${region.id} references missing source`)
-      else if (source.owner !== provider.id || source.kind !== 'regions') {
+      else if (sourceEvidenceIssue(source, provider.id, 'regions')) {
         failures.push(`provider ${provider.id} region ${region.id} source has wrong owner or kind`)
       }
     }
@@ -184,8 +184,7 @@ export function validateCatalog(catalog: Catalog): string[] {
             rate.quote === 'USD' &&
             rate.rate > 0 &&
             rate.date <= offer.verifiedAt &&
-            sourcesById.get(rate.sourceId)?.owner === 'ecb' &&
-            sourcesById.get(rate.sourceId)?.kind === 'exchange-rate',
+            sourceEvidenceIssue(sourcesById.get(rate.sourceId), 'ecb', 'exchange-rate') === null,
         )
         if (!hasUsableRate) failures.push(`offer ${offer.id} lacks a usable dated ECB EUR/USD rate on or before ${offer.verifiedAt}`)
       }
@@ -193,7 +192,7 @@ export function validateCatalog(catalog: Catalog): string[] {
     for (const sourceId of offer.sourceIds) {
       const source = sourcesById.get(sourceId)
       if (!source) failures.push(`offer ${offer.id} references missing source ${sourceId}`)
-      else if (source.owner !== offer.providerId || source.kind !== 'pricing') {
+      else if (sourceEvidenceIssue(source, offer.providerId, 'pricing')) {
         failures.push(`offer ${offer.id} source ${sourceId} has wrong owner or kind`)
       }
     }
@@ -232,7 +231,7 @@ export function validateCatalog(catalog: Catalog): string[] {
     for (const sourceId of freeTier.sourceIds) {
       const source = sourcesById.get(sourceId)
       if (!source) failures.push(`free tier ${freeTier.id} references missing source ${sourceId}`)
-      else if (source.owner !== freeTier.providerId || source.kind !== 'free-tier') {
+      else if (sourceEvidenceIssue(source, freeTier.providerId, 'free-tier')) {
         failures.push(`free tier ${freeTier.id} source ${sourceId} has wrong owner or kind`)
       }
     }
@@ -262,7 +261,7 @@ export function validateCatalog(catalog: Catalog): string[] {
     checkSnapshotDate(rate.date, `exchange rate ${rate.id}`, failures)
     const source = sourcesById.get(rate.sourceId)
     if (!source) failures.push(`exchange rate ${rate.id} references missing source ${rate.sourceId}`)
-    else if (source.owner !== 'ecb' || source.kind !== 'exchange-rate') {
+    else if (sourceEvidenceIssue(source, 'ecb', 'exchange-rate')) {
       failures.push(`exchange rate ${rate.id} does not use an ECB exchange-rate source`)
     }
   }
@@ -270,8 +269,7 @@ export function validateCatalog(catalog: Catalog): string[] {
     rate.base === 'EUR' &&
     rate.quote === 'USD' &&
     rate.date <= catalogSnapshotDate &&
-    sourcesById.get(rate.sourceId)?.owner === 'ecb' &&
-    sourcesById.get(rate.sourceId)?.kind === 'exchange-rate')) {
+    sourceEvidenceIssue(sourcesById.get(rate.sourceId), 'ecb', 'exchange-rate') === null)) {
     failures.push(`catalog lacks a dated ECB EUR/USD rate on or before ${catalogSnapshotDate}`)
   }
 

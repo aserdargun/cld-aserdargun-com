@@ -25,6 +25,39 @@ describe('catalog validator policy', () => {
     ]))
   })
 
+  it.each([
+    ['offer', 'azure-b2s-westeurope', 'azure-purchase-methods'],
+    ['offer', 'azure-b2s-westeurope', 'gcp-compute-pricing'],
+    ['free tier', 'azure-functions-flex-executions', 'azure-retail-vm-b2s'],
+    ['free tier', 'azure-functions-flex-executions', 'gcp-free-program'],
+  ] as const)('rejects an existing source with the wrong owner or kind for a %s', (recordType, recordId, sourceId) => {
+    const catalog = clonedCatalog()
+    if (recordType === 'offer') {
+      catalog.offers.find((offer) => offer.id === recordId)!.sourceIds = [sourceId]
+    } else {
+      catalog.freeTiers.find((freeTier) => freeTier.id === recordId)!.sourceIds = [sourceId]
+    }
+
+    expect(validateCatalog(catalog)).toEqual(expect.arrayContaining([
+      `${recordType} ${recordId} source ${sourceId} has wrong owner or kind`,
+      `catalog health reports invalid reference ${recordType === 'offer' ? 'offer' : 'free-tier'}:${recordId}:${sourceId}:${sourceId.startsWith('gcp-') ? 'wrong-owner' : 'wrong-kind'}`,
+    ]))
+  })
+
+  it('rejects existing purchase and region sources with mismatched evidence ownership or kind', () => {
+    const catalog = clonedCatalog()
+    const azure = catalog.providers.find((provider) => provider.id === 'azure')!
+    azure.purchaseSourceIds = ['gcp-purchase-currency']
+    azure.regions[0]!.sourceId = 'azure-purchase-methods'
+
+    expect(validateCatalog(catalog)).toEqual(expect.arrayContaining([
+      'provider azure purchase source gcp-purchase-currency has wrong owner or kind',
+      `provider azure region ${azure.regions[0]!.id} source has wrong owner or kind`,
+      'catalog health reports invalid reference provider:azure:purchase:gcp-purchase-currency:wrong-owner',
+      `catalog health reports invalid reference provider:azure:region:${azure.regions[0]!.id}:azure-purchase-methods:wrong-kind`,
+    ]))
+  })
+
   it('allows independently verified dates through the snapshot date and rejects future records', () => {
     const catalog = clonedCatalog()
     expect(validateCatalog(catalog)).toEqual([])

@@ -7,10 +7,11 @@ import type {
   Offer,
   Provider,
   Scenario,
+  ScenarioUsageDimension,
   Source,
 } from '../domain/catalog'
 import type { PriceComponent, VerificationStatus } from '../domain/catalog'
-import { projectScenarioForCategory } from '../domain/coverage'
+import { evaluateCategoryCoverage, projectScenarioForCategory } from '../domain/coverage'
 import { convertToUsd, estimateOffer } from '../domain/pricing'
 import { SourceLink } from './SourceLink'
 
@@ -64,6 +65,18 @@ const statusLabels: Record<VerificationStatus, string> = {
   current: 'Güncel',
   stale: 'Yeniden doğrulanmalı',
   invalid: 'Doğrulanamadı',
+}
+
+const dimensionLabels: Record<ScenarioUsageDimension, string> = {
+  hoursPerMonth: 'çalışma süresi',
+  vcpu: 'vCPU',
+  ramGb: 'RAM',
+  storageGb: 'depolama',
+  outboundGb: 'trafik',
+  requestsMillion: 'istek sayısı',
+  databaseGb: 'veritabanı depolaması',
+  gpuHours: 'GPU kullanım süresi',
+  gpuVramGb: 'GPU VRAM',
 }
 
 function priceText(
@@ -202,7 +215,8 @@ export function ComparisonTable({
   const rows = useMemo(() => offers.map((offer, index) => {
     const provider = providers.find((candidate) => candidate.id === offer.providerId)
     const inScope = scenario.requiredCategories.includes(offer.category)
-    const estimate = inScope
+    const coverage = inScope ? evaluateCategoryCoverage(offer, scenario, offer.category) : null
+    const estimate = inScope && coverage?.complete
       ? estimateOffer(offer, projectScenarioForCategory(scenario, offer.category), {
         exchangeRates: usableExchangeRates,
         freeTiers,
@@ -213,7 +227,7 @@ export function ComparisonTable({
         statusByExchangeRateId: health.statusByExchangeRateId,
       })
       : null
-    return { offer, provider, estimate, inScope, index }
+    return { offer, provider, estimate, coverage, inScope, index }
   }), [
     offers,
     providers,
@@ -232,7 +246,9 @@ export function ComparisonTable({
       if (sort.key === 'monthly') {
         const monthlyGroup = (row: (typeof rows)[number]) => {
           if (!row.inScope) return 2
-          return row.estimate?.status === 'invalid' || row.estimate?.totalUsd === null ? 1 : 0
+          return !row.coverage?.complete || row.estimate?.status === 'invalid' || row.estimate?.totalUsd === null
+            ? 1
+            : 0
         }
         const groupDifference = monthlyGroup(left) - monthlyGroup(right)
         if (groupDifference !== 0) return groupDifference
@@ -300,9 +316,11 @@ export function ComparisonTable({
           </tr>
         </thead>
         <tbody>
-          {sortedRows.map(({ offer, provider, estimate, inScope }) => {
+          {sortedRows.map(({ offer, provider, estimate, coverage, inScope }) => {
             const offerEvidenceStatus = health.statusByOfferId[offer.id] ?? 'invalid'
-            const status = inScope ? (estimate?.status ?? 'invalid') : offerEvidenceStatus
+            const status = inScope && coverage?.complete
+              ? (estimate?.status ?? 'invalid')
+              : offerEvidenceStatus
             return (
               <tr key={offer.id}>
                 <th className="data-table__sticky" scope="row">{provider?.name ?? 'Doğrulanamadı'}</th>
@@ -324,6 +342,15 @@ export function ComparisonTable({
                 <td className="data-table__numeric">
                   {!inScope
                     ? 'Senaryo kapsamı dışında'
+                    : !coverage?.complete
+                    ? (
+                      <>
+                        <span className="data-table__line">Kapasite yetersiz</span>
+                        <span className="data-table__meta">
+                          Eksik: {coverage?.missingDimensions.map((dimension) => dimensionLabels[dimension]).join(', ')}
+                        </span>
+                      </>
+                    )
                     : estimate?.status === 'invalid' || estimate?.totalUsd == null
                     ? 'Doğrulanamadı'
                     : `${monthlyUsdFormatter.format(estimate.totalUsd)}/ay`}

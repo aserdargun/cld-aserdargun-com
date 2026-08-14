@@ -170,7 +170,7 @@ const scenario: Scenario = {
   description: 'Test senaryosu',
   scopeNote: 'Test kapsamı.',
   requiredCategories: ['compute'],
-  coverageByCategory: { compute: ['hoursPerMonth', 'vcpu', 'ramGb', 'requestsMillion'] },
+  coverageByCategory: { compute: ['hoursPerMonth', 'vcpu', 'ramGb'] },
   hoursPerMonth: 100,
   vcpu: 1,
   ramGb: 1,
@@ -324,7 +324,10 @@ describe('ComparisonTable', () => {
       ...offers[1]!,
       id: 'cloudflare-verified-estimate',
       serviceName: 'Verified monthly offer',
-      prices: [{ kind: 'flat-month', price: 5, currency: 'USD', includedQuantity: 0 }],
+      prices: [
+        { kind: 'flat-month', price: 5, currency: 'USD', includedQuantity: 0 },
+        { kind: 'requests-million', price: 0.3, currency: 'USD', includedQuantity: 10 },
+      ],
     }
     renderTable({
       offers: [invalidOffer, verifiedOffer],
@@ -441,6 +444,60 @@ describe('ComparisonTable', () => {
     }
   })
 
+  it('withholds modeled totals from undersized real compute offers without hiding source prices', () => {
+    const catalog = loadCatalog()
+    const highTraffic = catalog.scenarios.find((candidate) => candidate.id === 'high-traffic')!
+    const selectedOffers = catalog.offers.filter((offer) => [
+      'azure-b2s-westeurope',
+      'azure-d8as-v5-westeurope',
+    ].includes(offer.id))
+
+    renderTable({
+      offers: selectedOffers,
+      providers: catalog.providers,
+      sources: catalog.sources,
+      freeTiers: catalog.freeTiers,
+      exchangeRates: catalog.exchangeRates,
+      health: getCatalogHealth(catalog, new Date('2026-08-14T00:00:00Z')),
+      scenario: highTraffic,
+    })
+
+    const undersized = screen.getByRole('row', { name: /Standard B2s/ })
+    const complete = screen.getByRole('row', { name: /Standard D8as v5/ })
+    expect(within(undersized).getAllByRole('cell')[3]).toHaveTextContent('$0.048/saat')
+    expect(within(undersized).getAllByRole('cell')[4]).toHaveTextContent('Kapasite yetersiz')
+    expect(within(undersized).getAllByRole('cell')[4]).toHaveTextContent('Eksik: vCPU, RAM')
+    expect(within(undersized).getAllByRole('cell')[4]).not.toHaveTextContent(/\$\d/)
+    expect(undersized).toHaveTextContent('Güncel')
+    expect(within(complete).getAllByRole('cell')[4]).toHaveTextContent(/\$[\d,.]+\/ay/)
+  })
+
+  it('withholds modeled totals from undersized real GPU offers', () => {
+    const catalog = loadCatalog()
+    const aiGpu = catalog.scenarios.find((candidate) => candidate.id === 'ai-gpu')!
+    const selectedOffers = catalog.offers.filter((offer) => [
+      'azure-nc4as-t4-v3-westeurope',
+      'azure-nc24ads-a100-v4-westeurope',
+    ].includes(offer.id))
+
+    renderTable({
+      offers: selectedOffers,
+      providers: catalog.providers,
+      sources: catalog.sources,
+      freeTiers: catalog.freeTiers,
+      exchangeRates: catalog.exchangeRates,
+      health: getCatalogHealth(catalog, new Date('2026-08-14T00:00:00Z')),
+      scenario: aiGpu,
+    })
+
+    const undersized = screen.getByRole('row', { name: /NVIDIA T4/ })
+    const complete = screen.getByRole('row', { name: /A100/ })
+    expect(within(undersized).getAllByRole('cell')[4]).toHaveTextContent('Kapasite yetersiz')
+    expect(within(undersized).getAllByRole('cell')[4]).toHaveTextContent('Eksik: GPU VRAM')
+    expect(within(undersized).getAllByRole('cell')[4]).not.toHaveTextContent(/\$\d/)
+    expect(within(complete).getAllByRole('cell')[4]).toHaveTextContent(/\$[\d,.]+\/ay/)
+  })
+
   it('keeps unit price, monthly cap and notes visible for an out-of-scope offer', () => {
     const cappedOutOfScope: Offer = {
       ...offers[0]!,
@@ -491,6 +548,12 @@ describe('ComparisonTable', () => {
       id: 'numeric-in-scope',
       serviceName: 'Numeric in scope',
     }
+    const capacityInScope: Offer = {
+      ...offers[0]!,
+      id: 'capacity-in-scope',
+      serviceName: 'Capacity in scope',
+      specs: { vcpu: 0.5, ramGb: 0.5 },
+    }
     const outOfScopeSecond: Offer = {
       ...offers[1]!,
       id: 'out-of-scope-second',
@@ -499,12 +562,13 @@ describe('ComparisonTable', () => {
     }
 
     renderTable({
-      offers: [outOfScopeFirst, invalidInScope, numericInScope, outOfScopeSecond],
+      offers: [outOfScopeFirst, capacityInScope, invalidInScope, numericInScope, outOfScopeSecond],
       freeTiers: [],
       health: health({
         statusByOfferId: {
           'out-of-scope-first': 'current',
           'invalid-in-scope': 'invalid',
+          'capacity-in-scope': 'current',
           'numeric-in-scope': 'current',
           'out-of-scope-second': 'current',
         },
@@ -515,16 +579,18 @@ describe('ComparisonTable', () => {
     await user.click(screen.getByRole('button', { name: 'Modellenen kategori tutarına göre sırala' }))
     const sorted = screen.getAllByRole('row').slice(1).map((row) => row.textContent)
     expect(sorted[0]).toContain('Numeric in scope')
-    expect(sorted[1]).toContain('Invalid in scope')
-    expect(sorted[2]).toContain('Out of scope first')
-    expect(sorted[3]).toContain('Out of scope second')
+    expect(sorted[1]).toContain('Capacity in scope')
+    expect(sorted[2]).toContain('Invalid in scope')
+    expect(sorted[3]).toContain('Out of scope first')
+    expect(sorted[4]).toContain('Out of scope second')
 
     await user.click(screen.getByRole('button', { name: 'Modellenen kategori tutarına göre sırala' }))
     const descending = screen.getAllByRole('row').slice(1).map((row) => row.textContent)
     expect(descending[0]).toContain('Numeric in scope')
-    expect(descending[1]).toContain('Invalid in scope')
-    expect(descending[2]).toContain('Out of scope first')
-    expect(descending[3]).toContain('Out of scope second')
+    expect(descending[1]).toContain('Capacity in scope')
+    expect(descending[2]).toContain('Invalid in scope')
+    expect(descending[3]).toContain('Out of scope first')
+    expect(descending[4]).toContain('Out of scope second')
   })
 
   it('fails traffic evidence closed for invalid included capacity and invalid outbound meters', () => {

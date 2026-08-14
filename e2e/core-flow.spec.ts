@@ -16,6 +16,13 @@ test('high-traffic scenario recomputes major-provider ranking and exposes source
   await expect(page.locator('vite-error-overlay, nextjs-portal')).toHaveCount(0)
 
   const scenarios = page.getByRole('region', { name: 'Senaryolar' })
+  const smallWebTab = scenarios.getByRole('tab', { name: 'Küçük web uygulaması' })
+  await smallWebTab.focus()
+  await page.keyboard.press('ArrowRight')
+  const apiTab = scenarios.getByRole('tab', { name: 'API / backend' })
+  await expect(apiTab).toBeFocused()
+  await expect(apiTab).toHaveAttribute('aria-selected', 'true')
+  await expect(scenarios.getByRole('tabpanel', { name: 'API / backend' })).toContainText('10 milyon istek/ay')
   await scenarios.getByRole('tab', { name: 'Yüksek trafik' }).click()
   await expect(scenarios.getByLabel('Kullanım senaryosu')).toHaveValue('high-traffic')
   await expect(scenarios.getByRole('note', { name: 'Modelleme kapsamı' })).toContainText(
@@ -36,6 +43,9 @@ test('high-traffic scenario recomputes major-provider ranking and exposes source
 
   const filters = page.getByRole('region', { name: 'Karşılaştırma filtreleri' })
   const comparison = page.getByRole('region', { name: 'Servis karşılaştırma tablosu' })
+  const undersizedCompute = comparison.getByRole('row', { name: /Standard B2s/ })
+  await expect(undersizedCompute.getByRole('cell').nth(4)).toContainText('Kapasite yetersiz')
+  await expect(undersizedCompute.getByRole('cell').nth(4)).not.toContainText(/\$\d/)
   const outOfScopeStorage = comparison.getByRole('row', {
     name: /DigitalOcean Spaces base subscription/,
   })

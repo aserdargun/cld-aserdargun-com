@@ -245,7 +245,7 @@ describe('catalog schemas', () => {
     const health = getCatalogHealth(parsed, new Date('2026-08-14T00:00:00Z'))
 
     expect(health.statusByExchangeRateId[rate.id]).toBe('invalid')
-    expect(health.invalidReferences).toContain(`exchange-rate:${rate.id}:azure-purchase-methods`)
+    expect(health.invalidReferences).toContain(`exchange-rate:${rate.id}:azure-purchase-methods:wrong-owner`)
   })
 
   it('counts invalid provider purchase-source references', () => {
@@ -340,6 +340,82 @@ describe('catalog schemas', () => {
     })
     expect(estimate.lineItems.map((lineItem) => lineItem.offer.id)).not.toContain('source-backed-offer')
     expect(estimate.totalUsd).not.toBeNull()
+  })
+
+  it.each([
+    ['wrong kind', 'azure-purchase-methods'],
+    ['wrong owner', 'gcp-compute-pricing'],
+  ])('invalidates only an offer backed by an existing source with the %s', (_, sourceId) => {
+    const catalog = loadCatalog()
+    const affectedOfferId = 'azure-b2s-westeurope'
+    const parsed = loadCatalog({
+      ...catalog,
+      offers: catalog.offers.map((offer) =>
+        offer.id === affectedOfferId ? { ...offer, sourceIds: [sourceId] } : offer,
+      ),
+    })
+    const health = getCatalogHealth(parsed, new Date('2026-08-14T00:00:00Z'))
+    const smallWeb = parsed.scenarios.find((scenario) => scenario.id === 'small-web-app')!
+    const gcpEstimate = estimateProvider('gcp', parsed.offers, smallWeb, {
+      exchangeRates: parsed.exchangeRates,
+      freeTiers: parsed.freeTiers,
+      statusByOfferId: health.statusByOfferId,
+      statusByFreeTierId: health.statusByFreeTierId,
+      statusByExchangeRateId: health.statusByExchangeRateId,
+    })
+
+    expect(health.statusByOfferId[affectedOfferId]).toBe('invalid')
+    expect(health.invalidReferences).toContain(
+      `offer:${affectedOfferId}:${sourceId}:${sourceId === 'azure-purchase-methods' ? 'wrong-kind' : 'wrong-owner'}`,
+    )
+    expect(health.statusByOfferId['gcp-e2-standard-2-belgium']).toBe('current')
+    expect(gcpEstimate).toMatchObject({ status: 'current', missingCategories: [], missingDimensions: [] })
+    expect(gcpEstimate.totalUsd).not.toBeNull()
+  })
+
+  it.each([
+    ['wrong kind', 'azure-retail-vm-b2s'],
+    ['wrong owner', 'gcp-free-program'],
+  ])('invalidates a free tier backed by an existing source with the %s', (_, sourceId) => {
+    const catalog = loadCatalog()
+    const affectedTierId = 'azure-functions-flex-executions'
+    const parsed = loadCatalog({
+      ...catalog,
+      freeTiers: catalog.freeTiers.map((freeTier) =>
+        freeTier.id === affectedTierId ? { ...freeTier, sourceIds: [sourceId] } : freeTier,
+      ),
+    })
+    const health = getCatalogHealth(parsed, new Date('2026-08-14T00:00:00Z'))
+
+    expect(health.statusByFreeTierId[affectedTierId]).toBe('invalid')
+    expect(health.invalidReferences).toContain(
+      `free-tier:${affectedTierId}:${sourceId}:${sourceId === 'azure-retail-vm-b2s' ? 'wrong-kind' : 'wrong-owner'}`,
+    )
+    expect(health.statusByFreeTierId['gcp-cloud-run-functions-2m']).toBe('current')
+  })
+
+  it('counts existing-but-mismatched purchase and region evidence as invalid references', () => {
+    const catalog = loadCatalog()
+    const azure = catalog.providers.find((provider) => provider.id === 'azure')!
+    const parsed = loadCatalog({
+      ...catalog,
+      providers: catalog.providers.map((provider) => provider.id === 'azure'
+        ? {
+          ...azure,
+          purchaseSourceIds: ['gcp-purchase-currency'],
+          regions: azure.regions.map((region, index) => index === 0
+            ? { ...region, sourceId: 'azure-purchase-methods' }
+            : region),
+        }
+        : provider),
+    })
+    const health = getCatalogHealth(parsed, new Date('2026-08-14T00:00:00Z'))
+
+    expect(health.invalidReferences).toEqual(expect.arrayContaining([
+      'provider:azure:purchase:gcp-purchase-currency:wrong-owner',
+      `provider:azure:region:${azure.regions[0]!.id}:azure-purchase-methods:wrong-kind`,
+    ]))
+    expect(health.invalidCount).toBe(2)
   })
 
   it('rejects an offer whose region is not declared by its provider', () => {

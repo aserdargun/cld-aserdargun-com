@@ -46,7 +46,7 @@ En ucuz sonuç otomatik olarak en uygun çözüm değildir. Mimari, CPU türü v
 ## Veri sağlığı
 
 - Bir fiyat ya da ücretsiz katman doğrulama tarihinden **30 gün** sonra “yeniden doğrulanmalı” olur.
-- Zorunlu alanı, resmî kaynak bağlantısı veya geçerli döviz kuru eksik kayıt “doğrulanamadı” olur.
+- Zorunlu alanı, resmî kaynak bağlantısı veya geçerli döviz kuru eksik kayıt “doğrulanamadı” olur. Var olan bir kaynak kimliği de yalnız beklenen sağlayıcıya ve kanıt türüne (fiyat, ücretsiz katman, bölge, satın alma veya kur) aitse geçerlidir.
 - Eski kayıtlar istenirse tabloda görülebilir; geçersiz ve eksik toplamlar sıralamaya alınmaz.
 - Eksik veya çözülemeyen bir değer hiçbir zaman sıfıra çevrilmez.
 - Kaynağın açılması tek başına fiyatın/kotanın güncel olduğu anlamına gelmez; bölge, birim, para birimi ve uygunluk iddiası da kaynak gövdesi ya da resmî API cevabında yeniden doğrulanmalıdır.
