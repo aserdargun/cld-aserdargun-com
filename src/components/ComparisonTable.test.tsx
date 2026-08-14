@@ -593,6 +593,61 @@ describe('ComparisonTable', () => {
     expect(descending[4]).toContain('Out of scope second')
   })
 
+  it.each([
+    ['ascending', 1, 'Invalid expensive', 'Invalid cheap'],
+    ['descending', 2, 'Invalid cheap', 'Invalid expensive'],
+  ] as const)('keeps invalid estimates stable when sorting %s despite hidden totals', async (
+    _direction,
+    clickCount,
+    firstInvalidName,
+    secondInvalidName,
+  ) => {
+    const user = userEvent.setup()
+    const invalidExpensive: Offer = {
+      ...offers[0]!,
+      id: 'invalid-expensive',
+      serviceName: 'Invalid expensive',
+      prices: [{ kind: 'instance-hour', price: 0.5, currency: 'USD', includedQuantity: 0 }],
+    }
+    const invalidCheap: Offer = {
+      ...offers[0]!,
+      id: 'invalid-cheap',
+      serviceName: 'Invalid cheap',
+      prices: [{ kind: 'instance-hour', price: 0.01, currency: 'USD', includedQuantity: 0 }],
+    }
+    const numeric: Offer = {
+      ...offers[0]!,
+      id: 'numeric-between-invalid',
+      serviceName: 'Numeric verified',
+      prices: [{ kind: 'instance-hour', price: 0.25, currency: 'USD', includedQuantity: 0 }],
+    }
+    const invalidByName = {
+      'Invalid expensive': invalidExpensive,
+      'Invalid cheap': invalidCheap,
+    }
+
+    renderTable({
+      offers: [invalidByName[firstInvalidName], numeric, invalidByName[secondInvalidName]],
+      freeTiers: [],
+      health: health({
+        statusByOfferId: {
+          'invalid-expensive': 'invalid',
+          'invalid-cheap': 'invalid',
+          'numeric-between-invalid': 'current',
+        },
+        statusByFreeTierId: {},
+      }),
+    })
+
+    const monthlySort = screen.getByRole('button', { name: 'Modellenen kategori tutarına göre sırala' })
+    for (let click = 0; click < clickCount; click += 1) await user.click(monthlySort)
+
+    const sorted = screen.getAllByRole('row').slice(1).map((row) => row.textContent)
+    expect(sorted[0]).toContain('Numeric verified')
+    expect(sorted[1]).toContain(firstInvalidName)
+    expect(sorted[2]).toContain(secondInvalidName)
+  })
+
   it('fails traffic evidence closed for invalid included capacity and invalid outbound meters', () => {
     const invalidIncluded: Offer = {
       ...offers[0]!,
@@ -746,6 +801,39 @@ describe('ComparisonTable', () => {
     expect(cells[3]).not.toHaveTextContent('Kur:')
     expect(cells[4]).toHaveTextContent('Doğrulanamadı')
     expect(row).toHaveTextContent('Doğrulanamadı')
+  })
+
+  it.each([
+    ['wrong-owner rate source', 'hetzner-price-adjustment'],
+    ['missing rate source', 'missing-rate-source'],
+  ])('marks an undersized EUR row invalid with a %s while preserving original evidence', (_, sourceId) => {
+    const catalog = loadCatalog()
+    const highTraffic = catalog.scenarios.find((candidate) => candidate.id === 'high-traffic')!
+    const hetzner = catalog.offers.find((offer) => offer.id === 'hetzner-cx23-nuremberg')!
+    const exchangeRates = catalog.exchangeRates.map((rate) => ({ ...rate, sourceId }))
+    const mutatedCatalog = { ...catalog, exchangeRates }
+    const mutatedHealth = getCatalogHealth(mutatedCatalog, new Date('2026-08-14T00:00:00Z'))
+
+    renderTable({
+      offers: [hetzner],
+      providers: catalog.providers,
+      sources: catalog.sources,
+      freeTiers: catalog.freeTiers,
+      exchangeRates,
+      health: mutatedHealth,
+      scenario: highTraffic,
+    })
+
+    const row = screen.getByRole('row', { name: /Hetzner Cloud CX23/ })
+    const cells = within(row).getAllByRole('cell')
+    expect(cells[3]).toHaveTextContent('€0.0088/saat · Doğrulanamadı')
+    expect(cells[3]).toHaveTextContent('aylık üst sınır €5.49')
+    expect(cells[3]).not.toHaveTextContent('$')
+    expect(cells[3]).not.toHaveTextContent('Kur:')
+    expect(cells[4]).toHaveTextContent('Kapasite yetersiz')
+    expect(cells[4]).toHaveTextContent('Eksik: vCPU, RAM')
+    expect(cells[7]).toHaveTextContent('Doğrulanamadı')
+    expect(cells[7]).not.toHaveTextContent('Güncel')
   })
 
   it('shows a USD monthly cap beside its metered unit price', () => {

@@ -215,6 +215,14 @@ export function ComparisonTable({
   const rows = useMemo(() => offers.map((offer, index) => {
     const provider = providers.find((candidate) => candidate.id === offer.providerId)
     const inScope = scenario.requiredCategories.includes(offer.category)
+    const offerEvidenceStatus = health.statusByOfferId[offer.id] ?? 'invalid'
+    const hasInvalidCurrencyEvidence = offer.prices.some(
+      (component) => component.currency === 'EUR' &&
+        convertToUsd(component.price, component.currency, usableExchangeRates, offer.verifiedAt).amountUsd === null,
+    )
+    const effectiveEvidenceStatus: VerificationStatus = offerEvidenceStatus === 'invalid' || hasInvalidCurrencyEvidence
+      ? 'invalid'
+      : offerEvidenceStatus
     const coverage = inScope ? evaluateCategoryCoverage(offer, scenario, offer.category) : null
     const estimate = inScope && coverage?.complete
       ? estimateOffer(offer, projectScenarioForCategory(scenario, offer.category), {
@@ -227,7 +235,7 @@ export function ComparisonTable({
         statusByExchangeRateId: health.statusByExchangeRateId,
       })
       : null
-    return { offer, provider, estimate, coverage, inScope, index }
+    return { offer, provider, estimate, coverage, effectiveEvidenceStatus, inScope, index }
   }), [
     offers,
     providers,
@@ -250,14 +258,14 @@ export function ComparisonTable({
             ? 1
             : 0
         }
-        const groupDifference = monthlyGroup(left) - monthlyGroup(right)
+        const leftGroup = monthlyGroup(left)
+        const rightGroup = monthlyGroup(right)
+        const groupDifference = leftGroup - rightGroup
         if (groupDifference !== 0) return groupDifference
-        if (!left.inScope || !right.inScope || left.estimate?.totalUsd === null || right.estimate?.totalUsd === null) {
-          return left.index - right.index
-        }
+        if (leftGroup !== 0) return left.index - right.index
         const leftValue = left.estimate?.totalUsd
         const rightValue = right.estimate?.totalUsd
-        if (leftValue === undefined || rightValue === undefined) return left.index - right.index
+        if (leftValue == null || rightValue == null) return left.index - right.index
         return (leftValue - rightValue) * direction || left.index - right.index
       }
 
@@ -316,11 +324,11 @@ export function ComparisonTable({
           </tr>
         </thead>
         <tbody>
-          {sortedRows.map(({ offer, provider, estimate, coverage, inScope }) => {
+          {sortedRows.map(({ offer, provider, estimate, coverage, effectiveEvidenceStatus, inScope }) => {
             const offerEvidenceStatus = health.statusByOfferId[offer.id] ?? 'invalid'
             const status = inScope && coverage?.complete
-              ? (estimate?.status ?? 'invalid')
-              : offerEvidenceStatus
+              ? (estimate?.status ?? effectiveEvidenceStatus)
+              : effectiveEvidenceStatus
             return (
               <tr key={offer.id}>
                 <th className="data-table__sticky" scope="row">{provider?.name ?? 'Doğrulanamadı'}</th>
