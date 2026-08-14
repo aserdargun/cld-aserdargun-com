@@ -24,7 +24,7 @@
     "id": "api-backend",
     "name": "API arka ucu",
     "description": "İstek tabanlı API hizmeti.",
-    "scopeNote": "Yalnızca 10 milyon serverless istek ücretini karşılaştırır; yürütme CPU/bellek/süresi, depolama ve ağ ücretleri dahil değildir. Bu nedenle sonuç tam bir backend faturası değildir.",
+    "scopeNote": "Yalnızca seçili serverless istek miktarının ücretini karşılaştırır; yürütme CPU/bellek/süresi, depolama ve ağ ücretleri dahil değildir. Bu nedenle sonuç tam bir backend faturası değildir.",
     "requiredCategories": ["serverless"],
     "coverageByCategory": {
       "serverless": ["requestsMillion", "vcpu", "ramGb", "storageGb", "outboundGb"]
@@ -63,7 +63,7 @@
     "id": "static-site",
     "name": "Statik site",
     "description": "Depolama ve CDN kullanan statik site.",
-    "scopeNote": "50 GB nesne depolama ve 500 GB CDN çıkış trafiğini kapsar. Depolama işlem/istek karışımı dahil değildir.",
+    "scopeNote": "Seçili nesne depolama miktarı ile seçili CDN çıkış trafiğini kapsar. Depolama işlem/istek karışımı dahil değildir.",
     "requiredCategories": ["object-storage", "cdn-network"],
     "coverageByCategory": {
       "object-storage": ["storageGb"],
@@ -83,7 +83,7 @@
     "id": "ai-gpu",
     "name": "Yapay zeka GPU",
     "description": "GPU ile yapay zeka iş yükü.",
-    "scopeNote": "100 GPU-saat ve en az 24 GB GPU belleğini kapsar. Depolama ve ağ çıkışı dahil değildir.",
+    "scopeNote": "Seçili GPU kullanım süresi ve GPU bellek gereksinimini kapsar. Depolama ve ağ çıkışı dahil değildir.",
     "requiredCategories": ["gpu-ai"],
     "coverageByCategory": {
       "gpu-ai": ["gpuHours", "gpuVramGb", "storageGb", "outboundGb"]
@@ -102,7 +102,7 @@
     "id": "high-traffic",
     "name": "Yüksek trafikli uygulama",
     "description": "Sürekli çalışan ve yüksek çıkış trafiği olan uygulama.",
-    "scopeNote": "Uygulama sunucusu çalışma süresi/kapasitesi ile 2.000 GB CDN çıkış trafiğini kapsar. Kalıcı depolama, istek ücretleri ve origin egress dahil değildir.",
+    "scopeNote": "Uygulama sunucusu çalışma süresi/kapasitesi ile seçili CDN çıkış trafiğini kapsar. Kalıcı depolama, istek ücretleri ve origin egress dahil değildir.",
     "requiredCategories": ["compute", "cdn-network"],
     "coverageByCategory": {
       "compute": ["hoursPerMonth", "vcpu", "ramGb", "storageGb"],

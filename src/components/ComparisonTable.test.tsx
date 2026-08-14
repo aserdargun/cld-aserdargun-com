@@ -1,6 +1,7 @@
 import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it } from 'vitest'
+import { getCatalogHealth, loadCatalog } from '../data/catalog'
 import type {
   CatalogHealth,
   FreeTier,
@@ -224,7 +225,7 @@ describe('ComparisonTable', () => {
       'Bölge',
       'Kapasite',
       'Saatlik / birim fiyat',
-      'Modellenen aylık tutar',
+      'Modellenen kategori tutarı',
       'Ücretsiz kota',
       'Trafik',
       'Doğrulama',
@@ -249,7 +250,7 @@ describe('ComparisonTable', () => {
     expect(cloudflare).toHaveTextContent('Yalnızca bileşen')
     expect(cloudflare).toHaveTextContent('$5.00/ay')
     expect(cloudflare).toHaveTextContent('$0.30/milyon istek · 10 dahil')
-    expect(cloudflare).toHaveTextContent('$5.60/ay')
+    expect(cloudflare).toHaveTextContent('$5.00/ay')
     expect(cloudflare).toHaveTextContent('Esnek / kullanıma göre')
     expect(cloudflare).toHaveTextContent('Yok')
     expect(cloudflare).toHaveTextContent('Kaynaklı trafik bileşeni yok')
@@ -266,10 +267,18 @@ describe('ComparisonTable', () => {
 
   it('sorts rows with button headers and exposes the active direction through aria-sort', async () => {
     const user = userEvent.setup()
-    renderTable()
+    renderTable({
+      scenario: {
+        ...scenario,
+        coverageByCategory: {
+          ...scenario.coverageByCategory,
+          serverless: ['requestsMillion'],
+        },
+      },
+    })
     const table = screen.getByRole('table', { name: 'Servis karşılaştırması' })
-    const monthlyHeader = within(table).getByRole('columnheader', { name: 'Modellenen aylık tutar' })
-    const monthlySort = within(monthlyHeader).getByRole('button', { name: 'Modellenen aylık tutara göre sırala' })
+    const monthlyHeader = within(table).getByRole('columnheader', { name: 'Modellenen kategori tutarı' })
+    const monthlySort = within(monthlyHeader).getByRole('button', { name: 'Modellenen kategori tutarına göre sırala' })
 
     expect(monthlyHeader).toHaveAttribute('aria-sort', 'none')
     await user.click(monthlySort)
@@ -334,8 +343,74 @@ describe('ComparisonTable', () => {
     expect(within(invalidRow).getAllByRole('cell')[4]).toHaveTextContent('Doğrulanamadı')
     expect(within(invalidRow).getAllByRole('cell')[4]).not.toHaveTextContent('$1.00/ay')
 
-    await user.click(screen.getByRole('button', { name: 'Modellenen aylık tutara göre sırala' }))
+    await user.click(screen.getByRole('button', { name: 'Modellenen kategori tutarına göre sırala' }))
     expect(screen.getAllByRole('row')[1]).toHaveTextContent('Verified monthly offer')
+  })
+
+  it('projects high-traffic usage to each offer category before calculating table amounts', () => {
+    const catalog = loadCatalog()
+    const highTraffic = catalog.scenarios.find((candidate) => candidate.id === 'high-traffic')!
+    const selectedOffers = catalog.offers.filter((offer) => [
+      'digitalocean-spaces-fra1',
+      'vultr-object-standard-amsterdam',
+    ].includes(offer.id))
+
+    renderTable({
+      offers: selectedOffers,
+      providers: catalog.providers,
+      sources: catalog.sources,
+      freeTiers: catalog.freeTiers,
+      exchangeRates: catalog.exchangeRates,
+      health: getCatalogHealth(catalog, new Date('2026-08-14T00:00:00Z')),
+      scenario: highTraffic,
+    })
+
+    const digitalOcean = screen.getByRole('row', { name: /DigitalOcean Spaces base subscription/ })
+    const vultr = screen.getByRole('row', { name: /Vultr Object Storage Standard/ })
+    expect(within(digitalOcean).getAllByRole('cell')[4]).toHaveTextContent('$5.00/ay')
+    expect(within(vultr).getAllByRole('cell')[4]).toHaveTextContent('$18.00/ay')
+    expect(within(digitalOcean).getAllByRole('cell')[4]).not.toHaveTextContent('$14.76/ay')
+    expect(within(vultr).getAllByRole('cell')[4]).not.toHaveTextContent('$28.00/ay')
+  })
+
+  it('fails traffic evidence closed for invalid included capacity and invalid outbound meters', () => {
+    const invalidIncluded: Offer = {
+      ...offers[0]!,
+      id: 'invalid-included-traffic',
+      serviceName: 'Invalid included traffic',
+      specs: { ...offers[0]!.specs, outboundGb: 100 },
+    }
+    const invalidMeter: Offer = {
+      ...offers[1]!,
+      id: 'invalid-metered-traffic',
+      serviceName: 'Invalid metered traffic',
+      category: 'cdn-network',
+      specs: {},
+      prices: [{ kind: 'outbound-gb', price: 0.1, currency: 'USD', includedQuantity: 0 }],
+    }
+
+    renderTable({
+      offers: [invalidIncluded, invalidMeter],
+      freeTiers: [],
+      health: health({
+        statusByOfferId: {
+          'invalid-included-traffic': 'invalid',
+          'invalid-metered-traffic': 'invalid',
+        },
+        statusByFreeTierId: {},
+      }),
+    })
+
+    const includedTraffic = within(
+      screen.getByRole('row', { name: /Invalid included traffic/ }),
+    ).getAllByRole('cell')[6]
+    const meteredTraffic = within(
+      screen.getByRole('row', { name: /Invalid metered traffic/ }),
+    ).getAllByRole('cell')[6]
+    expect(includedTraffic).toHaveTextContent('Doğrulanamadı')
+    expect(includedTraffic).not.toHaveTextContent('100 GB dahil')
+    expect(meteredTraffic).toHaveTextContent('Doğrulanamadı')
+    expect(meteredTraffic).not.toHaveTextContent('$0.10/GB')
   })
 
   it('uses dated exchange rates and monthly caps while preserving original EUR values', () => {

@@ -19,7 +19,7 @@ test('high-traffic scenario recomputes major-provider ranking and exposes source
   await scenarios.getByRole('tab', { name: 'Yüksek trafik' }).click()
   await expect(scenarios.getByLabel('Kullanım senaryosu')).toHaveValue('high-traffic')
   await expect(scenarios.getByRole('note', { name: 'Modelleme kapsamı' })).toContainText(
-    '2.000 GB CDN çıkış trafiğini kapsar',
+    'seçili CDN çıkış trafiğini kapsar',
   )
 
   const ranking = page.getByRole('region', { name: 'Sağlayıcı sıralaması' })

@@ -38,7 +38,7 @@ describe('ScenarioCalculator', () => {
     expect(screen.getByRole('spinbutton', { name: 'Aylık GPU kullanımı' })).toHaveValue(100)
     expect(screen.getByLabelText('Test senaryo durumu')).toHaveTextContent('"id":"ai-gpu"')
     expect(screen.getByRole('note', { name: 'Modelleme kapsamı' })).toHaveTextContent(
-      '100 GPU-saat ve en az 24 GB GPU belleğini kapsar',
+      'Seçili GPU kullanım süresi ve GPU bellek gereksinimini kapsar',
     )
   })
 
@@ -56,7 +56,27 @@ describe('ScenarioCalculator', () => {
     expect(screen.getByRole('status', { name: 'Senaryo gereksinim özeti' })).toHaveTextContent(
       '100 GB dış trafik',
     )
+    expect(screen.getByRole('note', { name: 'Modelleme kapsamı' })).toHaveTextContent(
+      'seçili CDN çıkış trafiğini kapsar',
+    )
+    expect(screen.getByRole('note', { name: 'Modelleme kapsamı' })).not.toHaveTextContent('2.000')
     expect(screen.getByRole('spinbutton', { name: 'Aylık çalışma süresi' })).toHaveValue(730)
+  })
+
+  it('keeps the API scope generic when the selected request quantity changes', async () => {
+    const user = userEvent.setup()
+    render(<CalculatorFixture />)
+
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Kullanım senaryosu' }), 'api-backend')
+    const requests = screen.getByRole('spinbutton', { name: 'Aylık istek sayısı' })
+    await user.clear(requests)
+    await user.type(requests, '3')
+
+    expect(requests).toHaveValue(3)
+    expect(screen.getByRole('note', { name: 'Modelleme kapsamı' })).toHaveTextContent(
+      'seçili serverless istek miktarının ücretini karşılaştırır',
+    )
+    expect(screen.getByRole('note', { name: 'Modelleme kapsamı' })).not.toHaveTextContent('10 milyon')
   })
 
   it('keeps negative and empty values out of scenario state', async () => {

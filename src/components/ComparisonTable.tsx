@@ -10,6 +10,7 @@ import type {
   Source,
 } from '../domain/catalog'
 import type { PriceComponent, VerificationStatus } from '../domain/catalog'
+import { projectScenarioForCategory } from '../domain/coverage'
 import { convertToUsd, estimateOffer } from '../domain/pricing'
 import { SourceLink } from './SourceLink'
 
@@ -120,9 +121,11 @@ function capacityText(offer: Offer): string {
 
 function trafficText(
   offer: Offer,
+  offerEvidenceStatus: VerificationStatus,
   exchangeRates: readonly ExchangeRate[],
   sources: readonly Source[],
 ): string {
+  if (offerEvidenceStatus === 'invalid') return 'Doğrulanamadı'
   if (offer.specs.outboundGb !== undefined) return `${offer.specs.outboundGb.toLocaleString('en-US')} GB dahil`
   const outbound = offer.prices.find((component) => component.kind === 'outbound-gb')
   return outbound ? priceText(outbound, offer, exchangeRates, sources) : 'Kaynaklı trafik bileşeni yok'
@@ -198,7 +201,7 @@ export function ComparisonTable({
   )
   const rows = useMemo(() => offers.map((offer, index) => {
     const provider = providers.find((candidate) => candidate.id === offer.providerId)
-    const estimate = estimateOffer(offer, scenario, {
+    const estimate = estimateOffer(offer, projectScenarioForCategory(scenario, offer.category), {
       exchangeRates: usableExchangeRates,
       freeTiers,
       eligibleFreeTierIds,
@@ -273,8 +276,8 @@ export function ComparisonTable({
             <th scope="col">Kapasite</th>
             <th scope="col">Saatlik / birim fiyat</th>
             <SortHeader
-              label="Modellenen aylık tutar"
-              buttonLabel="Modellenen aylık tutara göre sırala"
+              label="Modellenen kategori tutarı"
+              buttonLabel="Modellenen kategori tutarına göre sırala"
               sortKey="monthly"
               sort={sort}
               onSort={handleSort}
@@ -318,7 +321,7 @@ export function ComparisonTable({
                     <span className="data-table__line" key={quota}>{quota}</span>
                   ))}
                 </td>
-                <td>{trafficText(offer, usableExchangeRates, sources)}</td>
+                <td>{trafficText(offer, offerEvidenceStatus, usableExchangeRates, sources)}</td>
                 <td>
                   <span className={`data-table__status data-table__status--${status}`} data-status={status}>
                     {statusLabels[status]}

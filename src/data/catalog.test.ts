@@ -414,6 +414,7 @@ describe('official catalog policy', () => {
   it('declares a nonempty modeled scope and typed coverage for every scenario', () => {
     for (const scenario of catalog.scenarios) {
       expect(scenario.scopeNote.trim()).not.toBe('')
+      expect(scenario.scopeNote).not.toMatch(/\d/)
       expect(Object.keys(scenario.coverageByCategory)).toEqual(expect.arrayContaining(scenario.requiredCategories))
     }
   })
