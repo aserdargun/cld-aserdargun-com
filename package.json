@@ -1,14 +1,25 @@
 {
+  "name": "cloud-comparison-app",
+  "description": "A source-backed cloud cost comparison app for Turkey-accessible services.",
+  "private": false,
   "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "packageManager": "npm@10.9.8",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
+    "dev:codex": "npm run stop:codex && vite --host 127.0.0.1 --port 4173 --strictPort",
+    "stop:codex": "node scripts/stop-dev.mjs",
+    "validate:codex": "npm run stop:codex && npm run check && npm run e2e && git diff --check",
     "build": "tsc -b && vite build",
+    "verify:dist": "node scripts/verify-dist.mjs",
     "lint": "eslint .",
-    "test": "vitest run",
+    "test": "vitest run && node --test scripts/*.test.mjs",
     "test:watch": "vitest",
     "validate:data": "tsx scripts/validate-catalog.ts",
     "e2e": "playwright test",
-    "check": "npm run lint && npm run test && npm run validate:data && npm run build"
+    "check": "npm run lint && npm run test && npm run validate:data && npm run build && npm run verify:dist"
   },
   "dependencies": {
     "lucide-react": "^1.31.0",

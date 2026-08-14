@@ -40,7 +40,7 @@ Tüm karşılaştırmalar USD olarak gösterilir ve vergileri içermez. Kart/öd
 
 ## Yerelde çalıştırma
 
-Gereksinimler: Node.js 24 ve npm.
+Gereksinimler: Node.js 22.12 veya üzeri ve npm 10.9.8.
 
 ```bash
 npm ci
@@ -56,6 +56,14 @@ npm run e2e
 
 `npm run check`; kod kalitesi, birim/bileşen testleri, katalog doğrulaması ve üretim derlemesini birlikte çalıştırır.
 
+Codex proje aksiyonları aynı repo komutlarına bağlıdır:
+
+```bash
+npm run dev:codex       # http://127.0.0.1:4173
+npm run validate:codex
+npm run stop:codex
+```
+
 ## Veri yaklaşımı
 
 Katalog çalışma zamanında fiyat API'lerine bağlanmaz. Fiyatlar, ücretsiz katmanlar, bölgeler, satın alma notları ve ECB döviz kuru sürümlü JSON dosyalarında tarihli olarak saklanır. Teknik ve ticari iddialarda yalnız sağlayıcının kendi resmî sayfaları/API'leri ile ECB kaynağı kabul edilir; üçüncü taraf fiyat siteleri kullanılmaz.
@@ -64,9 +72,9 @@ Sürekli çalışan işlem kaynakları ayda 730 saat üzerinden hesaplanır. Gö
 
 Ayrıntılar için [fiyat metodolojisini](docs/methodology.md) ve [veri güncelleme rehberini](docs/updating-data.md) okuyun.
 
-## Yayın sınırı
+## Yayın
 
-Bu depo Azure'a, `cld.aserdargun.com` alan adına, GitHub Pages'a veya başka bir ortama dağıtım yapmaz. Çalışma bilerek GitHub tesliminde durdurulmuştur; CI yalnız kalite kontrolleri çalıştırır ve bulut girişi ya da dağıtım adımı içermez.
+`main` dalındaki doğrulanmış statik `dist/` çıktısı GitHub Actions ile Free Azure Static Web Apps kaynağına dağıtılır. Azure tarafından üretilen adres `https://black-field-04b19f003.7.azurestaticapps.net`, özel alan adı ise `https://cld.aserdargun.com` adresidir. Üretim workflow'u derleme öncesinde kilitli bağımlılık kurulumunu, kalite kontrollerini, katalog doğrulamasını, statik artefakt kontrolünü ve Playwright testlerini yeniden çalıştırır.
 
 ## Uyarı
 
