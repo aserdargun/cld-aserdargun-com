@@ -201,16 +201,19 @@ export function ComparisonTable({
   )
   const rows = useMemo(() => offers.map((offer, index) => {
     const provider = providers.find((candidate) => candidate.id === offer.providerId)
-    const estimate = estimateOffer(offer, projectScenarioForCategory(scenario, offer.category), {
-      exchangeRates: usableExchangeRates,
-      freeTiers,
-      eligibleFreeTierIds,
-      monthsSinceAccountCreation,
-      statusByOfferId: health.statusByOfferId,
-      statusByFreeTierId: health.statusByFreeTierId,
-      statusByExchangeRateId: health.statusByExchangeRateId,
-    })
-    return { offer, provider, estimate, index }
+    const inScope = scenario.requiredCategories.includes(offer.category)
+    const estimate = inScope
+      ? estimateOffer(offer, projectScenarioForCategory(scenario, offer.category), {
+        exchangeRates: usableExchangeRates,
+        freeTiers,
+        eligibleFreeTierIds,
+        monthsSinceAccountCreation,
+        statusByOfferId: health.statusByOfferId,
+        statusByFreeTierId: health.statusByFreeTierId,
+        statusByExchangeRateId: health.statusByExchangeRateId,
+      })
+      : null
+    return { offer, provider, estimate, inScope, index }
   }), [
     offers,
     providers,
@@ -227,11 +230,18 @@ export function ComparisonTable({
     const direction = sort.direction === 'ascending' ? 1 : -1
     return [...rows].sort((left, right) => {
       if (sort.key === 'monthly') {
-        const leftValue = left.estimate.status === 'invalid' ? null : left.estimate.totalUsd
-        const rightValue = right.estimate.status === 'invalid' ? null : right.estimate.totalUsd
-        if (leftValue === null && rightValue === null) return left.index - right.index
-        if (leftValue === null) return 1
-        if (rightValue === null) return -1
+        const monthlyGroup = (row: (typeof rows)[number]) => {
+          if (!row.inScope) return 2
+          return row.estimate?.status === 'invalid' || row.estimate?.totalUsd === null ? 1 : 0
+        }
+        const groupDifference = monthlyGroup(left) - monthlyGroup(right)
+        if (groupDifference !== 0) return groupDifference
+        if (!left.inScope || !right.inScope || left.estimate?.totalUsd === null || right.estimate?.totalUsd === null) {
+          return left.index - right.index
+        }
+        const leftValue = left.estimate?.totalUsd
+        const rightValue = right.estimate?.totalUsd
+        if (leftValue === undefined || rightValue === undefined) return left.index - right.index
         return (leftValue - rightValue) * direction || left.index - right.index
       }
 
@@ -290,9 +300,9 @@ export function ComparisonTable({
           </tr>
         </thead>
         <tbody>
-          {sortedRows.map(({ offer, provider, estimate }) => {
-            const status = estimate.status
+          {sortedRows.map(({ offer, provider, estimate, inScope }) => {
             const offerEvidenceStatus = health.statusByOfferId[offer.id] ?? 'invalid'
+            const status = inScope ? (estimate?.status ?? 'invalid') : offerEvidenceStatus
             return (
               <tr key={offer.id}>
                 <th className="data-table__sticky" scope="row">{provider?.name ?? 'Doğrulanamadı'}</th>
@@ -312,7 +322,9 @@ export function ComparisonTable({
                     ))}
                 </td>
                 <td className="data-table__numeric">
-                  {estimate.status === 'invalid' || estimate.totalUsd === null
+                  {!inScope
+                    ? 'Senaryo kapsamı dışında'
+                    : estimate?.status === 'invalid' || estimate?.totalUsd == null
                     ? 'Doğrulanamadı'
                     : `${monthlyUsdFormatter.format(estimate.totalUsd)}/ay`}
                 </td>

@@ -36,6 +36,11 @@ test('high-traffic scenario recomputes major-provider ranking and exposes source
 
   const filters = page.getByRole('region', { name: 'Karşılaştırma filtreleri' })
   const comparison = page.getByRole('region', { name: 'Servis karşılaştırma tablosu' })
+  const outOfScopeStorage = comparison.getByRole('row', {
+    name: /DigitalOcean Spaces base subscription/,
+  })
+  await expect(outOfScopeStorage.getByRole('cell').nth(4)).toHaveText('Senaryo kapsamı dışında')
+  await expect(outOfScopeStorage).toContainText('$5.00/ay')
   const awsRanking = ranking.getByRole('listitem', { name: 'Amazon Web Services', exact: true })
   const awsGlobal = filters.getByRole('button', {
     name: 'Amazon Web Services · CloudFront global edge network',

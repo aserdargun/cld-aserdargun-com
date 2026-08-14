@@ -270,6 +270,7 @@ describe('ComparisonTable', () => {
     renderTable({
       scenario: {
         ...scenario,
+        requiredCategories: ['compute', 'serverless'],
         coverageByCategory: {
           ...scenario.coverageByCategory,
           serverless: ['requestsMillion'],
@@ -328,6 +329,14 @@ describe('ComparisonTable', () => {
     renderTable({
       offers: [invalidOffer, verifiedOffer],
       freeTiers: [],
+      scenario: {
+        ...scenario,
+        requiredCategories: ['compute', 'serverless'],
+        coverageByCategory: {
+          ...scenario.coverageByCategory,
+          serverless: ['requestsMillion'],
+        },
+      },
       health: health({
         statusByOfferId: {
           'azure-invalid-estimate': 'invalid',
@@ -347,7 +356,64 @@ describe('ComparisonTable', () => {
     expect(screen.getAllByRole('row')[1]).toHaveTextContent('Verified monthly offer')
   })
 
-  it('projects high-traffic usage to each offer category before calculating table amounts', () => {
+  it('projects a required static-site category before calculating table amounts', () => {
+    const catalog = loadCatalog()
+    const staticSite = catalog.scenarios.find((candidate) => candidate.id === 'static-site')!
+    const selectedOffers = catalog.offers.filter((offer) => [
+      'digitalocean-spaces-fra1',
+      'vultr-object-standard-amsterdam',
+    ].includes(offer.id))
+
+    renderTable({
+      offers: selectedOffers,
+      providers: catalog.providers,
+      sources: catalog.sources,
+      freeTiers: catalog.freeTiers,
+      exchangeRates: catalog.exchangeRates,
+      health: getCatalogHealth(catalog, new Date('2026-08-14T00:00:00Z')),
+      scenario: staticSite,
+    })
+
+    const digitalOcean = screen.getByRole('row', { name: /DigitalOcean Spaces base subscription/ })
+    const vultr = screen.getByRole('row', { name: /Vultr Object Storage Standard/ })
+    expect(within(digitalOcean).getAllByRole('cell')[4]).toHaveTextContent('$5.00/ay')
+    expect(within(vultr).getAllByRole('cell')[4]).toHaveTextContent('$18.00/ay')
+    expect(within(digitalOcean).getAllByRole('cell')[4]).not.toHaveTextContent('$14.76/ay')
+    expect(within(vultr).getAllByRole('cell')[4]).not.toHaveTextContent('$28.00/ay')
+  })
+
+  it('marks real small-web database and worker rows outside the scenario without hiding evidence', () => {
+    const catalog = loadCatalog()
+    const smallWeb = catalog.scenarios.find((candidate) => candidate.id === 'small-web-app')!
+    const selectedOffers = catalog.offers.filter((offer) => [
+      'azure-postgres-flex-b1ms-westeurope',
+      'cloudflare-workers-paid-global',
+    ].includes(offer.id))
+
+    renderTable({
+      offers: selectedOffers,
+      providers: catalog.providers,
+      sources: catalog.sources,
+      freeTiers: catalog.freeTiers,
+      exchangeRates: catalog.exchangeRates,
+      health: getCatalogHealth(catalog, new Date('2026-08-14T00:00:00Z')),
+      scenario: smallWeb,
+    })
+
+    const database = screen.getByRole('row', { name: /Azure Database for PostgreSQL/ })
+    const workers = screen.getByRole('row', { name: /Cloudflare Workers Paid/ })
+    for (const row of [database, workers]) {
+      expect(within(row).getAllByRole('cell')[4]).toHaveTextContent('Senaryo kapsamı dışında')
+      expect(within(row).getAllByRole('cell')[4]).not.toHaveTextContent('Doğrulanamadı')
+      expect(row).toHaveTextContent('Güncel')
+    }
+    expect(within(database).getAllByRole('cell')[3]).toHaveTextContent('$0.0199/saat')
+    expect(database).toHaveTextContent('depolama, yedekleme, IOPS')
+    expect(within(workers).getAllByRole('cell')[3]).toHaveTextContent('$5.00/ay')
+    expect(workers).toHaveTextContent('CPU süresi aşımı')
+  })
+
+  it('marks high-traffic object storage rows outside the scenario', () => {
     const catalog = loadCatalog()
     const highTraffic = catalog.scenarios.find((candidate) => candidate.id === 'high-traffic')!
     const selectedOffers = catalog.offers.filter((offer) => [
@@ -365,12 +431,100 @@ describe('ComparisonTable', () => {
       scenario: highTraffic,
     })
 
-    const digitalOcean = screen.getByRole('row', { name: /DigitalOcean Spaces base subscription/ })
-    const vultr = screen.getByRole('row', { name: /Vultr Object Storage Standard/ })
-    expect(within(digitalOcean).getAllByRole('cell')[4]).toHaveTextContent('$5.00/ay')
-    expect(within(vultr).getAllByRole('cell')[4]).toHaveTextContent('$18.00/ay')
-    expect(within(digitalOcean).getAllByRole('cell')[4]).not.toHaveTextContent('$14.76/ay')
-    expect(within(vultr).getAllByRole('cell')[4]).not.toHaveTextContent('$28.00/ay')
+    for (const serviceName of [
+      /DigitalOcean Spaces base subscription/,
+      /Vultr Object Storage Standard/,
+    ]) {
+      const row = screen.getByRole('row', { name: serviceName })
+      expect(within(row).getAllByRole('cell')[4]).toHaveTextContent('Senaryo kapsamı dışında')
+      expect(within(row).getAllByRole('cell')[4]).not.toHaveTextContent(/\$\d/)
+    }
+  })
+
+  it('keeps unit price, monthly cap and notes visible for an out-of-scope offer', () => {
+    const cappedOutOfScope: Offer = {
+      ...offers[0]!,
+      id: 'capped-out-of-scope',
+      serviceName: 'Capped out of scope',
+      category: 'managed-database',
+      prices: [{
+        kind: 'instance-hour',
+        price: 0.05,
+        currency: 'USD',
+        includedQuantity: 0,
+        monthlyCap: 4,
+      }],
+    }
+    renderTable({
+      offers: [cappedOutOfScope],
+      freeTiers: [],
+      health: health({
+        statusByOfferId: { 'capped-out-of-scope': 'current' },
+        statusByFreeTierId: {},
+      }),
+    })
+
+    const row = screen.getByRole('row', { name: /Capped out of scope/ })
+    expect(within(row).getAllByRole('cell')[3]).toHaveTextContent(
+      '$0.05/saat · aylık üst sınır $4.00',
+    )
+    expect(within(row).getAllByRole('cell')[4]).toHaveTextContent('Senaryo kapsamı dışında')
+    expect(row).toHaveTextContent('Disk, yedekleme ve lisans dahil değildir.')
+    expect(row).toHaveTextContent('Güncel')
+  })
+
+  it('sorts numeric rows before invalid rows and out-of-scope rows in stable input order', async () => {
+    const user = userEvent.setup()
+    const outOfScopeFirst: Offer = {
+      ...offers[1]!,
+      id: 'out-of-scope-first',
+      serviceName: 'Out of scope first',
+      category: 'managed-database',
+    }
+    const invalidInScope: Offer = {
+      ...offers[0]!,
+      id: 'invalid-in-scope',
+      serviceName: 'Invalid in scope',
+    }
+    const numericInScope: Offer = {
+      ...offers[0]!,
+      id: 'numeric-in-scope',
+      serviceName: 'Numeric in scope',
+    }
+    const outOfScopeSecond: Offer = {
+      ...offers[1]!,
+      id: 'out-of-scope-second',
+      serviceName: 'Out of scope second',
+      category: 'serverless',
+    }
+
+    renderTable({
+      offers: [outOfScopeFirst, invalidInScope, numericInScope, outOfScopeSecond],
+      freeTiers: [],
+      health: health({
+        statusByOfferId: {
+          'out-of-scope-first': 'current',
+          'invalid-in-scope': 'invalid',
+          'numeric-in-scope': 'current',
+          'out-of-scope-second': 'current',
+        },
+        statusByFreeTierId: {},
+      }),
+    })
+
+    await user.click(screen.getByRole('button', { name: 'Modellenen kategori tutarına göre sırala' }))
+    const sorted = screen.getAllByRole('row').slice(1).map((row) => row.textContent)
+    expect(sorted[0]).toContain('Numeric in scope')
+    expect(sorted[1]).toContain('Invalid in scope')
+    expect(sorted[2]).toContain('Out of scope first')
+    expect(sorted[3]).toContain('Out of scope second')
+
+    await user.click(screen.getByRole('button', { name: 'Modellenen kategori tutarına göre sırala' }))
+    const descending = screen.getAllByRole('row').slice(1).map((row) => row.textContent)
+    expect(descending[0]).toContain('Numeric in scope')
+    expect(descending[1]).toContain('Invalid in scope')
+    expect(descending[2]).toContain('Out of scope first')
+    expect(descending[3]).toContain('Out of scope second')
   })
 
   it('fails traffic evidence closed for invalid included capacity and invalid outbound meters', () => {
