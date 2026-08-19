@@ -56,7 +56,7 @@ export function Hero({ verifiedAt }: HeroProps) {
 
       <section className="hero" id="genel-bakis" aria-labelledby="hero-heading">
         <h1 id="hero-heading">Bulut maliyetlerini karşılaştır</h1>
-        <p>Türkiye’den satın alınabilen servisler için kaynaklı USD analizi.</p>
+        <p>Türkiye’den satın alınabilen bulut servislerinin aylık maliyetlerini resmî kaynak fiyatlarıyla karşılaştırın. Tutarlar USD ve vergiler hariçtir.</p>
         <p className="hero__verified">
           Son doğrulama: <time dateTime={verifiedAt}>{formattedDate}</time>
         </p>

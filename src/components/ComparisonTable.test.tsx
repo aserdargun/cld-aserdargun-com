@@ -224,8 +224,8 @@ describe('ComparisonTable', () => {
       'Servis',
       'Bölge',
       'Kapasite',
-      'Saatlik / birim fiyat',
-      'Modellenen kategori tutarı',
+      'Birim fiyat',
+      'Aylık tutar (senaryo)',
       'Ücretsiz kota',
       'Trafik',
       'Doğrulama',
@@ -242,18 +242,18 @@ describe('ComparisonTable', () => {
     expect(azure).toHaveTextContent('$5.00/ay')
     expect(azure).toHaveTextContent('750 instance-hours/ay')
     expect(azure).toHaveTextContent('100 GB dahil')
-    expect(azure).toHaveTextContent('Sıralanabilir')
+    expect(azure).not.toHaveTextContent('Ek bileşen')
     expect(azure).toHaveTextContent('Disk, yedekleme ve lisans dahil değildir.')
 
     const cloudflare = within(table).getByRole('row', { name: /Cloudflare Workers Paid/ })
     expect(cloudflare).toHaveTextContent('Global edge network · Global')
-    expect(cloudflare).toHaveTextContent('Yalnızca bileşen')
+    expect(cloudflare).toHaveTextContent('Ek bileşen')
     expect(cloudflare).toHaveTextContent('$5.00/ay')
     expect(cloudflare).toHaveTextContent('$0.30/milyon istek · 10 dahil')
     expect(cloudflare).toHaveTextContent('$5.00/ay')
     expect(cloudflare).toHaveTextContent('Esnek / kullanıma göre')
     expect(cloudflare).toHaveTextContent('Yok')
-    expect(cloudflare).toHaveTextContent('Kaynaklı trafik bileşeni yok')
+    expect(cloudflare).toHaveTextContent('Trafik fiyatı belirtilmemiş')
     expect(cloudflare).toHaveTextContent('Worker yürütme süresi ve ek depolama dahil değildir.')
     expect(cloudflare).not.toHaveTextContent('$5.00/saat')
 
@@ -278,8 +278,8 @@ describe('ComparisonTable', () => {
       },
     })
     const table = screen.getByRole('table', { name: 'Servis karşılaştırması' })
-    const monthlyHeader = within(table).getByRole('columnheader', { name: 'Modellenen kategori tutarı' })
-    const monthlySort = within(monthlyHeader).getByRole('button', { name: 'Modellenen kategori tutarına göre sırala' })
+    const monthlyHeader = within(table).getByRole('columnheader', { name: 'Aylık tutar (senaryo)' })
+    const monthlySort = within(monthlyHeader).getByRole('button', { name: 'Aylık tutara göre sırala' })
 
     expect(monthlyHeader).toHaveAttribute('aria-sort', 'none')
     await user.click(monthlySort)
@@ -355,7 +355,7 @@ describe('ComparisonTable', () => {
     expect(within(invalidRow).getAllByRole('cell')[4]).toHaveTextContent('Doğrulanamadı')
     expect(within(invalidRow).getAllByRole('cell')[4]).not.toHaveTextContent('$1.00/ay')
 
-    await user.click(screen.getByRole('button', { name: 'Modellenen kategori tutarına göre sırala' }))
+    await user.click(screen.getByRole('button', { name: 'Aylık tutara göre sırala' }))
     expect(screen.getAllByRole('row')[1]).toHaveTextContent('Verified monthly offer')
   })
 
@@ -406,7 +406,7 @@ describe('ComparisonTable', () => {
     const database = screen.getByRole('row', { name: /Azure Database for PostgreSQL/ })
     const workers = screen.getByRole('row', { name: /Cloudflare Workers Paid/ })
     for (const row of [database, workers]) {
-      expect(within(row).getAllByRole('cell')[4]).toHaveTextContent('Senaryo kapsamı dışında')
+      expect(within(row).getAllByRole('cell')[4]).toHaveTextContent('Bu senaryoda kullanılmıyor')
       expect(within(row).getAllByRole('cell')[4]).not.toHaveTextContent('Doğrulanamadı')
       expect(row).toHaveTextContent('Güncel')
     }
@@ -439,7 +439,7 @@ describe('ComparisonTable', () => {
       /Vultr Object Storage Standard/,
     ]) {
       const row = screen.getByRole('row', { name: serviceName })
-      expect(within(row).getAllByRole('cell')[4]).toHaveTextContent('Senaryo kapsamı dışında')
+      expect(within(row).getAllByRole('cell')[4]).toHaveTextContent('Bu senaryoda kullanılmıyor')
       expect(within(row).getAllByRole('cell')[4]).not.toHaveTextContent(/\$\d/)
     }
   })
@@ -465,7 +465,7 @@ describe('ComparisonTable', () => {
     const undersized = screen.getByRole('row', { name: /Standard B2s/ })
     const complete = screen.getByRole('row', { name: /Standard D8as v5/ })
     expect(within(undersized).getAllByRole('cell')[3]).toHaveTextContent('$0.048/saat')
-    expect(within(undersized).getAllByRole('cell')[4]).toHaveTextContent('Kapasite yetersiz')
+    expect(within(undersized).getAllByRole('cell')[4]).toHaveTextContent('Gereksinimi karşılamıyor')
     expect(within(undersized).getAllByRole('cell')[4]).toHaveTextContent('Eksik: vCPU, RAM')
     expect(within(undersized).getAllByRole('cell')[4]).not.toHaveTextContent(/\$\d/)
     expect(undersized).toHaveTextContent('Güncel')
@@ -492,7 +492,7 @@ describe('ComparisonTable', () => {
 
     const undersized = screen.getByRole('row', { name: /NVIDIA T4/ })
     const complete = screen.getByRole('row', { name: /A100/ })
-    expect(within(undersized).getAllByRole('cell')[4]).toHaveTextContent('Kapasite yetersiz')
+    expect(within(undersized).getAllByRole('cell')[4]).toHaveTextContent('Gereksinimi karşılamıyor')
     expect(within(undersized).getAllByRole('cell')[4]).toHaveTextContent('Eksik: GPU VRAM')
     expect(within(undersized).getAllByRole('cell')[4]).not.toHaveTextContent(/\$\d/)
     expect(within(complete).getAllByRole('cell')[4]).toHaveTextContent(/\$[\d,.]+\/ay/)
@@ -522,10 +522,9 @@ describe('ComparisonTable', () => {
     })
 
     const row = screen.getByRole('row', { name: /Capped out of scope/ })
-    expect(within(row).getAllByRole('cell')[3]).toHaveTextContent(
-      '$0.05/saat · aylık üst sınır $4.00',
-    )
-    expect(within(row).getAllByRole('cell')[4]).toHaveTextContent('Senaryo kapsamı dışında')
+    expect(within(row).getAllByRole('cell')[3]).toHaveTextContent('$0.05/saat')
+    expect(within(row).getAllByRole('cell')[3]).toHaveTextContent('Aylık üst sınır: $4.00')
+    expect(within(row).getAllByRole('cell')[4]).toHaveTextContent('Bu senaryoda kullanılmıyor')
     expect(row).toHaveTextContent('Disk, yedekleme ve lisans dahil değildir.')
     expect(row).toHaveTextContent('Güncel')
   })
@@ -576,7 +575,7 @@ describe('ComparisonTable', () => {
       }),
     })
 
-    await user.click(screen.getByRole('button', { name: 'Modellenen kategori tutarına göre sırala' }))
+    await user.click(screen.getByRole('button', { name: 'Aylık tutara göre sırala' }))
     const sorted = screen.getAllByRole('row').slice(1).map((row) => row.textContent)
     expect(sorted[0]).toContain('Numeric in scope')
     expect(sorted[1]).toContain('Capacity in scope')
@@ -584,7 +583,7 @@ describe('ComparisonTable', () => {
     expect(sorted[3]).toContain('Out of scope first')
     expect(sorted[4]).toContain('Out of scope second')
 
-    await user.click(screen.getByRole('button', { name: 'Modellenen kategori tutarına göre sırala' }))
+    await user.click(screen.getByRole('button', { name: 'Aylık tutara göre sırala' }))
     const descending = screen.getAllByRole('row').slice(1).map((row) => row.textContent)
     expect(descending[0]).toContain('Numeric in scope')
     expect(descending[1]).toContain('Capacity in scope')
@@ -639,7 +638,7 @@ describe('ComparisonTable', () => {
       }),
     })
 
-    const monthlySort = screen.getByRole('button', { name: 'Modellenen kategori tutarına göre sırala' })
+    const monthlySort = screen.getByRole('button', { name: 'Aylık tutara göre sırala' })
     for (let click = 0; click < clickCount; click += 1) await user.click(monthlySort)
 
     const sorted = screen.getAllByRole('row').slice(1).map((row) => row.textContent)
@@ -745,10 +744,10 @@ describe('ComparisonTable', () => {
 
     const row = screen.getByRole('row', { name: /Hetzner Cloud CX23/ })
     expect(row).toHaveTextContent('€0.0088/saat · $0.00968/saat')
-    expect(row).toHaveTextContent('aylık üst sınır €5.49 · $6.04')
-    expect(row).toHaveTextContent('Kur: 1 EUR = 1.10 USD · 2026-08-13')
+    expect(row).toHaveTextContent('Aylık üst sınır: €5.49 (~$6.04)')
+    expect(row).toHaveTextContent('ECB kuru: 1 EUR = 1.10 USD · 2026-08-13')
     expect(row).toHaveTextContent('$6.04/ay')
-    expect(row).toHaveTextContent('Yeniden doğrulanmalı')
+    expect(row).toHaveTextContent('30 günden eski')
   })
 
   it('does not convert or total an EUR offer with invalid exchange-rate evidence', () => {
@@ -795,10 +794,10 @@ describe('ComparisonTable', () => {
     const row = screen.getByRole('row', { name: /Hetzner invalid exchange rate/ })
     const cells = within(row).getAllByRole('cell')
     expect(cells[3]).toHaveTextContent('€0.0088/saat · Doğrulanamadı')
-    expect(cells[3]).toHaveTextContent('aylık üst sınır €5.49')
+    expect(cells[3]).toHaveTextContent('Aylık üst sınır: €5.49')
     expect(cells[3]).not.toHaveTextContent('$0.00968/saat')
     expect(cells[3]).not.toHaveTextContent('$6.04')
-    expect(cells[3]).not.toHaveTextContent('Kur:')
+    expect(cells[3]).not.toHaveTextContent('ECB kuru:')
     expect(cells[4]).toHaveTextContent('Doğrulanamadı')
     expect(row).toHaveTextContent('Doğrulanamadı')
   })
@@ -827,10 +826,10 @@ describe('ComparisonTable', () => {
     const row = screen.getByRole('row', { name: /Hetzner Cloud CX23/ })
     const cells = within(row).getAllByRole('cell')
     expect(cells[3]).toHaveTextContent('€0.0088/saat · Doğrulanamadı')
-    expect(cells[3]).toHaveTextContent('aylık üst sınır €5.49')
+    expect(cells[3]).toHaveTextContent('Aylık üst sınır: €5.49')
     expect(cells[3]).not.toHaveTextContent('$')
-    expect(cells[3]).not.toHaveTextContent('Kur:')
-    expect(cells[4]).toHaveTextContent('Kapasite yetersiz')
+    expect(cells[3]).not.toHaveTextContent('ECB kuru:')
+    expect(cells[4]).toHaveTextContent('Gereksinimi karşılamıyor')
     expect(cells[4]).toHaveTextContent('Eksik: vCPU, RAM')
     expect(cells[7]).toHaveTextContent('Doğrulanamadı')
     expect(cells[7]).not.toHaveTextContent('Güncel')
@@ -860,8 +859,19 @@ describe('ComparisonTable', () => {
     })
 
     const row = screen.getByRole('row', { name: /Azure capped hourly offer/ })
-    expect(row).toHaveTextContent('$0.05/saat · aylık üst sınır $4.00')
+    expect(row).toHaveTextContent('$0.05/saat')
+    expect(row).toHaveTextContent('Aylık üst sınır: $4.00')
     expect(row).toHaveTextContent('$4.00/ay')
+  })
+
+  it('shows an empty-state message instead of a table when filters match no offers', () => {
+    renderTable({ offers: [] })
+
+    const region = screen.getByRole('region', { name: 'Servis karşılaştırma tablosu' })
+    expect(region).toHaveTextContent(
+      'Seçili filtrelerle eşleşen servis yok. Filtre seçimini genişletmeyi deneyin.',
+    )
+    expect(screen.queryByRole('table')).not.toBeInTheDocument()
   })
 
   it('uses the estimate status when an eligible stale free tier changes the estimate', () => {
@@ -877,8 +887,8 @@ describe('ComparisonTable', () => {
     })
 
     const row = screen.getByRole('row', { name: /Azure VM B2s/ })
-    expect(row).toHaveTextContent('Yeniden doğrulanmalı')
-    expect(within(row).getByText('Yeniden doğrulanmalı')).toHaveAttribute('data-status', 'stale')
+    expect(row).toHaveTextContent('30 günden eski')
+    expect(within(row).getByText('30 günden eski')).toHaveAttribute('data-status', 'stale')
     expect(row).not.toHaveTextContent('Güncel')
   })
 

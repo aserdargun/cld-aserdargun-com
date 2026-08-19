@@ -1,18 +1,9 @@
-import { useId, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
+import { useId, useRef, useState, type KeyboardEvent } from 'react'
 import { RotateCcw } from 'lucide-react'
 import type { ComparisonState } from '../app/useComparisonState'
 import { loadCatalog } from '../data/catalog'
-import type { Scenario, ServiceCategory } from '../domain/catalog'
+import type { Scenario, ScenarioUsageDimension, ServiceCategory } from '../domain/catalog'
 import './ScenarioCalculator.css'
-
-const scenarioLabels: Record<string, string> = {
-  'small-web-app': 'Küçük web uygulaması',
-  'api-backend': 'API / backend',
-  'database-saas': 'Veritabanlı SaaS',
-  'static-site': 'Statik site',
-  'ai-gpu': 'AI / GPU',
-  'high-traffic': 'Yüksek trafik',
-}
 
 const categoryLabels: Record<ServiceCategory, string> = {
   compute: 'hesaplama',
@@ -58,6 +49,10 @@ const requirementTextByField: Record<NumericScenarioField, (value: number) => st
   databaseGb: (value) => `${value.toLocaleString('tr-TR')} GB veritabanı depolaması`,
   gpuHours: (value) => `${value.toLocaleString('tr-TR')} GPU saat/ay`,
   gpuVramGb: (value) => `${value.toLocaleString('tr-TR')} GB GPU VRAM`,
+}
+
+function dimensionsForScenario(scenario: Scenario): Set<ScenarioUsageDimension> {
+  return new Set(Object.values(scenario.coverageByCategory).flat())
 }
 
 type DraftValues = Record<NumericScenarioField, string>
@@ -118,21 +113,6 @@ export function ScenarioCalculator({
     state.updateScenario({ [field]: parsed })
   }
 
-  function submitValidValues(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    const patch: Partial<Scenario> = {}
-    const nextErrors: ValidationErrors = {}
-
-    fields.forEach((field) => {
-      const parsed = parseUsageValue(drafts[field.key])
-      if (parsed === null) nextErrors[field.key] = '0 veya daha büyük bir sayı girin.'
-      else patch[field.key] = parsed
-    })
-
-    setErrors(nextErrors)
-    if (Object.keys(nextErrors).length === 0) state.updateScenario(patch)
-  }
-
   function resetToSelectedPreset() {
     const preset = scenarios.find((scenario) => scenario.id === state.scenario.id) ?? state.scenario
     setScenarioSnapshot(preset)
@@ -161,10 +141,12 @@ export function ScenarioCalculator({
     tabRefs.current[nextIndex]?.focus()
   }
 
+  const visibleDimensions = dimensionsForScenario(state.scenario)
+  const visibleFields = fields.filter((field) => visibleDimensions.has(field.key))
   const categorySummary = state.scenario.requiredCategories
     .map((category) => categoryLabels[category])
     .join(', ')
-  const requirementSummary = fields.flatMap((field) => {
+  const requirementSummary = visibleFields.flatMap((field) => {
     const value = state.scenario[field.key]
     return value > 0 ? [requirementTextByField[field.key](value)] : []
   })
@@ -187,7 +169,7 @@ export function ScenarioCalculator({
             onClick={() => state.selectScenario(scenario.id)}
             onKeyDown={(event) => handleTabKeyDown(event, index)}
           >
-            {scenarioLabels[scenario.id] ?? scenario.name}
+            {scenario.name}
           </button>
         ))}
       </div>
@@ -199,8 +181,8 @@ export function ScenarioCalculator({
         aria-labelledby={activeTabId}
       >
         <h2 id={`${formId}-heading`}>Senaryo hesaplayıcı</h2>
+        <p className="scenario-calculator__description">{state.scenario.description}</p>
 
-        <form onSubmit={submitValidValues} noValidate>
         <label className="scenario-calculator__scenario visually-hidden" htmlFor={`${formId}-scenario`}>
           <span>Kullanım senaryosu</span>
           <select
@@ -210,14 +192,14 @@ export function ScenarioCalculator({
           >
             {scenarios.map((scenario) => (
               <option key={scenario.id} value={scenario.id}>
-                {scenarioLabels[scenario.id] ?? scenario.name}
+                {scenario.name}
               </option>
             ))}
           </select>
         </label>
 
         <div className="scenario-calculator__fields">
-          {fields.map((field) => {
+          {visibleFields.map((field) => {
             const inputId = `${formId}-${field.key}`
             const unitId = `${inputId}-unit`
             const errorId = `${inputId}-error`
@@ -257,11 +239,7 @@ export function ScenarioCalculator({
             <RotateCcw aria-hidden="true" size={16} strokeWidth={2} />
             Varsayılan değerlere sıfırla
           </button>
-          <button className="scenario-calculator__submit" type="submit">
-            Hesaplamayı güncelle
-          </button>
         </div>
-        </form>
 
         <div
           className="scenario-calculator__requirements"

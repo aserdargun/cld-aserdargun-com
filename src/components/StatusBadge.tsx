@@ -1,10 +1,5 @@
 import type { VerificationStatus } from '../domain/catalog'
-
-const statusLabels: Record<VerificationStatus, string> = {
-  current: 'Güncel',
-  stale: 'Yeniden doğrulanmalı',
-  invalid: 'Eksik veri',
-}
+import { statusLabels } from './statusLabels'
 
 interface StatusBadgeProps {
   status: VerificationStatus

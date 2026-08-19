@@ -507,6 +507,16 @@ a {
   outline-offset: 3px;
 }
 
+.data-table-empty {
+  margin: 0;
+  padding: 28px 16px;
+  color: var(--muted);
+  background: var(--surface);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
 .data-table {
   width: 100%;
   min-width: 1480px;

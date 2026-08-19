@@ -65,6 +65,13 @@
   line-height: 1.2;
 }
 
+.scenario-calculator__description {
+  margin: -8px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 20px;
+}
+
 .scenario-calculator__scenario {
   display: grid;
   gap: 7px;
@@ -157,7 +164,7 @@
 
 .scenario-calculator__actions {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 12px;
   margin-top: 20px;
 }
@@ -181,12 +188,6 @@
   border: 1px solid var(--line);
   background: var(--surface);
   color: var(--navy-900);
-}
-
-.scenario-calculator__submit {
-  border: 1px solid var(--blue);
-  background: var(--blue);
-  color: var(--surface);
 }
 
 .scenario-calculator__requirements {

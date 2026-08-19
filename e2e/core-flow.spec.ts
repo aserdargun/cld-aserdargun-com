@@ -19,11 +19,11 @@ test('high-traffic scenario recomputes major-provider ranking and exposes source
   const smallWebTab = scenarios.getByRole('tab', { name: 'Küçük web uygulaması' })
   await smallWebTab.focus()
   await page.keyboard.press('ArrowRight')
-  const apiTab = scenarios.getByRole('tab', { name: 'API / backend' })
+  const apiTab = scenarios.getByRole('tab', { name: 'API arka ucu' })
   await expect(apiTab).toBeFocused()
   await expect(apiTab).toHaveAttribute('aria-selected', 'true')
-  await expect(scenarios.getByRole('tabpanel', { name: 'API / backend' })).toContainText('10 milyon istek/ay')
-  await scenarios.getByRole('tab', { name: 'Yüksek trafik' }).click()
+  await expect(scenarios.getByRole('tabpanel', { name: 'API arka ucu' })).toContainText('10 milyon istek/ay')
+  await scenarios.getByRole('tab', { name: 'Yüksek trafikli uygulama' }).click()
   await expect(scenarios.getByLabel('Kullanım senaryosu')).toHaveValue('high-traffic')
   await expect(scenarios.getByRole('note', { name: 'Modelleme kapsamı' })).toContainText(
     'seçili CDN çıkış trafiğini kapsar',
@@ -31,12 +31,11 @@ test('high-traffic scenario recomputes major-provider ranking and exposes source
 
   const ranking = page.getByRole('region', { name: 'Sağlayıcı sıralaması' })
   const azureRanking = ranking.getByRole('listitem', { name: 'Microsoft Azure', exact: true })
-  const azureMonthlyTotal = azureRanking.getByRole('status', { name: 'Modellenen aylık tutar' })
+  const azureMonthlyTotal = azureRanking.getByRole('status', { name: 'Aylık tahmini tutar' })
   const presetMonthlyTotal = await azureMonthlyTotal.innerText()
   expect(presetMonthlyTotal).toMatch(/^\d[\d.,]* USD\/ay$/)
 
   await scenarios.getByLabel('Aylık dış trafik').fill('1000')
-  await scenarios.getByRole('button', { name: 'Hesaplamayı güncelle' }).click()
   await expect(scenarios.getByLabel('Aylık dış trafik')).toHaveValue('1000')
   await expect(azureMonthlyTotal).not.toHaveText(presetMonthlyTotal)
   await expect(azureMonthlyTotal).toHaveText(/^\d[\d.,]* USD\/ay$/)
@@ -44,12 +43,12 @@ test('high-traffic scenario recomputes major-provider ranking and exposes source
   const filters = page.getByRole('region', { name: 'Karşılaştırma filtreleri' })
   const comparison = page.getByRole('region', { name: 'Servis karşılaştırma tablosu' })
   const undersizedCompute = comparison.getByRole('row', { name: /Standard B2s/ })
-  await expect(undersizedCompute.getByRole('cell').nth(4)).toContainText('Kapasite yetersiz')
+  await expect(undersizedCompute.getByRole('cell').nth(4)).toContainText('Gereksinimi karşılamıyor')
   await expect(undersizedCompute.getByRole('cell').nth(4)).not.toContainText(/\$\d/)
   const outOfScopeStorage = comparison.getByRole('row', {
     name: /DigitalOcean Spaces base subscription/,
   })
-  await expect(outOfScopeStorage.getByRole('cell').nth(4)).toHaveText('Senaryo kapsamı dışında')
+  await expect(outOfScopeStorage.getByRole('cell').nth(4)).toHaveText('Bu senaryoda kullanılmıyor')
   await expect(outOfScopeStorage).toContainText('$5.00/ay')
   const awsRanking = ranking.getByRole('listitem', { name: 'Amazon Web Services', exact: true })
   const awsGlobal = filters.getByRole('button', {
@@ -59,7 +58,7 @@ test('high-traffic scenario recomputes major-provider ranking and exposes source
   await awsGlobal.click()
   await expect(awsGlobal).toHaveAttribute('aria-pressed', 'false')
   await expect(comparison).not.toContainText('Amazon CloudFront Pro flat-rate plan')
-  await expect(awsRanking.getByRole('status', { name: 'Modellenen aylık tutar' })).toHaveText(
+  await expect(awsRanking.getByRole('status', { name: 'Aylık tahmini tutar' })).toHaveText(
     'Doğrulanamadı',
   )
   await awsGlobal.click()
@@ -127,12 +126,10 @@ test('mobile navigation closes and comparison tables own their horizontal overfl
   expect(disclosureHitbox.width).toBeGreaterThanOrEqual(44)
   expect(disclosureHitbox.height).toBeGreaterThanOrEqual(44)
 
-  for (const actionName of ['Varsayılan değerlere sıfırla', 'Hesaplamayı güncelle']) {
-    const actionHeight = await page
-      .getByRole('button', { name: actionName })
-      .evaluate((element) => element.getBoundingClientRect().height)
-    expect(actionHeight).toBeGreaterThanOrEqual(44)
-  }
+  const actionHeight = await page
+    .getByRole('button', { name: 'Varsayılan değerlere sıfırla' })
+    .evaluate((element) => element.getBoundingClientRect().height)
+  expect(actionHeight).toBeGreaterThanOrEqual(44)
 
   const tableRegion = page.getByRole('region', { name: 'Servis karşılaştırma tablosu' })
   const tableLayout = await tableRegion.evaluate((element) => {

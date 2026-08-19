@@ -45,7 +45,7 @@ const dimensionLabels: Record<ScenarioUsageDimension, string> = {
 
 const rankLabels: Record<Exclude<RankedProviderEstimate['rank'], null>, string> = {
   'best-price': 'En düşük tahmin',
-  'second-price': 'İkinci',
+  'second-price': 'İkinci en düşük',
 }
 
 const decimalFormatter = new Intl.NumberFormat('tr-TR', {
@@ -119,12 +119,12 @@ function EstimateMetrics({
         <dd>{formatUsd(estimate.subtotalBeforeFreeTierUsd)}</dd>
       </div>
       <div>
-        <dt>Uygulanan ücretsiz katman indirimi</dt>{' '}
+        <dt>Ücretsiz katman indirimi</dt>{' '}
         <dd>{formatUsd(savings)}</dd>
       </div>
       {traffic === null ? null : (
         <div>
-          <dt>Trafik payı</dt>{' '}
+          <dt>Trafik maliyetinin payı</dt>{' '}
           <dd>%{quantityFormatter.format(traffic)}</dd>
         </div>
       )}
@@ -188,29 +188,31 @@ export function ScenarioSummary({ estimates, providers: providedProviders }: Sce
                   <StatusBadge status={estimate.status} />
                 </div>
 
-                <output className="scenario-summary__total" aria-label="Modellenen aylık tutar">
+                <output className="scenario-summary__total" aria-label="Aylık tahmini tutar">
                   {formatUsd(estimate.totalUsd)}
                 </output>
               </div>
 
-              <EstimateMetrics
-                estimate={estimate}
-                savings={savings}
-                traffic={traffic}
-                regions={regions}
-                variant="summary"
-              />
+              {estimate.totalUsd === null ? null : (
+                <EstimateMetrics
+                  estimate={estimate}
+                  savings={savings}
+                  traffic={traffic}
+                  regions={regions}
+                  variant="summary"
+                />
+              )}
 
               {estimate.missingCategories.length > 0 ? (
                 <p className="scenario-summary__missing">
-                  <strong>Eksik kategoriler:</strong>{' '}
+                  <strong>Senaryoya eksik:</strong>{' '}
                   {estimate.missingCategories.map((category) => categoryLabels[category]).join(', ')}
                 </p>
               ) : null}
 
               {estimate.missingDimensions.length > 0 ? (
                 <p className="scenario-summary__missing">
-                  <strong>Eksik kullanım boyutları:</strong>{' '}
+                  <strong>Karşılanamayan gereksinimler:</strong>{' '}
                   {estimate.missingDimensions.map((dimension) => dimensionLabels[dimension]).join(', ')}
                 </p>
               ) : null}
@@ -222,13 +224,15 @@ export function ScenarioSummary({ estimates, providers: providedProviders }: Sce
                     <ChevronDown aria-hidden="true" size={17} strokeWidth={2} />
                   </summary>
 
-                  <EstimateMetrics
-                    estimate={estimate}
-                    savings={savings}
-                    traffic={traffic}
-                    regions={regions}
-                    variant="disclosure"
-                  />
+                  {estimate.totalUsd === null ? null : (
+                    <EstimateMetrics
+                      estimate={estimate}
+                      savings={savings}
+                      traffic={traffic}
+                      regions={regions}
+                      variant="disclosure"
+                    />
+                  )}
 
                   <div className="scenario-summary__breakdown">
                     {estimate.lineItems.map((offerEstimate) => (

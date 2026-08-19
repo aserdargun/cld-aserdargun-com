@@ -92,15 +92,17 @@ export function FilterBar({ state, providers: providedProviders }: FilterBarProp
         </div>
       </fieldset>
 
+      <p className="filter-bar__hint">Seçimler hem sağlayıcı sıralamasını hem servis tablosunu etkiler.</p>
+
       <fieldset className="filter-bar__group filter-bar__toggles">
-        <legend>Tablo filtreleri</legend>
+        <legend>Diğer filtreler</legend>
         <label>
           <input
             type="checkbox"
             checked={state.freeOnly}
             onChange={(event) => state.setFreeOnly(event.target.checked)}
           />
-          Yalnızca ücretsiz katmanlar
+          Yalnızca ücretsiz kotası olan servisler
         </label>
         <label>
           <input
@@ -108,7 +110,7 @@ export function FilterBar({ state, providers: providedProviders }: FilterBarProp
             checked={state.includeStale}
             onChange={(event) => state.setIncludeStale(event.target.checked)}
           />
-          Eski verileri dahil et
+          30 günden eski verileri göster
         </label>
       </fieldset>
     </section>

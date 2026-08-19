@@ -42,7 +42,7 @@ describe('FilterBar', () => {
     const user = userEvent.setup()
     render(<FilterFixture />)
 
-    const staleData = screen.getByRole('checkbox', { name: 'Eski verileri dahil et' })
+    const staleData = screen.getByRole('checkbox', { name: '30 günden eski verileri göster' })
     expect(staleData).not.toBeChecked()
 
     await user.click(staleData)

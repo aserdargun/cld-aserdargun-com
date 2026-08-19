@@ -27,10 +27,10 @@ describe('ScenarioCalculator', () => {
     const scenarioSelect = screen.getByRole('combobox', { name: 'Kullanım senaryosu' })
     expect(within(scenarioSelect).getAllByRole('option')).toHaveLength(6)
     expect(scenarioSelect).toHaveTextContent('Küçük web uygulaması')
-    expect(scenarioSelect).toHaveTextContent('API / backend')
+    expect(scenarioSelect).toHaveTextContent('API arka ucu')
     expect(scenarioSelect).toHaveTextContent('Veritabanlı SaaS')
     expect(scenarioSelect).toHaveTextContent('Statik site')
-    expect(scenarioSelect).toHaveTextContent('AI / GPU')
+    expect(scenarioSelect).toHaveTextContent('Yapay zeka GPU')
     expect(scenarioSelect).toHaveTextContent('Yüksek trafik')
 
     await user.selectOptions(scenarioSelect, 'ai-gpu')
@@ -128,29 +128,39 @@ describe('ScenarioCalculator', () => {
     expect(screen.getByLabelText('Test senaryo durumu')).toHaveTextContent('"storageGb":50')
   })
 
-  it('keeps every pricing and capacity input visible with units and a non-negative bound', () => {
+  it('shows only the fields used by the selected scenario, with units and a non-negative bound', async () => {
+    const user = userEvent.setup()
     render(<CalculatorFixture />)
 
-    const labels = [
+    const visibleLabels = [
       'Aylık çalışma süresi',
       'vCPU',
       'RAM',
       'Depolama',
       'Aylık dış trafik',
+    ]
+    visibleLabels.forEach((label) => {
+      expect(screen.getByRole('spinbutton', { name: label })).toHaveAttribute('min', '0')
+    })
+
+    for (const hiddenLabel of [
       'Aylık istek sayısı',
       'Veritabanı depolaması',
       'Aylık GPU kullanımı',
       'GPU VRAM',
-    ]
+    ]) {
+      expect(screen.queryByRole('spinbutton', { name: hiddenLabel })).not.toBeInTheDocument()
+    }
 
-    labels.forEach((label) => {
-      expect(screen.getByRole('spinbutton', { name: label })).toHaveAttribute('min', '0')
-    })
-
-    expect(screen.getAllByText('GB').length).toBeGreaterThanOrEqual(4)
+    expect(screen.getAllByText('GB').length).toBeGreaterThanOrEqual(2)
     expect(screen.getByText('saat/ay')).toBeInTheDocument()
-    expect(screen.getByText('milyon istek/ay')).toBeInTheDocument()
+
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Kullanım senaryosu' }), 'ai-gpu')
+
+    expect(screen.getByRole('spinbutton', { name: 'Aylık GPU kullanımı' })).toHaveAttribute('min', '0')
+    expect(screen.getByRole('spinbutton', { name: 'GPU VRAM' })).toHaveAttribute('min', '0')
     expect(screen.getByText('GPU saat/ay')).toBeInTheDocument()
+    expect(screen.queryByRole('spinbutton', { name: 'Aylık çalışma süresi' })).not.toBeInTheDocument()
   })
 
   it.each([
@@ -193,29 +203,29 @@ describe('ScenarioCalculator', () => {
     smallWeb.focus()
 
     await user.keyboard('{ArrowRight}')
-    const api = within(tablist).getByRole('tab', { name: 'API / backend' })
+    const api = within(tablist).getByRole('tab', { name: 'API arka ucu' })
     expect(api).toHaveFocus()
     expect(api).toHaveAttribute('aria-selected', 'true')
-    expect(screen.getByRole('tabpanel', { name: 'API / backend' })).toHaveTextContent('10 milyon istek/ay')
+    expect(screen.getByRole('tabpanel', { name: 'API arka ucu' })).toHaveTextContent('10 milyon istek/ay')
 
     await user.keyboard('{ArrowDown}')
     expect(within(tablist).getByRole('tab', { name: 'Veritabanlı SaaS' })).toHaveFocus()
     await user.keyboard('{End}')
-    expect(within(tablist).getByRole('tab', { name: 'Yüksek trafik' })).toHaveFocus()
+    expect(within(tablist).getByRole('tab', { name: 'Yüksek trafikli uygulama' })).toHaveFocus()
     await user.keyboard('{ArrowRight}')
     expect(smallWeb).toHaveFocus()
     await user.keyboard('{ArrowLeft}')
-    expect(within(tablist).getByRole('tab', { name: 'Yüksek trafik' })).toHaveFocus()
+    expect(within(tablist).getByRole('tab', { name: 'Yüksek trafikli uygulama' })).toHaveFocus()
     await user.keyboard('{Home}')
     expect(smallWeb).toHaveFocus()
     await user.keyboard('{ArrowUp}')
-    const highTraffic = within(tablist).getByRole('tab', { name: 'Yüksek trafik' })
+    const highTraffic = within(tablist).getByRole('tab', { name: 'Yüksek trafikli uygulama' })
     expect(highTraffic).toHaveFocus()
     expect(highTraffic).toHaveAttribute('aria-selected', 'true')
 
     const panelId = highTraffic.getAttribute('aria-controls')
     expect(panelId).toBeTruthy()
     expect(tabs.every((tab) => tab.getAttribute('aria-controls') === panelId)).toBe(true)
-    expect(screen.getByRole('tabpanel', { name: 'Yüksek trafik' })).toHaveAttribute('id', panelId)
+    expect(screen.getByRole('tabpanel', { name: 'Yüksek trafikli uygulama' })).toHaveAttribute('id', panelId)
   })
 })

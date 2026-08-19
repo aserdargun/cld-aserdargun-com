@@ -13,7 +13,9 @@ describe('App', () => {
       screen.getByRole('heading', { name: 'Bulut maliyetlerini karşılaştır', level: 1 }),
     ).toBeInTheDocument()
     expect(
-      screen.getByText('Türkiye’den satın alınabilen servisler için kaynaklı USD analizi.'),
+      screen.getByText(
+        'Türkiye’den satın alınabilen bulut servislerinin aylık maliyetlerini resmî kaynak fiyatlarıyla karşılaştırın. Tutarlar USD ve vergiler hariçtir.',
+      ),
     ).toBeInTheDocument()
     expect(document.getElementById('genel-bakis')).toHaveTextContent(
       'Son doğrulama: 14 Ağustos 2026',
@@ -64,13 +66,13 @@ describe('App', () => {
     await user.selectOptions(screen.getByLabelText('Kullanım senaryosu'), 'high-traffic')
     const ranking = screen.getByRole('region', { name: 'Sağlayıcı sıralaması' })
     const azure = within(ranking).getByRole('listitem', { name: 'Microsoft Azure' })
-    const before = within(azure).getByLabelText('Modellenen aylık tutar').textContent
+    const before = within(azure).getByLabelText('Aylık tahmini tutar').textContent
 
     const outbound = screen.getByLabelText('Aylık dış trafik')
     await user.clear(outbound)
     await user.type(outbound, '1000')
 
-    const after = within(azure).getByLabelText('Modellenen aylık tutar').textContent
+    const after = within(azure).getByLabelText('Aylık tahmini tutar').textContent
     expect(outbound).toHaveValue(1000)
     expect(before).toMatch(/USD\/ay/)
     expect(after).toMatch(/USD\/ay/)
@@ -90,13 +92,13 @@ describe('App', () => {
     })
 
     expect(comparison).toHaveTextContent('Amazon CloudFront Pro flat-rate plan')
-    expect(within(aws).getByLabelText('Modellenen aylık tutar')).not.toHaveTextContent('Doğrulanamadı')
+    expect(within(aws).getByLabelText('Aylık tahmini tutar')).not.toHaveTextContent('Doğrulanamadı')
 
     await user.click(region)
 
     expect(comparison).not.toHaveTextContent('Amazon CloudFront Pro flat-rate plan')
-    expect(within(aws).getByLabelText('Modellenen aylık tutar')).toHaveTextContent('Doğrulanamadı')
-    expect(aws).toHaveTextContent('Eksik kategoriler: CDN / ağ')
+    expect(within(aws).getByLabelText('Aylık tahmini tutar')).toHaveTextContent('Doğrulanamadı')
+    expect(aws).toHaveTextContent('Senaryoya eksik: CDN / ağ')
   })
 
   it('constrains rankings and detailed offers with provider and category filters', async () => {
@@ -126,8 +128,8 @@ describe('App', () => {
     await user.selectOptions(screen.getByLabelText('Kullanım senaryosu'), 'api-backend')
 
     const ranking = screen.getByRole('region', { name: 'Sağlayıcı sıralaması' })
-    expect(ranking).toHaveTextContent(/Uygulanan ücretsiz katman indirimi\s+0,00 USD\/ay/)
-    expect(ranking).not.toHaveTextContent(/Uygulanan ücretsiz katman indirimi\s+[1-9]/)
+    expect(ranking).toHaveTextContent(/Ücretsiz katman indirimi\s+0,00 USD\/ay/)
+    expect(ranking).not.toHaveTextContent(/Ücretsiz katman indirimi\s+[1-9]/)
   })
 
   it('shows a safe error state when the catalog cannot be validated', () => {

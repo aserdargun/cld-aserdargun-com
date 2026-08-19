@@ -125,11 +125,11 @@ describe('ScenarioSummary', () => {
       />,
     )
 
-    expect(within(screen.getByRole('listitem', { name: 'Microsoft Azure' })).getByText('İkinci')).toBeInTheDocument()
+    expect(within(screen.getByRole('listitem', { name: 'Microsoft Azure' })).getByText('İkinci en düşük')).toBeInTheDocument()
     expect(within(screen.getByRole('listitem', { name: 'Google Cloud' })).getByText('En düşük tahmin')).toBeInTheDocument()
 
     const stale = within(screen.getByRole('listitem', { name: 'Amazon Web Services' })).getByText(
-      'Yeniden doğrulanmalı',
+      '30 günden eski',
     )
     expect(stale).toHaveAttribute('data-status', 'stale')
   })
@@ -152,10 +152,11 @@ describe('ScenarioSummary', () => {
 
     const oracle = screen.getByRole('listitem', { name: 'Oracle Cloud Infrastructure' })
     expect(oracle).toHaveTextContent('Doğrulanamadı')
-    expect(oracle).toHaveTextContent('Eksik kategoriler: Hesaplama, Nesne depolama')
-    expect(oracle).toHaveTextContent('Eksik kullanım boyutları: Çalışma süresi, Depolama')
+    expect(oracle).toHaveTextContent('Senaryoya eksik: Hesaplama, Nesne depolama')
+    expect(oracle).toHaveTextContent('Karşılanamayan gereksinimler: Çalışma süresi, Depolama')
     expect(oracle).not.toHaveTextContent('$0')
     expect(oracle).not.toHaveTextContent('0,00 USD/ay')
+    expect(oracle).not.toHaveTextContent('Ücretsiz katman öncesi')
   })
 
   it('shows rounded UI totals, actual savings, traffic share, region and expandable line items', async () => {
@@ -175,11 +176,11 @@ describe('ScenarioSummary', () => {
     render(<ScenarioSummary estimates={[estimate]} />)
 
     const azure = screen.getByRole('listitem', { name: 'Microsoft Azure' })
-    expect(within(azure).getByLabelText('Modellenen aylık tutar')).toHaveTextContent('10,13 USD/ay')
+    expect(within(azure).getByLabelText('Aylık tahmini tutar')).toHaveTextContent('10,13 USD/ay')
     expect(azure).toHaveTextContent('10,13 USD/ay')
     expect(azure).toHaveTextContent('Ücretsiz katman öncesi 12,35 USD/ay')
-    expect(azure).toHaveTextContent('Uygulanan ücretsiz katman indirimi 2,22 USD/ay')
-    expect(azure).toHaveTextContent('Trafik payı %40')
+    expect(azure).toHaveTextContent('Ücretsiz katman indirimi 2,22 USD/ay')
+    expect(azure).toHaveTextContent('Trafik maliyetinin payı %40')
     expect(estimate.totalUsd).toBe(10.125)
 
     const disclosure = within(azure).getByText('Maliyet ayrıntılarını göster').closest('details')

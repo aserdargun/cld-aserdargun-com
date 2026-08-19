@@ -6,9 +6,9 @@ import type {
   Provider,
   ProviderId,
   Source,
-  VerificationStatus,
 } from '../domain/catalog'
 import { SourceLink } from './SourceLink'
+import { statusLabels } from './statusLabels'
 
 export interface FreeTierTableProps {
   freeTiers: readonly FreeTier[]
@@ -24,12 +24,6 @@ const typeLabels: Record<FreeTierType, string> = {
   'time-limited': 'Süreli ücretsiz kullanım',
   'always-free': 'Sürekli ücretsiz kota',
   'eligibility-limited': 'Uygunlukla sınırlı kota',
-}
-
-const statusLabels: Record<VerificationStatus, string> = {
-  current: 'Güncel',
-  stale: 'Yeniden doğrulanmalı',
-  invalid: 'Doğrulanamadı',
 }
 
 function quotaText(freeTier: FreeTier): string {

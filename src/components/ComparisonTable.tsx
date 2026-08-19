@@ -14,6 +14,7 @@ import type { PriceComponent, VerificationStatus } from '../domain/catalog'
 import { evaluateCategoryCoverage, projectScenarioForCategory } from '../domain/coverage'
 import { convertToUsd, estimateOffer } from '../domain/pricing'
 import { SourceLink } from './SourceLink'
+import { statusLabels } from './statusLabels'
 
 export interface ComparisonTableProps {
   offers: readonly Offer[]
@@ -61,12 +62,6 @@ const unitByKind: Record<PriceComponent['kind'], string> = {
   'requests-million': 'milyon istek',
 }
 
-const statusLabels: Record<VerificationStatus, string> = {
-  current: 'Güncel',
-  stale: 'Yeniden doğrulanmalı',
-  invalid: 'Doğrulanamadı',
-}
-
 const dimensionLabels: Record<ScenarioUsageDimension, string> = {
   hoursPerMonth: 'çalışma süresi',
   vcpu: 'vCPU',
@@ -79,12 +74,11 @@ const dimensionLabels: Record<ScenarioUsageDimension, string> = {
   gpuVramGb: 'GPU VRAM',
 }
 
-function priceText(
+function priceLines(
   component: PriceComponent,
   offer: Offer,
   exchangeRates: readonly ExchangeRate[],
-  sources: readonly Source[],
-): string {
+): string[] {
   const unit = unitByKind[component.kind]
   const included = component.includedQuantity > 0 ? ` · ${component.includedQuantity} dahil` : ''
   const conversion = convertToUsd(component.price, component.currency, exchangeRates, offer.verifiedAt)
@@ -97,29 +91,32 @@ function priceText(
     const usd = conversion.amountUsd === null
       ? 'Doğrulanamadı'
       : `${usdFormatter.format(conversion.amountUsd)}/${unit}`
+    const lines = [`${original} · ${usd}${included}`]
+
+    if (component.monthlyCap !== undefined) {
+      lines.push(capConversion?.amountUsd == null
+        ? `Aylık üst sınır: ${eurFormatter.format(component.monthlyCap)}`
+        : `Aylık üst sınır: ${eurFormatter.format(component.monthlyCap)} (~${monthlyUsdFormatter.format(capConversion.amountUsd)})`)
+    }
+
     const selectedRate = exchangeRates
       .filter((exchangeRate) => exchangeRate.date <= offer.verifiedAt)
       .reduce<ExchangeRate | undefined>((latest, exchangeRate) => (
         !latest || exchangeRate.date > latest.date ? exchangeRate : latest
       ), undefined)
-    const rateSource = selectedRate
-      ? sources.find((source) => source.id === selectedRate.sourceId)
-      : undefined
-    const rateNote = selectedRate
-      ? ` · Kur: 1 EUR = ${exchangeRateFormatter.format(selectedRate.rate)} USD · ${selectedRate.date}${rateSource ? ` · ${rateSource.title}` : ''}`
-      : ''
-    const cap = component.monthlyCap === undefined
-      ? ''
-      : capConversion?.amountUsd == null
-        ? ` · aylık üst sınır ${eurFormatter.format(component.monthlyCap)}`
-        : ` · aylık üst sınır ${eurFormatter.format(component.monthlyCap)} · ${monthlyUsdFormatter.format(capConversion.amountUsd)}`
-    return `${original} · ${usd}${included}${cap}${rateNote}`
+    if (selectedRate) {
+      lines.push(
+        `ECB kuru: 1 EUR = ${exchangeRateFormatter.format(selectedRate.rate)} USD · ${selectedRate.date}`,
+      )
+    }
+    return lines
   }
 
-  const cap = component.monthlyCap === undefined
-    ? ''
-    : ` · aylık üst sınır ${monthlyUsdFormatter.format(component.monthlyCap)}`
-  return `${usdFormatter.format(component.price)}/${unit}${included}${cap}`
+  const lines = [`${usdFormatter.format(component.price)}/${unit}${included}`]
+  if (component.monthlyCap !== undefined) {
+    lines.push(`Aylık üst sınır: ${monthlyUsdFormatter.format(component.monthlyCap)}`)
+  }
+  return lines
 }
 
 function capacityText(offer: Offer): string {
@@ -132,16 +129,17 @@ function capacityText(offer: Offer): string {
   return parts.length > 0 ? parts.join(' · ') : 'Esnek / kullanıma göre'
 }
 
-function trafficText(
+function trafficLines(
   offer: Offer,
   offerEvidenceStatus: VerificationStatus,
   exchangeRates: readonly ExchangeRate[],
-  sources: readonly Source[],
-): string {
-  if (offerEvidenceStatus === 'invalid') return 'Doğrulanamadı'
-  if (offer.specs.outboundGb !== undefined) return `${offer.specs.outboundGb.toLocaleString('en-US')} GB dahil`
+): string[] {
+  if (offerEvidenceStatus === 'invalid') return ['Doğrulanamadı']
+  if (offer.specs.outboundGb !== undefined) {
+    return [`${offer.specs.outboundGb.toLocaleString('en-US')} GB dahil`]
+  }
   const outbound = offer.prices.find((component) => component.kind === 'outbound-gb')
-  return outbound ? priceText(outbound, offer, exchangeRates, sources) : 'Kaynaklı trafik bileşeni yok'
+  return outbound ? priceLines(outbound, offer, exchangeRates) : ['Trafik fiyatı belirtilmemiş']
 }
 
 function regionText(offer: Offer, providers: readonly Provider[]): string {
@@ -288,6 +286,11 @@ export function ComparisonTable({
 
   return (
     <div className="data-table-scroll" role="region" aria-label="Servis karşılaştırma tablosu" tabIndex={0}>
+      {sortedRows.length === 0 ? (
+        <p className="data-table-empty">
+          Seçili filtrelerle eşleşen servis yok. Filtre seçimini genişletmeyi deneyin.
+        </p>
+      ) : (
       <table className="data-table comparison-table">
         <caption>Servis karşılaştırması</caption>
         <thead>
@@ -308,10 +311,10 @@ export function ComparisonTable({
             />
             <th scope="col">Bölge</th>
             <th scope="col">Kapasite</th>
-            <th scope="col">Saatlik / birim fiyat</th>
+            <th scope="col">Birim fiyat</th>
             <SortHeader
-              label="Modellenen kategori tutarı"
-              buttonLabel="Modellenen kategori tutarına göre sırala"
+              label="Aylık tutar (senaryo)"
+              buttonLabel="Aylık tutara göre sırala"
               sortKey="monthly"
               sort={sort}
               onSort={handleSort}
@@ -334,26 +337,28 @@ export function ComparisonTable({
                 <th className="data-table__sticky" scope="row">{provider?.name ?? 'Doğrulanamadı'}</th>
                 <td>
                   <strong>{offer.serviceName}</strong>
-                  <span className="data-table__meta">{offer.rankable ? 'Sıralanabilir' : 'Yalnızca bileşen'}</span>
+                  {offer.rankable ? null : <span className="data-table__meta">Ek bileşen</span>}
                 </td>
                 <td>{regionText(offer, providers)}</td>
                 <td>{capacityText(offer)}</td>
                 <td>
                   {offerEvidenceStatus === 'invalid' || offer.prices.length === 0
                     ? 'Doğrulanamadı'
-                    : offer.prices.map((component, index) => (
-                      <span className="data-table__line" key={`${component.kind}-${index}`}>
-                        {priceText(component, offer, usableExchangeRates, sources)}
-                      </span>
-                    ))}
+                    : offer.prices.flatMap((component, index) =>
+                      priceLines(component, offer, usableExchangeRates).map((line, lineIndex) => (
+                        <span className="data-table__line" key={`${component.kind}-${index}-${lineIndex}`}>
+                          {line}
+                        </span>
+                      )),
+                    )}
                 </td>
                 <td className="data-table__numeric">
                   {!inScope
-                    ? 'Senaryo kapsamı dışında'
+                    ? 'Bu senaryoda kullanılmıyor'
                     : !coverage?.complete
                     ? (
                       <>
-                        <span className="data-table__line">Kapasite yetersiz</span>
+                        <span className="data-table__line">Gereksinimi karşılamıyor</span>
                         <span className="data-table__meta">
                           Eksik: {coverage?.missingDimensions.map((dimension) => dimensionLabels[dimension]).join(', ')}
                         </span>
@@ -368,7 +373,11 @@ export function ComparisonTable({
                     <span className="data-table__line" key={quota}>{quota}</span>
                   ))}
                 </td>
-                <td>{trafficText(offer, offerEvidenceStatus, usableExchangeRates, sources)}</td>
+                <td>
+                  {trafficLines(offer, offerEvidenceStatus, usableExchangeRates).map((line, lineIndex) => (
+                    <span className="data-table__line" key={lineIndex}>{line}</span>
+                  ))}
+                </td>
                 <td>
                   <span className={`data-table__status data-table__status--${status}`} data-status={status}>
                     {statusLabels[status]}
@@ -388,10 +397,11 @@ export function ComparisonTable({
                   ))}
                 </td>
               </tr>
-            )
-          })}
+          )
+        })}
         </tbody>
       </table>
+      )}
     </div>
   )
 }
