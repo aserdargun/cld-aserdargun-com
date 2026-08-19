@@ -2,6 +2,7 @@ import { getCatalogHealth, getUsableExchangeRates, loadCatalog } from '../data/c
 import type { Catalog, Offer, ProviderId } from '../domain/catalog'
 import { estimateProvider, rankProviderEstimates } from '../domain/ranking'
 import { ComparisonTable } from '../components/ComparisonTable'
+import { Education } from '../components/Education'
 import { FilterBar } from '../components/FilterBar'
 import { FreeTierTable } from '../components/FreeTierTable'
 import { Hero } from '../components/Hero'
@@ -105,6 +106,8 @@ function Dashboard({ catalog, today }: { catalog: Catalog; today: Date }) {
             eligibleFreeTierIds={eligibleFreeTierIds}
           />
         </section>
+
+        <Education />
 
         <section className="free-tier-section page-section" id="ucretsiz-katmanlar" aria-labelledby="free-tier-heading">
           <header className="page-section__heading">

@@ -15,6 +15,7 @@ const dateFormatter = new Intl.DateTimeFormat('tr-TR', {
 const navigationItems = [
   { href: '#senaryolar', label: 'Senaryolar' },
   { href: '#karsilastirma', label: 'Karşılaştırma' },
+  { href: '#ogren', label: 'Öğren' },
   { href: '#ucretsiz-katmanlar', label: 'Ücretsiz katmanlar' },
   { href: '#metodoloji', label: 'Metodoloji' },
 ] as const

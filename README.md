@@ -10,6 +10,33 @@
 - Karşılaştırılabilir ve eksiksiz sonuçlarda en düşük ve ikinci en düşük fiyat etiketleri
 - Sağlayıcı, kategori, bölge, ücretsiz kota ve güncellik filtreleri
 - 30 günlük güncellik durumu; eksik/geçersiz değerleri sıfır ya da sıralanabilir fiyat kabul etmeyen veri sağlığı yaklaşımı
+- **Öğren** bölümü: üniversite öğrencisi düzeyinde, görsellerle desteklenen, kalıcı kavramsal içerik (bulut bileşenleri, servis kategorileri, fiyatlandırma modelleri, bölge, sağlayıcı kartları, sözlük, bilgi testi, konu derinleştirme). Sıralı öğrenme yolu, “Öğrendim” işaretleme, kişisel notlar, flashcard modu ve sıralı ilerleme çubuğu tarayıcıda `localStorage` ile saklanır.
+
+### Öğren bölümü
+
+`#ogren` bölümü, fiyatları karşılaştırmadan önce kavramsal temel kurmak için tasarlanmıştır. Tüm görseller saf SVG olarak çizilir, dış kaynak/ikon seti gerektirmez. Dokuz alt başlıktan oluşur:
+
+1. **Hızlı başlangıç** — Senaryo, sağlayıcı filtresi ve sonuç okuma adımları.
+2. **Bulut bileşenleri** — On-prem / IaaS / PaaS / SaaS için sorumluluk payı piramidi (SVG) ve her katmanın kartı.
+3. **Servis kategorileri** — Hesaplama, GPU, nesne depolama, yönetilen veritabanı, sunucusuz, CDN/ağ, Kubernetes. Her kategori için sekmeli anlatım: ne, ne zaman, benzetme, anahtar terimler, sık yapılan hata.
+4. **Fiyatlandırma modelleri** — On-demand, Reserved, Spot, Savings Plan, Free tier kartları; her biri için göreli tasarruf çubuğu (SVG).
+5. **Bölge ve gecikme** — İstanbul’dan başlıca bölgelere yaklaşık gecikme grafiği, egemenlik ve fiyat etkisi, yaygın inanış düzeltmesi.
+6. **Sağlayıcı kartları** — Sekiz sağlayıcının her biri için tek cümle özet, “kime uygun?” ve imza özellik.
+7. **Sözlük** — vCPU, RAM, egress, IOPS, SLA, konteyner gibi 12 temel terim; arama destekli kart listesi **ve flashcard modu** (terim/örnek çevirme, “Biliyorum / Tekrar” işaretleme, tekrar kuyruğu filtresi).
+8. **Bilgi testi** — Yedi soruluk, geri bildirimli mini sınav; tüm sorular yanıtlanmadan “Değerlendir” devre dışı, sonuçta yeşil/kırmızı renk kodlu doğru/yanlış işaretleme ve açıklayıcı notlar.
+9. **Konu derinleştirme** — Üç kısa yolculuk: Kubernetes’a giriş, Sunucusuz mimari desenleri, GPU / yapay zeka iş yükleri. Her biri için ön koşullar, 5 adımlı yolculuk, akış şeması, sık yapılan hata ve sonraki adım.
+
+### Kişiselleştirme katmanı
+
+`localStorage` üzerinde saklanan, tarayıcıya özel ilerleme durumu:
+
+- **Sıralı öğrenme yolu** — Bölüm başında 9 adımlı yol haritası; aktif adım, önceki/sonraki düğmeleri, bölüm başına “X / Y öğrenildi” sayacı.
+- **“Öğrendim” işaretleme** — Her kavram katmanı, kategori, fiyat modeli, sağlayıcı kartı, sözlük terimi ve derinleştirme kartı üzerinde. Bölüm başında toplam ilerleme yüzdesi görünür.
+- **Flashcard modu** — Sözlük sekmesinde “Kart listesi / Flashcard modu” geçişi; her kart için “Tanımı göster → Biliyorum / Tekrar” akışı, tekrar kuyruğu filtresi.
+- **Kişisel notlar** — Her ana bölümün altında “Kişisel notun” paneli; kelime sayacı, “Notu temizle” düğmesi. Deep-dive kartlarında inline not alanı.
+- **Son ziyaret** — Sıralı yol haritasında “şu anki adım” otomatik kaydedilir; sayfa yenilense de geri yüklenir.
+
+Tüm kişisel veriler tek bir `cld:learning:v1` `localStorage` anahtarı altında tutulur; sunucuya gönderilmez, başka tarayıcı/cihazla senkronize olmaz.
 
 ## Kapsam
 
