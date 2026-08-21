@@ -36,7 +36,7 @@
 
 .scenario-tabs__tab[aria-selected='true'] {
   color: var(--blue);
-  background: #f8fbff;
+  background: var(--tint);
 }
 
 .scenario-tabs__tab[aria-selected='true']::after {
@@ -217,7 +217,7 @@
   border-left: 3px solid var(--blue);
   border-radius: 0 6px 6px 0;
   color: var(--muted);
-  background: #f8fbff;
+  background: var(--tint);
   font-size: 12px;
   line-height: 18px;
 }

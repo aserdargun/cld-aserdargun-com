@@ -1,5 +1,6 @@
 import { Menu } from 'lucide-react'
 import { useRef } from 'react'
+import { ThemeToggle } from './ThemeToggle'
 
 interface HeroProps {
   verifiedAt: string
@@ -42,7 +43,10 @@ export function Hero({ verifiedAt }: HeroProps) {
         <nav className="site-header__navigation" aria-label="Ana navigasyon">
           <NavigationLinks />
         </nav>
-        <a className="site-header__sources" href="#metodoloji">Kaynakları incele</a>
+        <div className="site-header__actions">
+          <a className="site-header__sources" href="#metodoloji">Kaynakları incele</a>
+          <ThemeToggle />
+        </div>
 
         <details className="site-header__mobile-menu" ref={mobileMenuRef}>
           <summary aria-label="Menüyü aç">

@@ -50,7 +50,7 @@
 .filter-bar__button[aria-pressed='true'] {
   border-color: var(--blue);
   background: var(--blue);
-  color: var(--surface);
+  color: var(--on-accent);
 }
 
 .filter-bar__toggles {
