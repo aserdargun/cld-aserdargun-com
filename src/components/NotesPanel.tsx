@@ -38,7 +38,7 @@ export function NotesPanel({ sectionId, value, onChange }: NotesPanelProps) {
         data-testid={`notes-${sectionId}`}
         aria-label={`${sectionId} bölümü için kişisel not`}
       />
-      <footer className="notes-panel__footer">
+      <div className="notes-panel__footer">
         <span className="notes-panel__count">{wordCount} kelime</span>
         <button
           type="button"
@@ -49,7 +49,7 @@ export function NotesPanel({ sectionId, value, onChange }: NotesPanelProps) {
         >
           Notu temizle
         </button>
-      </footer>
+      </div>
     </section>
   )
 }

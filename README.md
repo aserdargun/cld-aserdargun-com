@@ -38,6 +38,18 @@
 
 Tüm kişisel veriler tek bir `cld:learning:v1` `localStorage` anahtarı altında tutulur; sunucuya gönderilmez, başka tarayıcı/cihazla senkronize olmaz.
 
+## Karar akışı
+
+- Hazır senaryolardan iş yükünü seçin.
+- Temel kullanım değerlerini ayarlayın; gerekirse gelişmiş kullanım ayarlarını açın.
+- Karşılaştırılabilir ilk üç sonucu, fiyat farklarını ve veri güven sinyallerini okuyun.
+- Seçtiğiniz sağlayıcıları yan yana karşılaştırın.
+- Ayrıntılı teklif tablosunu yalnız gerektiğinde açın.
+- Ücretsiz kullanım rehberinde süre, uygunluk ve aşım risklerini inceleyin.
+- Satın almadan önce teklif, sağlayıcı ve metodoloji bölümlerindeki resmî kaynakları izleyin.
+
+Ücretsiz katmanlar, kullanıcı uygunluğu açıkça seçilip hesaplamaya uygulanmadıkça yalnızca bilgi amaçlıdır. Arayüzde gösterilen toplamlar vergiler hariç genel liste fiyatı tahminleridir; taahhüt, sözleşme indirimi, destek ve lisans maliyetlerini içermez.
+
 ## Kapsam
 
 Sağlayıcılar: **Azure, Google Cloud, AWS, Hetzner, Oracle Cloud, Cloudflare, DigitalOcean ve Vultr**.

@@ -32,6 +32,23 @@ export interface CurrencyConversion {
   converted: boolean
 }
 
+export function selectEurUsdExchangeRate<T extends ExchangeRateInput>(
+  exchangeRates: readonly T[],
+  verifiedAt?: string,
+): T | null {
+  const matchingRates = exchangeRates.filter(
+    (exchangeRate) =>
+      exchangeRate.base === 'EUR' &&
+      exchangeRate.quote === 'USD' &&
+      (!verifiedAt || (exchangeRate.date !== undefined && exchangeRate.date <= verifiedAt)),
+  )
+
+  return matchingRates.reduce<T | null>((latest, exchangeRate) => {
+    if (!latest || (exchangeRate.date ?? '') > (latest.date ?? '')) return exchangeRate
+    return latest
+  }, null)
+}
+
 export interface PriceLineItemEstimate {
   component: PriceComponent
   quantity: number
@@ -86,16 +103,7 @@ export function convertToUsd(
 ): CurrencyConversion {
   if (currency === 'USD') return { amountUsd: amount, converted: true }
 
-  const matchingRates = exchangeRates.filter(
-    (exchangeRate) =>
-      exchangeRate.base === 'EUR' &&
-      exchangeRate.quote === 'USD' &&
-      (!verifiedAt || (exchangeRate.date !== undefined && exchangeRate.date <= verifiedAt)),
-  )
-  const latestRate = matchingRates.reduce<ExchangeRateInput | undefined>((latest, exchangeRate) => {
-    if (!latest || (exchangeRate.date ?? '') > (latest.date ?? '')) return exchangeRate
-    return latest
-  }, undefined)
+  const latestRate = selectEurUsdExchangeRate(exchangeRates, verifiedAt)
 
   return latestRate
     ? { amountUsd: amount * latestRate.rate, converted: true }

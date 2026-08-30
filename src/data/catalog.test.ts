@@ -268,6 +268,19 @@ describe('catalog schemas', () => {
     expect(health.invalidCount).toBe(1)
   })
 
+  it('counts an empty required provider purchase-source set after parsing', () => {
+    const catalog = loadCatalog()
+    const mutated = structuredClone(catalog)
+    const aws = mutated.providers.find((provider) => provider.id === 'aws')
+    if (!aws) throw new Error('Seeded AWS provider is required for this test')
+    aws.purchaseSourceIds = []
+
+    const health = getCatalogHealth(mutated, new Date('2026-08-13T00:00:00Z'))
+
+    expect(health.invalidReferences).toEqual(['provider:aws:purchase:empty'])
+    expect(health.invalidCount).toBe(1)
+  })
+
   it('loads provider evidence defects without invalidating unrelated offer data', () => {
     const catalog = loadCatalog()
     const azure = catalog.providers.find((provider) => provider.id === 'azure')!

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { loadCatalog } from '../data/catalog'
 import type { ComparisonState } from '../app/useComparisonState'
 import type { Provider, ServiceCategory } from '../domain/catalog'
@@ -19,6 +20,7 @@ interface FilterBarProps {
     | 'selectedProviderIds'
     | 'selectedCategories'
     | 'selectedRegionKeys'
+    | 'scenario'
     | 'freeOnly'
     | 'includeStale'
     | 'toggleProvider'
@@ -26,15 +28,47 @@ interface FilterBarProps {
     | 'toggleRegion'
     | 'setFreeOnly'
     | 'setIncludeStale'
+    | 'clearOfferFilters'
+    | 'resetOfferFiltersForScenario'
   >
   providers?: readonly Provider[]
 }
 
 export function FilterBar({ state, providers: providedProviders }: FilterBarProps) {
   const providers = providedProviders ?? loadCatalog().providers
+  const [open, setOpen] = useState(false)
+  const providerIdSet = new Set(providers.map((provider) => provider.id))
+  const scenarioCategorySet = new Set(state.scenario.requiredCategories)
+  const regionKeySet = new Set(providers.flatMap((provider) => (
+    provider.regions.map((region) => `${provider.id}:${region.id}`)
+  )))
+  const selectedDifferenceCount = <T,>(selected: Set<T>, expected: Set<T>) => (
+    [...selected].filter((value) => !expected.has(value)).length +
+    [...expected].filter((value) => !selected.has(value)).length
+  )
+  const activeFilterCount = selectedDifferenceCount(state.selectedProviderIds, providerIdSet) +
+    selectedDifferenceCount(state.selectedCategories, scenarioCategorySet) +
+    selectedDifferenceCount(state.selectedRegionKeys, regionKeySet) +
+    Number(state.freeOnly) + Number(state.includeStale)
+
   return (
     <section className="filter-bar" role="region" aria-label="Karşılaştırma filtreleri">
-      <fieldset className="filter-bar__group">
+      <button
+        className="filter-bar__summary"
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen((value) => !value)}
+      >
+        Filtreler · {activeFilterCount}
+      </button>
+
+      {open ? <div className="filter-bar__panel">
+        <div className="filter-bar__actions">
+          <button type="button" onClick={state.clearOfferFilters}>Tümünü temizle</button>
+          <button type="button" onClick={state.resetOfferFiltersForScenario}>Senaryoya dön</button>
+        </div>
+
+        <fieldset className="filter-bar__group">
         <legend>Sağlayıcılar</legend>
         <div className="filter-bar__choices">
           {providers.map((provider) => (
@@ -49,9 +83,9 @@ export function FilterBar({ state, providers: providedProviders }: FilterBarProp
             </button>
           ))}
         </div>
-      </fieldset>
+        </fieldset>
 
-      <fieldset className="filter-bar__group">
+        <fieldset className="filter-bar__group">
         <legend>Hizmet kategorileri</legend>
         <div className="filter-bar__choices">
           {Object.entries(categoryLabels).map(([id, label]) => {
@@ -69,32 +103,41 @@ export function FilterBar({ state, providers: providedProviders }: FilterBarProp
             )
           })}
         </div>
-      </fieldset>
+        </fieldset>
 
-      <fieldset className="filter-bar__group filter-bar__regions">
-        <legend>Bölgeler</legend>
-        <div className="filter-bar__choices">
-          {providers.flatMap((provider) => provider.regions.map((region) => {
-            const key = `${provider.id}:${region.id}` as const
-            return (
-              <button
-                className="filter-bar__button"
-                key={key}
-                type="button"
-                aria-label={`${provider.name} · ${region.name}`}
-                aria-pressed={state.selectedRegionKeys.has(key)}
-                onClick={() => state.toggleRegion(provider.id, region.id)}
-              >
-                {provider.shortName} · {region.name}
-              </button>
-            )
-          }))}
-        </div>
-      </fieldset>
+        <fieldset className="filter-bar__group filter-bar__regions">
+          <legend>Bölgeler</legend>
+          <div className="filter-bar__region-groups">
+            {providers.map((provider) => (
+              <div className="filter-bar__region-provider" role="group" aria-label={provider.name} key={provider.id}>
+                <p>{provider.shortName}</p>
+                <div className="filter-bar__choices">
+                  {provider.regions.map((region) => {
+                    const key = `${provider.id}:${region.id}` as const
+                    return (
+                      <button
+                        className="filter-bar__button"
+                        key={key}
+                        type="button"
+                        aria-label={`${provider.name} · ${region.name}`}
+                        aria-pressed={state.selectedRegionKeys.has(key)}
+                        onClick={() => state.toggleRegion(provider.id, region.id)}
+                      >
+                        {region.name}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </fieldset>
 
-      <p className="filter-bar__hint">Seçimler hem sağlayıcı sıralamasını hem servis tablosunu etkiler.</p>
+        <p className="filter-bar__hint">
+          Seçimler hem karar sonuçlarını hem ayrıntılı teklif tablosunu etkiler.
+        </p>
 
-      <fieldset className="filter-bar__group filter-bar__toggles">
+        <fieldset className="filter-bar__group filter-bar__toggles">
         <legend>Diğer filtreler</legend>
         <label>
           <input
@@ -112,7 +155,8 @@ export function FilterBar({ state, providers: providedProviders }: FilterBarProp
           />
           30 günden eski verileri göster
         </label>
-      </fieldset>
+        </fieldset>
+      </div> : null}
     </section>
   )
 }

@@ -7,6 +7,12 @@ import type {
   Source,
   VerificationStatus,
 } from '../domain/catalog'
+import {
+  hasExactSourceEvidence,
+  sourceEvidenceIssue,
+  sourceEvidenceSetIssues,
+  type SourceEvidenceIssue,
+} from '../domain/sourceEvidence'
 import exchangeRates from './exchange-rates.json'
 import freeTiers from './free-tiers.json'
 import offers from './offers.json'
@@ -29,11 +35,12 @@ function verificationStatus(
   expectedKind: Source['kind'],
   today: Date,
 ): VerificationStatus {
-  if (sourceIds.some((sourceId) => sourceEvidenceIssue(
-    sourcesById.get(sourceId),
+  if (!hasExactSourceEvidence(
+    sourceIds,
+    sourcesById,
     expectedOwner,
     expectedKind,
-  ) !== null)) {
+  )) {
     return 'invalid'
   }
 
@@ -43,18 +50,8 @@ function verificationStatus(
   return ageInDays > 30 ? 'stale' : 'current'
 }
 
-export type SourceEvidenceIssue = 'missing' | 'wrong-owner' | 'wrong-kind'
-
-export function sourceEvidenceIssue(
-  source: Source | undefined,
-  expectedOwner: Source['owner'],
-  expectedKind: Source['kind'],
-): SourceEvidenceIssue | null {
-  if (!source) return 'missing'
-  if (source.owner !== expectedOwner) return 'wrong-owner'
-  if (source.kind !== expectedKind) return 'wrong-kind'
-  return null
-}
+export { sourceEvidenceIssue }
+export type { SourceEvidenceIssue }
 
 function collectInvalidReferences(catalog: Catalog, sourcesById: Map<string, Source>): string[] {
   const invalidReferences: string[] = []
@@ -63,17 +60,33 @@ function collectInvalidReferences(catalog: Catalog, sourcesById: Map<string, Sou
     sourceIds: string[],
     expectedOwner: Source['owner'],
     expectedKind: Source['kind'],
+    requireAtLeastOne = false,
   ) => {
-    sourceIds.forEach((sourceId) => {
-      const issue = sourceEvidenceIssue(sourcesById.get(sourceId), expectedOwner, expectedKind)
-      if (issue) {
-        invalidReferences.push(`${record}:${sourceId}${issue === 'missing' ? '' : `:${issue}`}`)
+    sourceEvidenceSetIssues(
+      sourceIds,
+      sourcesById,
+      expectedOwner,
+      expectedKind,
+      requireAtLeastOne,
+    ).forEach((setIssue) => {
+      if (setIssue.type === 'empty') {
+        invalidReferences.push(`${record}:empty`)
+      } else {
+        invalidReferences.push(
+          `${record}:${setIssue.sourceId}${setIssue.issue === 'missing' ? '' : `:${setIssue.issue}`}`,
+        )
       }
     })
   }
 
   catalog.providers.forEach((provider) => {
-    addInvalid(`provider:${provider.id}:purchase`, provider.purchaseSourceIds, provider.id, 'purchase')
+    addInvalid(
+      `provider:${provider.id}:purchase`,
+      provider.purchaseSourceIds,
+      provider.id,
+      'purchase',
+      true,
+    )
     provider.regions.forEach((region) => addInvalid(
       `provider:${provider.id}:region:${region.id}`,
       [region.sourceId],

@@ -74,11 +74,12 @@ const dimensionLabels: Record<ScenarioUsageDimension, string> = {
   gpuVramGb: 'GPU VRAM',
 }
 
-function priceLines(
+function priceText(
   component: PriceComponent,
   offer: Offer,
   exchangeRates: readonly ExchangeRate[],
-): string[] {
+  sources: readonly Source[],
+): string {
   const unit = unitByKind[component.kind]
   const included = component.includedQuantity > 0 ? ` · ${component.includedQuantity} dahil` : ''
   const conversion = convertToUsd(component.price, component.currency, exchangeRates, offer.verifiedAt)
@@ -91,32 +92,29 @@ function priceLines(
     const usd = conversion.amountUsd === null
       ? 'Doğrulanamadı'
       : `${usdFormatter.format(conversion.amountUsd)}/${unit}`
-    const lines = [`${original} · ${usd}${included}`]
-
-    if (component.monthlyCap !== undefined) {
-      lines.push(capConversion?.amountUsd == null
-        ? `Aylık üst sınır: ${eurFormatter.format(component.monthlyCap)}`
-        : `Aylık üst sınır: ${eurFormatter.format(component.monthlyCap)} (~${monthlyUsdFormatter.format(capConversion.amountUsd)})`)
-    }
-
     const selectedRate = exchangeRates
       .filter((exchangeRate) => exchangeRate.date <= offer.verifiedAt)
       .reduce<ExchangeRate | undefined>((latest, exchangeRate) => (
         !latest || exchangeRate.date > latest.date ? exchangeRate : latest
       ), undefined)
-    if (selectedRate) {
-      lines.push(
-        `ECB kuru: 1 EUR = ${exchangeRateFormatter.format(selectedRate.rate)} USD · ${selectedRate.date}`,
-      )
-    }
-    return lines
+    const rateSource = selectedRate
+      ? sources.find((source) => source.id === selectedRate.sourceId)
+      : undefined
+    const rateNote = selectedRate
+      ? ` · Kur: 1 EUR = ${exchangeRateFormatter.format(selectedRate.rate)} USD · ${selectedRate.date}${rateSource ? ` · ${rateSource.title}` : ''}`
+      : ''
+    const cap = component.monthlyCap === undefined
+      ? ''
+      : capConversion?.amountUsd == null
+        ? ` · aylık üst sınır ${eurFormatter.format(component.monthlyCap)}`
+        : ` · aylık üst sınır ${eurFormatter.format(component.monthlyCap)} · ${monthlyUsdFormatter.format(capConversion.amountUsd)}`
+    return `${original} · ${usd}${included}${cap}${rateNote}`
   }
 
-  const lines = [`${usdFormatter.format(component.price)}/${unit}${included}`]
-  if (component.monthlyCap !== undefined) {
-    lines.push(`Aylık üst sınır: ${monthlyUsdFormatter.format(component.monthlyCap)}`)
-  }
-  return lines
+  const cap = component.monthlyCap === undefined
+    ? ''
+    : ` · aylık üst sınır ${monthlyUsdFormatter.format(component.monthlyCap)}`
+  return `${usdFormatter.format(component.price)}/${unit}${included}${cap}`
 }
 
 function capacityText(offer: Offer): string {
@@ -129,17 +127,16 @@ function capacityText(offer: Offer): string {
   return parts.length > 0 ? parts.join(' · ') : 'Esnek / kullanıma göre'
 }
 
-function trafficLines(
+function trafficText(
   offer: Offer,
   offerEvidenceStatus: VerificationStatus,
   exchangeRates: readonly ExchangeRate[],
-): string[] {
-  if (offerEvidenceStatus === 'invalid') return ['Doğrulanamadı']
-  if (offer.specs.outboundGb !== undefined) {
-    return [`${offer.specs.outboundGb.toLocaleString('en-US')} GB dahil`]
-  }
+  sources: readonly Source[],
+): string {
+  if (offerEvidenceStatus === 'invalid') return 'Doğrulanamadı'
+  if (offer.specs.outboundGb !== undefined) return `${offer.specs.outboundGb.toLocaleString('en-US')} GB dahil`
   const outbound = offer.prices.find((component) => component.kind === 'outbound-gb')
-  return outbound ? priceLines(outbound, offer, exchangeRates) : ['Trafik fiyatı belirtilmemiş']
+  return outbound ? priceText(outbound, offer, exchangeRates, sources) : 'Kaynaklı trafik bileşeni yok'
 }
 
 function regionText(offer: Offer, providers: readonly Provider[]): string {
@@ -285,12 +282,17 @@ export function ComparisonTable({
   }
 
   return (
-    <div className="data-table-scroll" role="region" aria-label="Servis karşılaştırma tablosu" tabIndex={0}>
-      {sortedRows.length === 0 ? (
-        <p className="data-table-empty">
-          Seçili filtrelerle eşleşen servis yok. Filtre seçimini genişletmeyi deneyin.
-        </p>
-      ) : (
+    <>
+      <p className="data-table-scroll__hint" id="offer-table-scroll-hint">
+        Tabloyu yatay kaydırın; sağlayıcı sütunu sabit kalır.
+      </p>
+      <div
+        className="data-table-scroll data-table-scroll--offers"
+        role="region"
+        aria-label="Servis karşılaştırma tablosu"
+        aria-describedby="offer-table-scroll-hint"
+        tabIndex={0}
+      >
       <table className="data-table comparison-table">
         <caption>Servis karşılaştırması</caption>
         <thead>
@@ -311,19 +313,14 @@ export function ComparisonTable({
             />
             <th scope="col">Bölge</th>
             <th scope="col">Kapasite</th>
-            <th scope="col">Birim fiyat</th>
             <SortHeader
-              label="Aylık tutar (senaryo)"
-              buttonLabel="Aylık tutara göre sırala"
+              label="Modellenen tutar"
+              buttonLabel="Modellenen kategori tutarına göre sırala"
               sortKey="monthly"
               sort={sort}
               onSort={handleSort}
             />
-            <th scope="col">Ücretsiz kota</th>
-            <th scope="col">Trafik</th>
-            <th scope="col">Doğrulama</th>
-            <th scope="col">Kapsam / hariçler</th>
-            <th scope="col">Kaynak</th>
+            <th scope="col">Durum ve ayrıntı</th>
           </tr>
         </thead>
         <tbody>
@@ -337,28 +334,17 @@ export function ComparisonTable({
                 <th className="data-table__sticky" scope="row">{provider?.name ?? 'Doğrulanamadı'}</th>
                 <td>
                   <strong>{offer.serviceName}</strong>
-                  {offer.rankable ? null : <span className="data-table__meta">Ek bileşen</span>}
+                  <span className="data-table__meta">{offer.rankable ? 'Sıralanabilir' : 'Yalnızca bileşen'}</span>
                 </td>
                 <td>{regionText(offer, providers)}</td>
                 <td>{capacityText(offer)}</td>
-                <td>
-                  {offerEvidenceStatus === 'invalid' || offer.prices.length === 0
-                    ? 'Doğrulanamadı'
-                    : offer.prices.flatMap((component, index) =>
-                      priceLines(component, offer, usableExchangeRates).map((line, lineIndex) => (
-                        <span className="data-table__line" key={`${component.kind}-${index}-${lineIndex}`}>
-                          {line}
-                        </span>
-                      )),
-                    )}
-                </td>
                 <td className="data-table__numeric">
                   {!inScope
-                    ? 'Bu senaryoda kullanılmıyor'
+                    ? 'Senaryo kapsamı dışında'
                     : !coverage?.complete
                     ? (
                       <>
-                        <span className="data-table__line">Gereksinimi karşılamıyor</span>
+                        <span className="data-table__line">Kapasite yetersiz</span>
                         <span className="data-table__meta">
                           Eksik: {coverage?.missingDimensions.map((dimension) => dimensionLabels[dimension]).join(', ')}
                         </span>
@@ -369,39 +355,48 @@ export function ComparisonTable({
                     : `${monthlyUsdFormatter.format(estimate.totalUsd)}/ay`}
                 </td>
                 <td>
-                  {quotaText(offer, freeTiers).map((quota) => (
-                    <span className="data-table__line" key={quota}>{quota}</span>
-                  ))}
-                </td>
-                <td>
-                  {trafficLines(offer, offerEvidenceStatus, usableExchangeRates).map((line, lineIndex) => (
-                    <span className="data-table__line" key={lineIndex}>{line}</span>
-                  ))}
-                </td>
-                <td>
                   <span className={`data-table__status data-table__status--${status}`} data-status={status}>
                     {statusLabels[status]}
                   </span>
-                  <time className="data-table__meta" dateTime={offer.verifiedAt}>{offer.verifiedAt}</time>
-                </td>
-                <td>
-                  {offer.notes.length === 0
-                    ? 'Yok'
-                    : offer.notes.map((note) => (
-                      <span className="data-table__line" key={note}>{note}</span>
-                    ))}
-                </td>
-                <td>
-                  {offer.sourceIds.map((sourceId) => (
-                    <SourceLink key={sourceId} sourceId={sourceId} sources={sources} />
-                  ))}
+                  <details className="comparison-table__evidence">
+                    <summary aria-label="Teklif kanıtını göster">Ayrıntıları göster</summary>
+                    <dl className="comparison-table__evidence-list">
+                      <div>
+                        <dt>Birim fiyat</dt>
+                        <dd>{offerEvidenceStatus === 'invalid' || offer.prices.length === 0
+                          ? 'Doğrulanamadı'
+                          : offer.prices.map((component, index) => (
+                            <span className="data-table__line" key={`${component.kind}-${index}`}>
+                              {priceText(component, offer, usableExchangeRates, sources)}
+                            </span>
+                          ))}</dd>
+                      </div>
+                      <div><dt>Ücretsiz kota</dt><dd>{quotaText(offer, freeTiers).join(' · ')}</dd></div>
+                      <div>
+                        <dt>Trafik</dt>
+                        <dd>{trafficText(offer, offerEvidenceStatus, usableExchangeRates, sources)}</dd>
+                      </div>
+                      <div>
+                        <dt>Doğrulama</dt>
+                        <dd><time dateTime={offer.verifiedAt}>{offer.verifiedAt}</time></dd>
+                      </div>
+                    </dl>
+                    <section aria-label="Kapsam ve kaynak kanıtı">
+                      {offer.notes.length === 0
+                        ? <p>Ek kapsam notu yok.</p>
+                        : offer.notes.map((note) => <p key={note}>{note}</p>)}
+                      {offer.sourceIds.map((sourceId) => (
+                        <SourceLink key={sourceId} sourceId={sourceId} sources={sources} />
+                      ))}
+                    </section>
+                  </details>
                 </td>
               </tr>
-          )
-        })}
+            )
+          })}
         </tbody>
       </table>
-      )}
-    </div>
+      </div>
+    </>
   )
 }

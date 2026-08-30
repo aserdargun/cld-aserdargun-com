@@ -1,29 +1,23 @@
 import { getCatalogHealth, getUsableExchangeRates, loadCatalog } from '../data/catalog'
 import type { Catalog, Offer, ProviderId } from '../domain/catalog'
-import { estimateProvider, rankProviderEstimates } from '../domain/ranking'
+import { getCatalogStats, rankEvidenceEligibleEstimates } from '../domain/presentation'
+import { estimateProvider } from '../domain/ranking'
 import { ComparisonTable } from '../components/ComparisonTable'
+import { DecisionSummary } from '../components/DecisionSummary'
 import { Education } from '../components/Education'
 import { FilterBar } from '../components/FilterBar'
-import { FreeTierTable } from '../components/FreeTierTable'
+import { FreeTierGuide } from '../components/FreeTierGuide'
 import { Hero } from '../components/Hero'
 import { Methodology } from '../components/Methodology'
+import { OfferExplorer } from '../components/OfferExplorer'
+import { ProviderCompare } from '../components/ProviderCompare'
 import { ProviderDetails } from '../components/ProviderDetails'
 import { ScenarioCalculator } from '../components/ScenarioCalculator'
-import { ScenarioSummary } from '../components/ScenarioSummary'
 import { providerRegionKey, useComparisonState } from './useComparisonState'
 
 interface AppProps {
   loadCatalogData?: () => Catalog
   today?: Date
-}
-
-function latestVerificationDate(catalog: Catalog): string {
-  const dates = [
-    ...catalog.providers.map((provider) => provider.verifiedAt),
-    ...catalog.offers.map((offer) => offer.verifiedAt),
-    ...catalog.freeTiers.map((freeTier) => freeTier.verifiedAt),
-  ]
-  return dates.reduce((latest, date) => date > latest ? date : latest, dates[0] ?? '')
 }
 
 function tryLoadCatalog(loader: () => Catalog): Catalog | null {
@@ -37,6 +31,7 @@ function tryLoadCatalog(loader: () => Catalog): Catalog | null {
 function Dashboard({ catalog, today }: { catalog: Catalog; today: Date }) {
   const state = useComparisonState(catalog.scenarios, catalog.providers)
   const health = getCatalogHealth(catalog, today)
+  const stats = getCatalogStats(catalog)
   const usableExchangeRates = getUsableExchangeRates(catalog, health)
   const eligibleFreeTierIds: readonly string[] = []
 
@@ -60,10 +55,18 @@ function Dashboard({ catalog, today }: { catalog: Catalog; today: Date }) {
     statusByFreeTierId: health.statusByFreeTierId,
     statusByExchangeRateId: health.statusByExchangeRateId,
   }
-  const estimates = rankProviderEstimates(
-    [...state.selectedProviderIds].map((providerId: ProviderId) => (
-      estimateProvider(providerId, rankingOffers, state.scenario, pricingContext)
-    )),
+  const providerEstimates = [...state.selectedProviderIds].map((providerId: ProviderId) => (
+    estimateProvider(providerId, rankingOffers, state.scenario, pricingContext)
+  ))
+  const estimateEvidenceContext = {
+    exchangeRates: catalog.exchangeRates,
+    sources: catalog.sources,
+    statusByExchangeRateId: health.statusByExchangeRateId,
+  }
+  const estimates = rankEvidenceEligibleEstimates(
+    providerEstimates,
+    catalog.providers,
+    estimateEvidenceContext,
   )
 
   const detailedOffers = catalog.offers.filter((offer) => {
@@ -80,47 +83,55 @@ function Dashboard({ catalog, today }: { catalog: Catalog; today: Date }) {
 
   return (
     <div className="app-shell">
-      <Hero verifiedAt={latestVerificationDate(catalog)} />
+      <Hero stats={stats} />
 
       <main className="app-main">
         <section className="scenario-workspace" id="senaryolar" aria-label="Senaryolar">
           <div className="scenario-workspace__grid">
             <ScenarioCalculator state={state} scenarios={catalog.scenarios} />
-            <ScenarioSummary estimates={estimates} providers={catalog.providers} />
+            <DecisionSummary
+              estimates={estimates}
+              providers={catalog.providers}
+              exchangeRates={catalog.exchangeRates}
+              sources={catalog.sources}
+              statusByExchangeRateId={health.statusByExchangeRateId}
+            />
           </div>
         </section>
 
-        <section className="comparison-section page-section" id="karsilastirma" aria-labelledby="comparison-heading">
-          <header className="page-section__heading">
-            <h2 id="comparison-heading">Servis karşılaştırması</h2>
-          </header>
-          <FilterBar state={state} providers={catalog.providers} />
-          <ComparisonTable
-            offers={detailedOffers}
-            providers={catalog.providers}
-            sources={catalog.sources}
-            freeTiers={catalog.freeTiers}
-            exchangeRates={catalog.exchangeRates}
-            health={health}
-            scenario={state.scenario}
-            eligibleFreeTierIds={eligibleFreeTierIds}
-          />
-        </section>
+        <ProviderCompare
+          estimates={estimates}
+          providers={catalog.providers}
+          exchangeRates={catalog.exchangeRates}
+          sources={catalog.sources}
+          statusByExchangeRateId={health.statusByExchangeRateId}
+        />
+
+        <OfferExplorer
+          offers={detailedOffers}
+          filterBar={<FilterBar state={state} providers={catalog.providers} />}
+          comparisonTable={(
+            <ComparisonTable
+              offers={detailedOffers}
+              providers={catalog.providers}
+              sources={catalog.sources}
+              freeTiers={catalog.freeTiers}
+              exchangeRates={catalog.exchangeRates}
+              health={health}
+              scenario={state.scenario}
+              eligibleFreeTierIds={eligibleFreeTierIds}
+            />
+          )}
+        />
 
         <Education />
 
-        <section className="free-tier-section page-section" id="ucretsiz-katmanlar" aria-labelledby="free-tier-heading">
-          <header className="page-section__heading">
-            <h2 id="free-tier-heading">Ücretsiz kullanım imkânları</h2>
-            <p>Krediler, süreli teklifler ve sürekli kotalar birbirinden ayrı gösterilir.</p>
-          </header>
-          <FreeTierTable
-            freeTiers={catalog.freeTiers}
-            providers={catalog.providers}
-            sources={catalog.sources}
-            health={health}
-          />
-        </section>
+        <FreeTierGuide
+          freeTiers={catalog.freeTiers}
+          providers={catalog.providers}
+          sources={catalog.sources}
+          health={health}
+        />
 
         <ProviderDetails providers={catalog.providers} sources={catalog.sources} />
         <Methodology />
@@ -129,6 +140,7 @@ function Dashboard({ catalog, today }: { catalog: Catalog; today: Date }) {
       <footer className="site-footer">
         <div>
           <strong>CLD</strong>
+          <span aria-hidden="true">{' · '}</span>
           <span>Kaynaklı bulut maliyet karşılaştırması</span>
         </div>
         <a href="#genel-bakis">Başa dön</a>
