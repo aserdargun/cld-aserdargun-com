@@ -51,6 +51,14 @@ export function Methodology() {
         ))}
       </div>
 
+      <aside className="methodology__price-basis" role="note">
+        <strong>Fiyat tabanı</strong>
+        <p>
+          Sonuçlar genel liste fiyatı tahminidir; taahhüt, sözleşme indirimi, vergi, destek ve
+          lisans maliyetleri uygulanmaz.
+        </p>
+      </aside>
+
       <div className="methodology__limits">
         <h3>Karşılaştırma sınırları</h3>
         <p>

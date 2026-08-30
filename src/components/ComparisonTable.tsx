@@ -287,7 +287,17 @@ export function ComparisonTable({
   }
 
   return (
-    <div className="data-table-scroll" role="region" aria-label="Servis karşılaştırma tablosu" tabIndex={0}>
+    <>
+      <p className="data-table-scroll__hint" id="offer-table-scroll-hint">
+        Tabloyu yatay kaydırın; sağlayıcı sütunu sabit kalır.
+      </p>
+      <div
+        className="data-table-scroll data-table-scroll--offers"
+        role="region"
+        aria-label="Servis karşılaştırma tablosu"
+        aria-describedby="offer-table-scroll-hint"
+        tabIndex={0}
+      >
       <table className="data-table comparison-table">
         <caption>Servis karşılaştırması</caption>
         <thead>
@@ -308,19 +318,14 @@ export function ComparisonTable({
             />
             <th scope="col">Bölge</th>
             <th scope="col">Kapasite</th>
-            <th scope="col">Saatlik / birim fiyat</th>
             <SortHeader
-              label="Modellenen kategori tutarı"
+              label="Modellenen tutar"
               buttonLabel="Modellenen kategori tutarına göre sırala"
               sortKey="monthly"
               sort={sort}
               onSort={handleSort}
             />
-            <th scope="col">Ücretsiz kota</th>
-            <th scope="col">Trafik</th>
-            <th scope="col">Doğrulama</th>
-            <th scope="col">Kapsam / hariçler</th>
-            <th scope="col">Kaynak</th>
+            <th scope="col">Durum ve ayrıntı</th>
           </tr>
         </thead>
         <tbody>
@@ -338,15 +343,6 @@ export function ComparisonTable({
                 </td>
                 <td>{regionText(offer, providers)}</td>
                 <td>{capacityText(offer)}</td>
-                <td>
-                  {offerEvidenceStatus === 'invalid' || offer.prices.length === 0
-                    ? 'Doğrulanamadı'
-                    : offer.prices.map((component, index) => (
-                      <span className="data-table__line" key={`${component.kind}-${index}`}>
-                        {priceText(component, offer, usableExchangeRates, sources)}
-                      </span>
-                    ))}
-                </td>
                 <td className="data-table__numeric">
                   {!inScope
                     ? 'Senaryo kapsamı dışında'
@@ -364,34 +360,48 @@ export function ComparisonTable({
                     : `${monthlyUsdFormatter.format(estimate.totalUsd)}/ay`}
                 </td>
                 <td>
-                  {quotaText(offer, freeTiers).map((quota) => (
-                    <span className="data-table__line" key={quota}>{quota}</span>
-                  ))}
-                </td>
-                <td>{trafficText(offer, offerEvidenceStatus, usableExchangeRates, sources)}</td>
-                <td>
                   <span className={`data-table__status data-table__status--${status}`} data-status={status}>
                     {statusLabels[status]}
                   </span>
-                  <time className="data-table__meta" dateTime={offer.verifiedAt}>{offer.verifiedAt}</time>
-                </td>
-                <td>
-                  {offer.notes.length === 0
-                    ? 'Yok'
-                    : offer.notes.map((note) => (
-                      <span className="data-table__line" key={note}>{note}</span>
-                    ))}
-                </td>
-                <td>
-                  {offer.sourceIds.map((sourceId) => (
-                    <SourceLink key={sourceId} sourceId={sourceId} sources={sources} />
-                  ))}
+                  <details className="comparison-table__evidence">
+                    <summary aria-label="Teklif kanıtını göster">Ayrıntıları göster</summary>
+                    <dl className="comparison-table__evidence-list">
+                      <div>
+                        <dt>Birim fiyat</dt>
+                        <dd>{offerEvidenceStatus === 'invalid' || offer.prices.length === 0
+                          ? 'Doğrulanamadı'
+                          : offer.prices.map((component, index) => (
+                            <span className="data-table__line" key={`${component.kind}-${index}`}>
+                              {priceText(component, offer, usableExchangeRates, sources)}
+                            </span>
+                          ))}</dd>
+                      </div>
+                      <div><dt>Ücretsiz kota</dt><dd>{quotaText(offer, freeTiers).join(' · ')}</dd></div>
+                      <div>
+                        <dt>Trafik</dt>
+                        <dd>{trafficText(offer, offerEvidenceStatus, usableExchangeRates, sources)}</dd>
+                      </div>
+                      <div>
+                        <dt>Doğrulama</dt>
+                        <dd><time dateTime={offer.verifiedAt}>{offer.verifiedAt}</time></dd>
+                      </div>
+                    </dl>
+                    <section aria-label="Kapsam ve kaynak kanıtı">
+                      {offer.notes.length === 0
+                        ? <p>Ek kapsam notu yok.</p>
+                        : offer.notes.map((note) => <p key={note}>{note}</p>)}
+                      {offer.sourceIds.map((sourceId) => (
+                        <SourceLink key={sourceId} sourceId={sourceId} sources={sources} />
+                      ))}
+                    </section>
+                  </details>
                 </td>
               </tr>
             )
           })}
         </tbody>
       </table>
-    </div>
+      </div>
+    </>
   )
 }

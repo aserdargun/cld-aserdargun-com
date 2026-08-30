@@ -94,6 +94,8 @@ export function ScenarioCalculator({
   const [scenarioSnapshot, setScenarioSnapshot] = useState(state.scenario)
   const [drafts, setDrafts] = useState<DraftValues>(() => draftValuesFor(state.scenario))
   const [errors, setErrors] = useState<ValidationErrors>({})
+  const [announcement, setAnnouncement] = useState('')
+  const [announcementId, setAnnouncementId] = useState(0)
 
   if (scenarioSnapshot !== state.scenario) {
     setScenarioSnapshot(state.scenario)
@@ -130,7 +132,11 @@ export function ScenarioCalculator({
     })
 
     setErrors(nextErrors)
-    if (Object.keys(nextErrors).length === 0) state.updateScenario(patch)
+    if (Object.keys(nextErrors).length === 0) {
+      state.updateScenario(patch)
+      setAnnouncement('Hesaplama güncellendi.')
+      setAnnouncementId((current) => current + 1)
+    }
   }
 
   function resetToSelectedPreset() {
@@ -169,6 +175,43 @@ export function ScenarioCalculator({
     return value > 0 ? [requirementTextByField[field.key](value)] : []
   })
   const activeTabId = `${formId}-tab-${state.scenario.id}`
+  const selectedPreset = scenarios.find((scenario) => scenario.id === state.scenario.id) ?? state.scenario
+  const primaryFields = fields.filter((field) => selectedPreset[field.key] > 0)
+  const advancedFields = fields.filter((field) => selectedPreset[field.key] === 0)
+
+  function renderField(field: FieldDefinition) {
+    const inputId = `${formId}-${field.key}`
+    const unitId = `${inputId}-unit`
+    const errorId = `${inputId}-error`
+    const error = errors[field.key]
+
+    return (
+      <label className="scenario-calculator__field" key={field.key} htmlFor={inputId}>
+        <span>{field.label}</span>
+        <span className="scenario-calculator__control">
+          <input
+            id={inputId}
+            type="number"
+            aria-label={field.label}
+            min="0"
+            step={field.step ?? 'any'}
+            value={drafts[field.key]}
+            aria-invalid={error ? 'true' : 'false'}
+            aria-describedby={error ? `${unitId} ${errorId}` : unitId}
+            onChange={(event) => updateField(field.key, event.target.value)}
+          />
+          <span id={unitId} className="scenario-calculator__unit">
+            {field.unit}
+          </span>
+        </span>
+        {error ? (
+          <span id={errorId} className="scenario-calculator__error" role="alert">
+            {error}
+          </span>
+        ) : null}
+      </label>
+    )
+  }
 
   return (
     <section className="scenario-calculator" aria-labelledby={`${formId}-heading`}>
@@ -201,56 +244,30 @@ export function ScenarioCalculator({
         <h2 id={`${formId}-heading`}>Senaryo hesaplayıcı</h2>
 
         <form onSubmit={submitValidValues} noValidate>
-        <label className="scenario-calculator__scenario visually-hidden" htmlFor={`${formId}-scenario`}>
-          <span>Kullanım senaryosu</span>
-          <select
-            id={`${formId}-scenario`}
-            value={state.scenario.id}
-            onChange={(event) => state.selectScenario(event.target.value)}
-          >
-            {scenarios.map((scenario) => (
-              <option key={scenario.id} value={scenario.id}>
-                {scenarioLabels[scenario.id] ?? scenario.name}
-              </option>
-            ))}
-          </select>
-        </label>
+          <label className="scenario-calculator__scenario" htmlFor={`${formId}-scenario`}>
+            <span>Kullanım senaryosu</span>
+            <select
+              id={`${formId}-scenario`}
+              value={state.scenario.id}
+              onChange={(event) => state.selectScenario(event.target.value)}
+            >
+              {scenarios.map((scenario) => (
+                <option key={scenario.id} value={scenario.id}>
+                  {scenarioLabels[scenario.id] ?? scenario.name}
+                </option>
+              ))}
+            </select>
+          </label>
 
-        <div className="scenario-calculator__fields">
-          {fields.map((field) => {
-            const inputId = `${formId}-${field.key}`
-            const unitId = `${inputId}-unit`
-            const errorId = `${inputId}-error`
-            const error = errors[field.key]
+          <fieldset className="scenario-calculator__fieldset" aria-label="Temel kullanım">
+            <legend>Temel kullanım</legend>
+            <div className="scenario-calculator__fields">{primaryFields.map(renderField)}</div>
+          </fieldset>
 
-            return (
-              <label className="scenario-calculator__field" key={field.key} htmlFor={inputId}>
-                <span>{field.label}</span>
-                <span className="scenario-calculator__control">
-                  <input
-                    id={inputId}
-                    type="number"
-                    aria-label={field.label}
-                    min="0"
-                    step={field.step ?? 'any'}
-                    value={drafts[field.key]}
-                    aria-invalid={error ? 'true' : 'false'}
-                    aria-describedby={error ? `${unitId} ${errorId}` : unitId}
-                    onChange={(event) => updateField(field.key, event.target.value)}
-                  />
-                  <span id={unitId} className="scenario-calculator__unit">
-                    {field.unit}
-                  </span>
-                </span>
-                {error ? (
-                  <span id={errorId} className="scenario-calculator__error" role="alert">
-                    {error}
-                  </span>
-                ) : null}
-              </label>
-            )
-          })}
-        </div>
+          <details className="scenario-calculator__advanced">
+            <summary>Gelişmiş kullanım ayarları</summary>
+            <div className="scenario-calculator__fields">{advancedFields.map(renderField)}</div>
+          </details>
 
         <div className="scenario-calculator__actions">
           <button className="scenario-calculator__reset" type="button" onClick={resetToSelectedPreset}>
@@ -263,12 +280,7 @@ export function ScenarioCalculator({
         </div>
         </form>
 
-        <div
-          className="scenario-calculator__requirements"
-          role="status"
-          aria-label="Senaryo gereksinim özeti"
-          aria-live="polite"
-        >
+        <div className="scenario-calculator__requirements" aria-label="Senaryo gereksinim özeti">
           <span className="scenario-calculator__requirements-label">Gereken hizmetler</span>
           <span>{categorySummary}; </span>
           {requirementSummary.map((requirement, index) => (
@@ -282,9 +294,18 @@ export function ScenarioCalculator({
           role="note"
           aria-label="Modelleme kapsamı"
         >
-          <strong>Modelleme kapsamı</strong>
-          <span>{state.scenario.scopeNote}</span>
+          <div>
+            <strong>Bu tahmine dahil</strong>
+            <span>{categorySummary}</span>
+          </div>
+          <div>
+            <strong>Dahil değil</strong>
+            <span>{state.scenario.scopeNote}</span>
+          </div>
         </aside>
+        <p key={announcementId} className="visually-hidden" role="status" aria-live="polite">
+          {announcement}
+        </p>
       </div>
     </section>
   )

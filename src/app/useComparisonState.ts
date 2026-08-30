@@ -2,7 +2,6 @@ import { useCallback, useState } from 'react'
 import { loadCatalog } from '../data/catalog'
 import {
   providerIds,
-  serviceCategories,
   type Provider,
   type ProviderId,
   type Scenario,
@@ -24,6 +23,8 @@ export interface ComparisonState {
   setFreeOnly: (value: boolean) => void
   setIncludeStale: (value: boolean) => void
   resetScenario: () => void
+  clearOfferFilters: () => void
+  resetOfferFiltersForScenario: () => void
 }
 
 export type ProviderRegionKey = `${ProviderId}:${string}`
@@ -51,6 +52,12 @@ function toggleInSet<T>(selected: Set<T>, id: T): Set<T> {
   return next
 }
 
+function providerRegionKeys(providers: readonly Provider[]): Set<ProviderRegionKey> {
+  return new Set(providers.flatMap((provider) => (
+    provider.regions.map((region) => providerRegionKey(provider.id, region.id))
+  )))
+}
+
 export function useComparisonState(
   providedScenarioPresets?: readonly Scenario[],
   providedProviders?: readonly Provider[],
@@ -63,19 +70,20 @@ export function useComparisonState(
   const [scenario, setScenario] = useState<Scenario>(() => resolveInitialScenario(scenarioPresets))
   const [selectedProviderIds, setSelectedProviderIds] = useState<Set<ProviderId>>(() => new Set(providerIds))
   const [selectedCategories, setSelectedCategories] = useState<Set<ServiceCategory>>(
-    () => new Set(serviceCategories),
+    () => new Set(resolveInitialScenario(scenarioPresets).requiredCategories),
   )
   const [selectedRegionKeys, setSelectedRegionKeys] = useState<Set<ProviderRegionKey>>(
-    () => new Set(providers.flatMap((provider) => (
-      provider.regions.map((region) => providerRegionKey(provider.id, region.id))
-    ))),
+    () => providerRegionKeys(providers),
   )
   const [freeOnly, setFreeOnly] = useState(false)
   const [includeStale, setIncludeStale] = useState(false)
 
   const selectScenario = useCallback((id: string) => {
     const preset = scenarioForId(scenarioPresets, id)
-    if (preset) setScenario(preset)
+    if (preset) {
+      setScenario(preset)
+      setSelectedCategories(new Set(preset.requiredCategories))
+    }
   }, [scenarioPresets])
 
   const updateScenario = useCallback((patch: Partial<Scenario>) => {
@@ -100,6 +108,22 @@ export function useComparisonState(
     ))
   }, [scenarioPresets])
 
+  const clearOfferFilters = useCallback(() => {
+    setSelectedProviderIds(new Set())
+    setSelectedCategories(new Set())
+    setSelectedRegionKeys(new Set())
+    setFreeOnly(false)
+    setIncludeStale(false)
+  }, [])
+
+  const resetOfferFiltersForScenario = useCallback(() => {
+    setSelectedProviderIds(new Set(providerIds))
+    setSelectedCategories(new Set(scenario.requiredCategories))
+    setSelectedRegionKeys(providerRegionKeys(providers))
+    setFreeOnly(false)
+    setIncludeStale(false)
+  }, [providers, scenario.requiredCategories])
+
   return {
     scenario,
     selectedProviderIds,
@@ -115,5 +139,7 @@ export function useComparisonState(
     setFreeOnly,
     setIncludeStale,
     resetScenario,
+    clearOfferFilters,
+    resetOfferFiltersForScenario,
   }
 }

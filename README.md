@@ -11,6 +11,18 @@
 - Sağlayıcı, kategori, bölge, ücretsiz kota ve güncellik filtreleri
 - 30 günlük güncellik durumu; eksik/geçersiz değerleri sıfır ya da sıralanabilir fiyat kabul etmeyen veri sağlığı yaklaşımı
 
+## Karar akışı
+
+- Hazır senaryolardan iş yükünü seçin.
+- Temel kullanım değerlerini ayarlayın; gerekirse gelişmiş kullanım ayarlarını açın.
+- Karşılaştırılabilir ilk üç sonucu, fiyat farklarını ve veri güven sinyallerini okuyun.
+- Seçtiğiniz sağlayıcıları yan yana karşılaştırın.
+- Ayrıntılı teklif tablosunu yalnız gerektiğinde açın.
+- Ücretsiz kullanım rehberinde süre, uygunluk ve aşım risklerini inceleyin.
+- Satın almadan önce teklif, sağlayıcı ve metodoloji bölümlerindeki resmî kaynakları izleyin.
+
+Ücretsiz katmanlar, kullanıcı uygunluğu açıkça seçilip hesaplamaya uygulanmadıkça yalnızca bilgi amaçlıdır. Arayüzde gösterilen toplamlar vergiler hariç genel liste fiyatı tahminleridir; taahhüt, sözleşme indirimi, destek ve lisans maliyetlerini içermez.
+
 ## Kapsam
 
 Sağlayıcılar: **Azure, Google Cloud, AWS, Hetzner, Oracle Cloud, Cloudflare, DigitalOcean ve Vultr**.

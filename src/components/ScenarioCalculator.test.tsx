@@ -20,6 +20,37 @@ function CalculatorFixture() {
 afterEach(cleanup)
 
 describe('ScenarioCalculator', () => {
+  it('groups active preset fields and exposes the mobile scenario control', () => {
+    render(<CalculatorFixture />)
+
+    expect(screen.getByLabelText('Kullanım senaryosu').closest('label')).not.toHaveClass('visually-hidden')
+    expect(screen.getByRole('group', { name: 'Temel kullanım' })).toContainElement(
+      screen.getByLabelText('Aylık çalışma süresi'),
+    )
+    const advanced = screen.getByText('Gelişmiş kullanım ayarları').closest('details')
+    expect(advanced).not.toBeNull()
+    expect(advanced).not.toHaveAttribute('open')
+    expect(within(advanced!).getByLabelText('Aylık GPU kullanımı')).toBeInTheDocument()
+    expect(screen.getByText('Bu tahmine dahil')).toBeInTheDocument()
+    expect(screen.getByText('Dahil değil')).toBeInTheDocument()
+  })
+
+  it('replaces the success announcement node for each valid explicit submit', async () => {
+    const user = userEvent.setup()
+    render(<CalculatorFixture />)
+
+    await user.click(screen.getByRole('button', { name: 'Hesaplamayı güncelle' }))
+    const firstAnnouncement = screen.getByText('Hesaplama güncellendi.').closest('[role="status"]')
+    expect(firstAnnouncement).not.toBeNull()
+    expect(firstAnnouncement).toHaveTextContent('Hesaplama güncellendi.')
+
+    await user.click(screen.getByRole('button', { name: 'Hesaplamayı güncelle' }))
+    const secondAnnouncement = screen.getByText('Hesaplama güncellendi.').closest('[role="status"]')
+    expect(secondAnnouncement).not.toBeNull()
+    expect(secondAnnouncement).toHaveTextContent('Hesaplama güncellendi.')
+    expect(secondAnnouncement).not.toBe(firstAnnouncement)
+  })
+
   it('offers all six presets and selects the AI / GPU scenario', async () => {
     const user = userEvent.setup()
     render(<CalculatorFixture />)
@@ -53,7 +84,7 @@ describe('ScenarioCalculator', () => {
 
     expect(outbound).toHaveValue(100)
     expect(screen.getByLabelText('Test senaryo durumu')).toHaveTextContent('"outboundGb":100')
-    expect(screen.getByRole('status', { name: 'Senaryo gereksinim özeti' })).toHaveTextContent(
+    expect(screen.getByLabelText('Senaryo gereksinim özeti')).toHaveTextContent(
       '100 GB dış trafik',
     )
     expect(screen.getByRole('note', { name: 'Modelleme kapsamı' })).toHaveTextContent(
@@ -165,7 +196,7 @@ describe('ScenarioCalculator', () => {
     render(<CalculatorFixture />)
 
     await user.selectOptions(screen.getByRole('combobox', { name: 'Kullanım senaryosu' }), scenarioId)
-    const summary = screen.getByRole('status', { name: 'Senaryo gereksinim özeti' })
+    const summary = screen.getByLabelText('Senaryo gereksinim özeti')
     for (const requirement of expectedRequirements) {
       expect(summary).toHaveTextContent(requirement)
     }
@@ -180,7 +211,7 @@ describe('ScenarioCalculator', () => {
     await user.clear(vcpu)
     await user.type(vcpu, '6')
 
-    expect(screen.getByRole('status', { name: 'Senaryo gereksinim özeti' })).toHaveTextContent('6 vCPU')
+    expect(screen.getByLabelText('Senaryo gereksinim özeti')).toHaveTextContent('6 vCPU')
   })
 
   it('supports wrapping arrow, Home and End navigation with linked tabs and tabpanel', async () => {

@@ -1,8 +1,9 @@
 import { Menu } from 'lucide-react'
 import { useRef } from 'react'
+import type { CatalogStats } from '../domain/presentation'
 
 interface HeroProps {
-  verifiedAt: string
+  stats: CatalogStats
 }
 
 const dateFormatter = new Intl.DateTimeFormat('tr-TR', {
@@ -13,9 +14,10 @@ const dateFormatter = new Intl.DateTimeFormat('tr-TR', {
 })
 
 const navigationItems = [
-  { href: '#senaryolar', label: 'Senaryolar' },
-  { href: '#karsilastirma', label: 'Karşılaştırma' },
-  { href: '#ucretsiz-katmanlar', label: 'Ücretsiz katmanlar' },
+  { href: '#senaryolar', label: 'Hesapla' },
+  { href: '#sonuclar', label: 'Sonuçlar' },
+  { href: '#karsilastirma', label: 'Teklifler' },
+  { href: '#ucretsiz-katmanlar', label: 'Ücretsiz kullanım' },
   { href: '#metodoloji', label: 'Metodoloji' },
 ] as const
 
@@ -29,9 +31,11 @@ function NavigationLinks({ onNavigate }: { onNavigate?: () => void }) {
   )
 }
 
-export function Hero({ verifiedAt }: HeroProps) {
+export function Hero({ stats }: HeroProps) {
   const mobileMenuRef = useRef<HTMLDetailsElement>(null)
-  const formattedDate = dateFormatter.format(new Date(`${verifiedAt}T00:00:00.000Z`))
+  const formattedDate = dateFormatter.format(
+    new Date(`${stats.latestVerificationDate}T00:00:00.000Z`),
+  )
   const closeMobileMenu = () => mobileMenuRef.current?.removeAttribute('open')
 
   return (
@@ -55,11 +59,34 @@ export function Hero({ verifiedAt }: HeroProps) {
       </header>
 
       <section className="hero" id="genel-bakis" aria-labelledby="hero-heading">
-        <h1 id="hero-heading">Bulut maliyetlerini karşılaştır</h1>
-        <p>Türkiye’den satın alınabilen servisler için kaynaklı USD analizi.</p>
-        <p className="hero__verified">
-          Son doğrulama: <time dateTime={verifiedAt}>{formattedDate}</time>
+        <p className="hero__eyebrow">Kaynaklı bulut maliyet karşılaştırması</p>
+        <h1 id="hero-heading">Bulut maliyetini senaryona göre karşılaştır</h1>
+        <p className="hero__lede">
+          Türkiye’den erişilebilen servisler için kaynaklı, vergiler hariç liste fiyatı analizi.
         </p>
+        <div className="hero__actions">
+          <a className="button button--primary" href="#senaryolar">Hesaplamaya başla</a>
+          <a className="button button--ghost" href="#metodoloji">Yöntemi ve kaynakları incele</a>
+        </div>
+        <dl className="hero__trust" aria-label="Katalog güven özeti">
+          <div>
+            <dt>Son doğrulama</dt>
+            <dd><time dateTime={stats.latestVerificationDate}>{formattedDate}</time></dd>
+          </div>
+          <div>
+            <dt>Kapsam</dt>
+            <dd>{stats.providerCount} sağlayıcı</dd>
+          </div>
+          <div>
+            <dt>Fiyat kataloğu</dt>
+            <dd>{stats.offerCount} teklif</dd>
+          </div>
+          <div>
+            <dt>Kanıt</dt>
+            <dd>{stats.sourceCount} resmî kaynak</dd>
+          </div>
+        </dl>
+        <p className="hero__basis">Genel liste fiyatı · Vergiler hariç · USD</p>
       </section>
     </div>
   )

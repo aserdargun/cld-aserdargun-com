@@ -1,17 +1,21 @@
 import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { loadCatalog } from '../data/catalog'
-import { providerIds, serviceCategories } from '../domain/catalog'
+import { providerIds } from '../domain/catalog'
 import { resolveInitialScenario, useComparisonState } from './useComparisonState'
 
 describe('useComparisonState', () => {
-  it('starts with the small web app and every provider and category selected', () => {
+  it('starts with every provider and the small web app categories selected', () => {
     const catalog = loadCatalog()
     const { result } = renderHook(() => useComparisonState(catalog.scenarios, catalog.providers))
 
     expect(result.current.scenario.id).toBe('small-web-app')
     expect(result.current.selectedProviderIds).toEqual(new Set(providerIds))
-    expect(result.current.selectedCategories).toEqual(new Set(serviceCategories))
+    expect(result.current.selectedCategories).toEqual(new Set([
+      'compute',
+      'object-storage',
+      'cdn-network',
+    ]))
     expect(result.current.selectedRegionKeys).toEqual(new Set([
       'azure:westeurope',
       'gcp:europe-west1',
@@ -58,13 +62,49 @@ describe('useComparisonState', () => {
     )
   })
 
-  it('selects the GPU scenario without narrowing the category filter', () => {
+  it('replaces selected categories with the selected GPU scenario requirements', () => {
     const { result } = renderHook(() => useComparisonState())
 
     act(() => result.current.selectScenario('ai-gpu'))
 
     expect(result.current.scenario.id).toBe('ai-gpu')
-    expect(result.current.selectedCategories).toEqual(new Set(serviceCategories))
+    expect(result.current.selectedCategories).toEqual(new Set(['gpu-ai']))
+  })
+
+  it('clears every offer filter without changing the current scenario', () => {
+    const { result } = renderHook(() => useComparisonState())
+
+    act(() => result.current.selectScenario('ai-gpu'))
+    act(() => result.current.setFreeOnly(true))
+    act(() => result.current.setIncludeStale(true))
+    act(() => result.current.clearOfferFilters())
+
+    expect(result.current.scenario.id).toBe('ai-gpu')
+    expect(result.current.selectedProviderIds).toEqual(new Set())
+    expect(result.current.selectedCategories).toEqual(new Set())
+    expect(result.current.selectedRegionKeys).toEqual(new Set())
+    expect(result.current.freeOnly).toBe(false)
+    expect(result.current.includeStale).toBe(false)
+  })
+
+  it('restores all providers and regions with the current scenario categories', () => {
+    const { result } = renderHook(() => useComparisonState())
+
+    act(() => result.current.selectScenario('ai-gpu'))
+    act(() => result.current.toggleProvider('azure'))
+    act(() => result.current.toggleCategory('gpu-ai'))
+    act(() => result.current.toggleRegion('aws', 'global'))
+    act(() => result.current.setFreeOnly(true))
+    act(() => result.current.setIncludeStale(true))
+    act(() => result.current.resetOfferFiltersForScenario())
+
+    expect(result.current.selectedProviderIds).toEqual(new Set(providerIds))
+    expect(result.current.selectedCategories).toEqual(new Set(['gpu-ai']))
+    expect(result.current.selectedRegionKeys.has('aws:global')).toBe(true)
+    expect(result.current.selectedRegionKeys.has('cloudflare:global')).toBe(true)
+    expect(result.current.selectedRegionKeys.size).toBe(10)
+    expect(result.current.freeOnly).toBe(false)
+    expect(result.current.includeStale).toBe(false)
   })
 
   it('toggles Azure without changing any other selected provider', () => {

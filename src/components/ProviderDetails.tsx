@@ -1,5 +1,12 @@
-import { ExternalLink } from 'lucide-react'
-import type { Provider, PurchaseAvailability, Source } from '../domain/catalog'
+import { ChevronDown, ExternalLink } from 'lucide-react'
+import { useState } from 'react'
+import type {
+  Provider,
+  ProviderId,
+  PurchaseAvailability,
+  Source,
+} from '../domain/catalog'
+import { ProviderMark } from './ProviderMark'
 import { SourceLink } from './SourceLink'
 
 interface ProviderDetailsProps {
@@ -25,6 +32,8 @@ function formatDate(date: string): string {
 }
 
 export function ProviderDetails({ providers, sources }: ProviderDetailsProps) {
+  const [openProviderId, setOpenProviderId] = useState<ProviderId | null>(null)
+
   return (
     <section
       className="provider-details page-section"
@@ -39,84 +48,111 @@ export function ProviderDetails({ providers, sources }: ProviderDetailsProps) {
       </header>
 
       <ul className="provider-details__list">
-        {providers.map((provider) => (
-          <li
-            className={`provider-details__row provider-details__row--${provider.id}`}
-            key={provider.id}
-            aria-label={provider.name}
-          >
-            <header className="provider-details__identity">
-              <div>
-                <span className="provider-details__mark" aria-hidden="true">
-                  {provider.shortName.slice(0, 3).toUpperCase()}
-                </span>
-                <h3>{provider.name}</h3>
+        {providers.map((provider) => {
+          const isOpen = openProviderId === provider.id
+          const bodyId = `provider-details-body-${provider.id}`
+
+          return (
+            <li
+              className={`provider-details__row provider-details__row--${provider.id}`}
+              key={provider.id}
+              aria-label={provider.name}
+            >
+              <header className="provider-details__identity">
+                <div>
+                  <ProviderMark providerId={provider.id} size={22} />
+                  <h3>{provider.name}</h3>
+                </div>
+                <button
+                  className="provider-details__toggle"
+                  type="button"
+                  aria-controls={bodyId}
+                  aria-expanded={isOpen}
+                  aria-label={`${provider.name} ayrıntılarını ${isOpen ? 'gizle' : 'göster'}`}
+                  onClick={() => setOpenProviderId(isOpen ? null : provider.id)}
+                >
+                  <span aria-hidden="true">Ayrıntılar</span>
+                  <ChevronDown aria-hidden="true" size={18} strokeWidth={1.9} />
+                </button>
+              </header>
+
+              <div className="provider-details__panel" id={bodyId} hidden={!isOpen}>
+                {isOpen && (
+                  <div className="provider-details__body">
+                    <a
+                      className="provider-details__official"
+                      href={provider.officialSite}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`${provider.name} resmî sitesi`}
+                    >
+                      Resmî site
+                      <ExternalLink aria-hidden="true" size={15} strokeWidth={1.9} />
+                    </a>
+
+                    <div className="provider-details__facts">
+                      <section>
+                        <h4>Güçlü yönler</h4>
+                        <ul>
+                          {provider.strengths.map((strength) => <li key={strength}>{strength}</li>)}
+                        </ul>
+                      </section>
+                      <section>
+                        <h4>Sınırlamalar</h4>
+                        <ul>
+                          {provider.limitations.map((limitation) => (
+                            <li key={limitation}>{limitation}</li>
+                          ))}
+                        </ul>
+                      </section>
+                      <section>
+                        <h4>Avrupa / global bölgeler</h4>
+                        <ul>
+                          {provider.regions.map((region) => (
+                            <li key={region.id}>
+                              {region.name}
+                              {region.countryCode ? ` · ${region.countryCode}` : ' · global'}
+                            </li>
+                          ))}
+                        </ul>
+                      </section>
+                      <section>
+                        <h4>Türkiye’den satın alma</h4>
+                        <strong
+                          className={`provider-details__availability provider-details__availability--${provider.purchaseAvailability}`}
+                        >
+                          {availabilityLabels[provider.purchaseAvailability]}
+                        </strong>
+                        <p>{provider.purchaseNote}</p>
+                        <span className="provider-details__verified">
+                          Doğrulama:{' '}
+                          <time dateTime={provider.verifiedAt}>{formatDate(provider.verifiedAt)}</time>
+                        </span>
+                      </section>
+                    </div>
+
+                    <div className="provider-details__sources">
+                      <section>
+                        <h4>Satın alma kaynakları</h4>
+                        {provider.purchaseSourceIds.map((sourceId) => (
+                          <SourceLink key={sourceId} sourceId={sourceId} sources={sources} />
+                        ))}
+                      </section>
+                      <section>
+                        <h4>Bölge kaynakları</h4>
+                        {[...new Set(provider.regions.map((region) => region.sourceId))].map(
+                          (sourceId) => (
+                            <SourceLink key={sourceId} sourceId={sourceId} sources={sources} />
+                          ),
+                        )}
+                      </section>
+                    </div>
+                  </div>
+                )}
               </div>
-              <a
-                className="provider-details__official"
-                href={provider.officialSite}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={`${provider.name} resmî sitesi`}
-              >
-                Resmî site
-                <ExternalLink aria-hidden="true" size={15} strokeWidth={1.9} />
-              </a>
-            </header>
-
-            <div className="provider-details__facts">
-              <section>
-                <h4>Güçlü yönler</h4>
-                <ul>
-                  {provider.strengths.map((strength) => <li key={strength}>{strength}</li>)}
-                </ul>
-              </section>
-              <section>
-                <h4>Sınırlamalar</h4>
-                <ul>
-                  {provider.limitations.map((limitation) => <li key={limitation}>{limitation}</li>)}
-                </ul>
-              </section>
-              <section>
-                <h4>Avrupa / global bölgeler</h4>
-                <ul>
-                  {provider.regions.map((region) => (
-                    <li key={region.id}>
-                      {region.name}
-                      {region.countryCode ? ` · ${region.countryCode}` : ' · global'}
-                    </li>
-                  ))}
-                </ul>
-              </section>
-              <section>
-                <h4>Türkiye’den satın alma</h4>
-                <strong className={`provider-details__availability provider-details__availability--${provider.purchaseAvailability}`}>
-                  {availabilityLabels[provider.purchaseAvailability]}
-                </strong>
-                <p>{provider.purchaseNote}</p>
-                <span className="provider-details__verified">
-                  Doğrulama:{' '}
-                  <time dateTime={provider.verifiedAt}>{formatDate(provider.verifiedAt)}</time>
-                </span>
-              </section>
-            </div>
-
-            <div className="provider-details__sources">
-              <section>
-                <h4>Satın alma kaynakları</h4>
-                {provider.purchaseSourceIds.map((sourceId) => (
-                  <SourceLink key={sourceId} sourceId={sourceId} sources={sources} />
-                ))}
-              </section>
-              <section>
-                <h4>Bölge kaynakları</h4>
-                {[...new Set(provider.regions.map((region) => region.sourceId))].map((sourceId) => (
-                  <SourceLink key={sourceId} sourceId={sourceId} sources={sources} />
-                ))}
-              </section>
-            </div>
-          </li>
-        ))}
+            </li>
+          )
+        })}
       </ul>
     </section>
   )

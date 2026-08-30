@@ -1,187 +1,287 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 
-test('high-traffic scenario recomputes major-provider ranking and exposes sources', async ({ page }) => {
-  const consoleProblems: string[] = []
+function collectConsoleProblems(page: Page): string[] {
+  const problems: string[] = []
   page.on('console', (message) => {
     if (message.type() === 'error' || message.type() === 'warning') {
-      consoleProblems.push(message.text())
+      problems.push(message.text())
     }
   })
+  return problems
+}
+
+async function expectNoDocumentOverflow(page: Page) {
+  const clientWidth = await page.evaluate(() => document.documentElement.clientWidth)
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBe(clientWidth)
+}
+
+test('desktop decision-first flow recomputes a scenario and reaches official offer evidence', async ({ page }) => {
+  const consoleProblems = collectConsoleProblems(page)
 
   await page.setViewportSize({ width: 1440, height: 1000 })
   await page.goto('/')
 
   await expect(page).toHaveTitle('CLD — Bulut maliyetlerini karşılaştır')
-  await expect(page.getByRole('heading', { name: 'Bulut maliyetlerini karşılaştır' })).toBeVisible()
+  await expect(page.getByRole('heading', {
+    name: 'Bulut maliyetini senaryona göre karşılaştır',
+  })).toBeVisible()
   await expect(page.locator('vite-error-overlay, nextjs-portal')).toHaveCount(0)
 
+  const sectionIds = [
+    'genel-bakis',
+    'senaryolar',
+    'sonuclar',
+    'saglayici-karsilastirma',
+    'karsilastirma',
+    'ucretsiz-katmanlar',
+    'saglayici-ayrintilari',
+    'metodoloji',
+  ]
+  expect(await page.evaluate((ids) => ids.every((id, index) => {
+    const current = document.getElementById(id)
+    const previous = index === 0 ? null : document.getElementById(ids[index - 1]!)
+    return current !== null && (
+      previous === null || Boolean(previous.compareDocumentPosition(current) & Node.DOCUMENT_POSITION_FOLLOWING)
+    )
+  }), sectionIds)).toBe(true)
+
   const scenarios = page.getByRole('region', { name: 'Senaryolar' })
+  const decisionSummary = page.getByRole('region', { name: 'Karar özeti' })
+  await expect(decisionSummary).toBeVisible()
+  const firstDecisionResult = decisionSummary
+    .getByRole('listitem', { name: /doğrulanmış tahmin/i })
+    .first()
+  await expect(firstDecisionResult).toContainText('Kullanılan bölgeler')
+  await expect(firstDecisionResult).toContainText('Vergiler hariç genel liste fiyatı')
+  await expect(firstDecisionResult).toContainText('Özgün para birimi: USD')
+  await expect(page.getByRole('table', { name: 'Servis karşılaştırması' })).toHaveCount(0)
+
   const smallWebTab = scenarios.getByRole('tab', { name: 'Küçük web uygulaması' })
   await smallWebTab.focus()
   await page.keyboard.press('ArrowRight')
-  const apiTab = scenarios.getByRole('tab', { name: 'API / backend' })
-  await expect(apiTab).toBeFocused()
-  await expect(apiTab).toHaveAttribute('aria-selected', 'true')
-  await expect(scenarios.getByRole('tabpanel', { name: 'API / backend' })).toContainText('10 milyon istek/ay')
-  await scenarios.getByRole('tab', { name: 'Yüksek trafik' }).click()
-  await expect(scenarios.getByLabel('Kullanım senaryosu')).toHaveValue('high-traffic')
-  await expect(scenarios.getByRole('note', { name: 'Modelleme kapsamı' })).toContainText(
-    'seçili CDN çıkış trafiğini kapsar',
+  await expect(scenarios.getByRole('tab', { name: 'API / backend' })).toBeFocused()
+  await expect(scenarios.getByRole('tab', { name: 'API / backend' })).toHaveAttribute('aria-selected', 'true')
+
+  const awsComparison = page.getByRole('article', { name: 'Amazon Web Services' })
+  await expect(awsComparison).toContainText('Europe (Frankfurt) · DE')
+  await expect(awsComparison).not.toContainText('CloudFront global edge network')
+  await expect(awsComparison.getByText('13 Ağustos 2026')).toHaveAttribute(
+    'datetime',
+    '2026-08-13',
   )
 
-  const ranking = page.getByRole('region', { name: 'Sağlayıcı sıralaması' })
-  const azureRanking = ranking.getByRole('listitem', { name: 'Microsoft Azure', exact: true })
-  const azureMonthlyTotal = azureRanking.getByRole('status', { name: 'Modellenen aylık tutar' })
-  const presetMonthlyTotal = await azureMonthlyTotal.innerText()
-  expect(presetMonthlyTotal).toMatch(/^\d[\d.,]* USD\/ay$/)
+  await page.getByRole('tab', { name: 'Yüksek trafik' }).click()
+  await page.getByLabel('Aylık dış trafik').fill('1000')
+  await page.getByRole('button', { name: 'Hesaplamayı güncelle' }).click()
 
-  await scenarios.getByLabel('Aylık dış trafik').fill('1000')
-  await scenarios.getByRole('button', { name: 'Hesaplamayı güncelle' }).click()
-  await expect(scenarios.getByLabel('Aylık dış trafik')).toHaveValue('1000')
-  await expect(azureMonthlyTotal).not.toHaveText(presetMonthlyTotal)
-  await expect(azureMonthlyTotal).toHaveText(/^\d[\d.,]* USD\/ay$/)
+  await expect(page.getByLabel('Aylık dış trafik')).toHaveValue('1000')
+  await expect(decisionSummary).toContainText(/USD\/ay/)
+  await expect(page.getByRole('region', { name: 'Sağlayıcıları karşılaştır' })).toBeVisible()
 
-  const filters = page.getByRole('region', { name: 'Karşılaştırma filtreleri' })
-  const comparison = page.getByRole('region', { name: 'Servis karşılaştırma tablosu' })
-  const undersizedCompute = comparison.getByRole('row', { name: /Standard B2s/ })
-  await expect(undersizedCompute.getByRole('cell').nth(4)).toContainText('Kapasite yetersiz')
-  await expect(undersizedCompute.getByRole('cell').nth(4)).not.toContainText(/\$\d/)
-  const outOfScopeStorage = comparison.getByRole('row', {
-    name: /DigitalOcean Spaces base subscription/,
-  })
-  await expect(outOfScopeStorage.getByRole('cell').nth(4)).toHaveText('Senaryo kapsamı dışında')
-  await expect(outOfScopeStorage).toContainText('$5.00/ay')
-  const awsRanking = ranking.getByRole('listitem', { name: 'Amazon Web Services', exact: true })
-  const awsGlobal = filters.getByRole('button', {
-    name: 'Amazon Web Services · CloudFront global edge network',
-  })
-  await expect(comparison).toContainText('Amazon CloudFront Pro flat-rate plan')
-  await awsGlobal.click()
-  await expect(awsGlobal).toHaveAttribute('aria-pressed', 'false')
-  await expect(comparison).not.toContainText('Amazon CloudFront Pro flat-rate plan')
-  await expect(awsRanking.getByRole('status', { name: 'Modellenen aylık tutar' })).toHaveText(
-    'Doğrulanamadı',
-  )
-  await awsGlobal.click()
-  await expect(comparison).toContainText('Amazon CloudFront Pro flat-rate plan')
+  await page.getByRole('button', { name: /Tüm teklif ayrıntıları/ }).click()
+  await expect(page.getByRole('table', { name: 'Servis karşılaştırması' })).toBeVisible()
+  const firstEvidence = page
+    .getByRole('region', { name: 'Servis karşılaştırma tablosu' })
+    .locator('details.comparison-table__evidence')
+    .first()
+  await firstEvidence.locator('summary[aria-label="Teklif kanıtını göster"]').click()
+  await expect(firstEvidence).toHaveAttribute('open', '')
 
-  for (const provider of ['Hetzner', 'Oracle', 'Cloudflare', 'DigitalOcean', 'Vultr']) {
-    await filters.getByRole('button', { name: provider, exact: true }).click()
-  }
-  for (const provider of ['Azure', 'GCP', 'AWS']) {
-    await expect(filters.getByRole('button', { name: provider, exact: true })).toHaveAttribute('aria-pressed', 'true')
-  }
-  for (const provider of ['Hetzner', 'Oracle', 'Cloudflare', 'DigitalOcean', 'Vultr']) {
-    await expect(filters.getByRole('button', { name: provider, exact: true })).toHaveAttribute('aria-pressed', 'false')
-  }
-
-  await expect(ranking.getByRole('listitem')).toHaveCount(3)
-  await ranking.locator('summary').first().click()
-  await expect(ranking.locator('details').first()).toHaveAttribute('open', '')
-  await expect(ranking).toContainText('Kalem')
-
-  const source = comparison
+  const firstSource = page
+    .getByRole('region', { name: 'Servis karşılaştırma tablosu' })
     .getByRole('link')
     .first()
-  await expect(source).toHaveAttribute('href', /^https:\/\//)
-  await expect(source).toHaveAttribute('target', '_blank')
-  await expect(source).toHaveAttribute('rel', /\bnoopener\b/)
-  await expect(source.locator('time')).toHaveAttribute('datetime', /^2026-\d{2}-\d{2}$/)
+  await expect(firstSource).toHaveAttribute('href', /^https:\/\//)
+  await expect(firstSource).toHaveAttribute('target', '_blank')
+  await expect(firstSource).toHaveAttribute('rel', /\bnoopener\b/)
 
+  const filterSummary = page.getByRole('button', { name: /Filtreler/ })
+  await filterSummary.click()
+  const freeOnly = page.getByRole('checkbox', { name: 'Yalnızca ücretsiz katmanlar' })
+  const includeStale = page.getByRole('checkbox', { name: 'Eski verileri dahil et' })
+  await freeOnly.check()
+  await includeStale.check()
+  await expect(filterSummary).toContainText('Filtreler · 2')
+  await page.getByRole('button', { name: 'Tümünü temizle' }).click()
+  await expect(freeOnly).not.toBeChecked()
+  await expect(includeStale).not.toBeChecked()
+  await expect(filterSummary).toContainText('Filtreler · 20')
+
+  await expectNoDocumentOverflow(page)
   await expect.poll(() => consoleProblems).toEqual([])
 })
 
-test('mobile navigation closes and comparison tables own their horizontal overflow', async ({ page }) => {
+test('mobile flow uses a visible scenario select, stacked inputs, and table-owned overflow', async ({ page }) => {
+  const consoleProblems = collectConsoleProblems(page)
+
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/')
 
-  const menu = page.getByRole('group').filter({ has: page.getByLabel('Menüyü aç') })
-  await page.getByLabel('Menüyü aç').click()
-  const mobileNavigation = page.getByRole('navigation', { name: 'Mobil navigasyon' })
-  await expect(mobileNavigation).toBeVisible()
-  await mobileNavigation.getByRole('link', { name: 'Karşılaştırma', exact: true }).click()
+  await expect(page.getByRole('heading', {
+    name: 'Bulut maliyetini senaryona göre karşılaştır',
+  })).toBeVisible()
+  await expect(page.locator('vite-error-overlay, nextjs-portal')).toHaveCount(0)
 
-  await expect(page).toHaveURL(/#karsilastirma$/)
-  await expect(mobileNavigation).toBeHidden()
-  await expect(menu).not.toHaveAttribute('open', '')
+  const scenarioSelect = page.getByLabel('Kullanım senaryosu')
+  await expect(scenarioSelect).toBeVisible()
+  await expect(page.getByRole('tablist', { name: 'Kullanım senaryoları' })).toBeHidden()
 
-  const documentWidths = await page.evaluate(() => ({
-    clientWidth: document.documentElement.clientWidth,
-    scrollWidth: document.documentElement.scrollWidth,
-  }))
-  expect(documentWidths.scrollWidth).toBe(documentWidths.clientWidth)
-
-  const mobileRanking = page.getByRole('region', { name: 'Sağlayıcı sıralaması' })
-  const rankingOverflow = await mobileRanking.evaluate((element) => ({
-    clientHeight: element.clientHeight,
-    scrollHeight: element.scrollHeight,
-    overflowY: getComputedStyle(element).overflowY,
-  }))
-  expect(rankingOverflow.overflowY).toBe('visible')
-  expect(rankingOverflow.scrollHeight).toBe(rankingOverflow.clientHeight)
-
-  const disclosureHitbox = await mobileRanking.locator('summary').first().evaluate((element) => {
-    const bounds = element.getBoundingClientRect()
-    return { width: bounds.width, height: bounds.height }
-  })
-  expect(disclosureHitbox.width).toBeGreaterThanOrEqual(44)
-  expect(disclosureHitbox.height).toBeGreaterThanOrEqual(44)
-
-  for (const actionName of ['Varsayılan değerlere sıfırla', 'Hesaplamayı güncelle']) {
-    const actionHeight = await page
-      .getByRole('button', { name: actionName })
-      .evaluate((element) => element.getBoundingClientRect().height)
-    expect(actionHeight).toBeGreaterThanOrEqual(44)
+  const primaryFields = page.locator('.scenario-calculator__fieldset .scenario-calculator__field')
+  const primaryFieldBoxes = await primaryFields.evaluateAll((elements) => elements
+    .filter((element) => {
+      const bounds = element.getBoundingClientRect()
+      return getComputedStyle(element).display !== 'none' && bounds.width > 0 && bounds.height > 0
+    })
+    .map((element) => {
+      const bounds = element.getBoundingClientRect()
+      return { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }
+    }))
+  expect(primaryFieldBoxes.length).toBeGreaterThan(1)
+  for (const [index, field] of primaryFieldBoxes.entries()) {
+    const firstField = primaryFieldBoxes[0]!
+    expect(Math.abs(field.x - firstField.x), `primary field ${index + 1} x position`).toBeLessThanOrEqual(1)
+    expect(Math.abs(field.width - firstField.width), `primary field ${index + 1} width`).toBeLessThanOrEqual(1)
+    if (index > 0) {
+      const previousField = primaryFieldBoxes[index - 1]!
+      expect(field.y, `primary field ${index + 1} vertical position`)
+        .toBeGreaterThanOrEqual(previousField.y + previousField.height)
+    }
   }
 
+  const decisionSummary = page.getByRole('region', { name: 'Karar özeti' })
+  await expect(page.locator('.scenario-workspace__grid > .scenario-calculator + #sonuclar'))
+    .toBeVisible()
+  await expect(decisionSummary.getByRole('listitem', { name: /doğrulanmış tahmin/i }).first()).toBeVisible()
+  await expect(decisionSummary.getByText('Kullanılan bölgeler').first()).toBeVisible()
+  await expect(decisionSummary.getByText('Fiyat tabanı').first()).toBeVisible()
+  await expect(page.getByRole('table', { name: 'Servis karşılaştırması' })).toHaveCount(0)
+
+  const providerDetailsButton = page.getByRole('button', {
+    name: 'Microsoft Azure ayrıntılarını göster',
+  })
+  await providerDetailsButton.click()
+  await expect(page.getByRole('button', { name: 'Microsoft Azure ayrıntılarını gizle' }))
+    .toHaveAttribute('aria-expanded', 'true')
+  await expect(page.getByRole('link', { name: 'Microsoft Azure resmî sitesi' })).toHaveAttribute('href', /^https:\/\//)
+  const azureProviderRow = page.getByRole('listitem', { name: 'Microsoft Azure' })
+  const visibleSourceDate = azureProviderRow.locator('.provider-details__sources .source-link time').first()
+  await expect(visibleSourceDate).toBeVisible()
+  await expect(visibleSourceDate).toHaveAttribute('datetime', '2026-08-13')
+  const providerSourceLinkHeight = await visibleSourceDate.locator('..').evaluate(
+    (element) => element.getBoundingClientRect().height,
+  )
+  expect(providerSourceLinkHeight).toBeGreaterThanOrEqual(44)
+
+  await expectNoDocumentOverflow(page)
+
+  await page.getByRole('button', { name: /Tüm teklif ayrıntıları/ }).click()
   const tableRegion = page.getByRole('region', { name: 'Servis karşılaştırma tablosu' })
+  await expect(page.getByText('Tabloyu yatay kaydırın; sağlayıcı sütunu sabit kalır.')).toBeVisible()
   const tableLayout = await tableRegion.evaluate((element) => {
     const table = element.querySelector('table')
-    const providerHeader = table?.querySelector('th:first-child')
-    if (!table || !providerHeader) throw new Error('Comparison table structure is missing')
+    const columnHeader = table?.querySelector('thead th:first-child')
+    const firstBodyHeader = table?.querySelector('tbody th:first-child')
+    if (!table || !columnHeader || !firstBodyHeader) {
+      throw new Error('Comparison table structure is missing')
+    }
+    const scrollLeftBefore = element.scrollLeft
+    const bodyHeaderLeftBefore = firstBodyHeader.getBoundingClientRect().left
     element.scrollLeft = 300
+    const bodyHeaderLeftAfter = firstBodyHeader.getBoundingClientRect().left
     return {
       clientWidth: element.clientWidth,
       scrollWidth: element.scrollWidth,
-      scrollLeft: element.scrollLeft,
+      scrollLeftBefore,
+      scrollLeftAfter: element.scrollLeft,
       tableDisplay: getComputedStyle(table).display,
-      providerPosition: getComputedStyle(providerHeader).position,
+      columnHeaderPosition: getComputedStyle(columnHeader).position,
+      bodyHeaderPosition: getComputedStyle(firstBodyHeader).position,
+      bodyHeaderLeftBefore,
+      bodyHeaderLeftAfter,
     }
   })
   expect(tableLayout.scrollWidth).toBeGreaterThan(tableLayout.clientWidth)
-  expect(tableLayout.scrollLeft).toBeGreaterThan(0)
+  expect(tableLayout.scrollLeftAfter).toBeGreaterThan(tableLayout.scrollLeftBefore)
   expect(tableLayout.tableDisplay).toBe('table')
-  expect(tableLayout.providerPosition).toBe('sticky')
+  expect(tableLayout.columnHeaderPosition).toBe('sticky')
+  expect(tableLayout.bodyHeaderPosition).toBe('sticky')
+  expect(Math.abs(tableLayout.bodyHeaderLeftAfter - tableLayout.bodyHeaderLeftBefore))
+    .toBeLessThanOrEqual(2)
 
-  const freeTierSection = page.getByRole('region', { name: 'Ücretsiz kullanım imkânları' })
-  await expect(freeTierSection.getByRole('button', { name: 'Azure', exact: true })).toHaveAttribute('aria-pressed', 'true')
-  await expect(freeTierSection.getByRole('button', { name: 'GCP', exact: true })).toHaveAttribute('aria-pressed', 'true')
-  await expect(freeTierSection.getByRole('button', { name: 'AWS', exact: true })).toHaveAttribute('aria-pressed', 'false')
-  await expect(freeTierSection.getByRole('button', { name: 'Oracle', exact: true })).toHaveAttribute('aria-pressed', 'false')
-  await expect(freeTierSection).not.toContainText('Amazon Web Services')
-  await expect(freeTierSection).not.toContainText('Oracle Cloud Infrastructure')
+  await page.keyboard.press('Tab')
+  await page.keyboard.press('Tab')
+  await expect(tableRegion).toBeFocused()
+  const focusStyle = await tableRegion.evaluate((element) => {
+    const style = getComputedStyle(element)
+    return { width: Number.parseFloat(style.outlineWidth), style: style.outlineStyle }
+  })
+  expect(focusStyle.width).toBeGreaterThanOrEqual(3)
+  expect(focusStyle.style).not.toBe('none')
 
-  await freeTierSection.getByRole('button', { name: 'AWS', exact: true }).click()
-  await freeTierSection.getByRole('button', { name: 'Oracle', exact: true }).click()
-  await expect(freeTierSection).toContainText('Amazon Web Services')
-  await expect(freeTierSection).toContainText('Oracle Cloud Infrastructure')
+  await expectNoDocumentOverflow(page)
+  await expect.poll(() => consoleProblems).toEqual([])
+})
 
-  const freeTierRegion = page.getByRole('region', { name: 'Ücretsiz katmanlar tablosu' })
-  const freeTierLayout = await freeTierRegion.evaluate((element) => {
-    const table = element.querySelector('table')
-    const providerHeader = table?.querySelector('th:first-child')
-    if (!table || !providerHeader) throw new Error('Free-tier table structure is missing')
-    element.scrollLeft = 300
-    return {
+test('tablet trust, calculator, decision, and provider surfaces fit with 44px primary controls', async ({ page }) => {
+  const consoleProblems = collectConsoleProblems(page)
+
+  await page.setViewportSize({ width: 768, height: 1024 })
+  await page.goto('/')
+
+  await expect(page.getByRole('heading', {
+    name: 'Bulut maliyetini senaryona göre karşılaştır',
+  })).toBeVisible()
+  await expect(page.locator('vite-error-overlay, nextjs-portal')).toHaveCount(0)
+  await expect(page.locator('.hero__trust')).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Senaryolar' })).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Karar özeti' })).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Sağlayıcıları karşılaştır' })).toBeVisible()
+
+  for (const selector of [
+    '.hero__trust',
+    '.scenario-calculator__panel',
+    '#sonuclar',
+    '#saglayici-karsilastirma',
+  ]) {
+    const layout = await page.locator(selector).evaluate((element) => ({
       clientWidth: element.clientWidth,
       scrollWidth: element.scrollWidth,
-      scrollLeft: element.scrollLeft,
-      tableDisplay: getComputedStyle(table).display,
-      providerPosition: getComputedStyle(providerHeader).position,
-    }
+      right: element.getBoundingClientRect().right,
+    }))
+    expect(layout.scrollWidth).toBeLessThanOrEqual(layout.clientWidth)
+    expect(layout.right).toBeLessThanOrEqual(768)
+  }
+
+  const primaryControls = page.locator([
+    'a.button',
+    '.scenario-calculator__actions button',
+    '.provider-compare__selector button',
+    '.offer-explorer .page-section__heading > button',
+  ].join(', '))
+  const controlHeights = await primaryControls.evaluateAll((elements) => elements
+    .filter((element) => {
+      const bounds = element.getBoundingClientRect()
+      return bounds.width > 0 && bounds.height > 0
+    })
+    .map((element) => ({
+      text: element.textContent?.trim() ?? '',
+      height: element.getBoundingClientRect().height,
+    })))
+  expect(controlHeights.length).toBeGreaterThan(0)
+  for (const control of controlHeights) {
+    expect(control.height, control.text).toBeGreaterThanOrEqual(44)
+  }
+
+  const primaryCta = page.getByRole('link', { name: 'Hesaplamaya başla' })
+  await primaryCta.focus()
+  await expect(primaryCta).toBeFocused()
+  const focusStyle = await primaryCta.evaluate((element) => {
+    const style = getComputedStyle(element)
+    return { width: Number.parseFloat(style.outlineWidth), style: style.outlineStyle }
   })
-  expect(freeTierLayout.scrollWidth).toBeGreaterThan(freeTierLayout.clientWidth)
-  expect(freeTierLayout.scrollLeft).toBeGreaterThan(0)
-  expect(freeTierLayout.tableDisplay).toBe('table')
-  expect(freeTierLayout.providerPosition).toBe('sticky')
+  expect(focusStyle.width).toBeGreaterThanOrEqual(3)
+  expect(focusStyle.style).not.toBe('none')
+
+  await expectNoDocumentOverflow(page)
+  await expect.poll(() => consoleProblems).toEqual([])
 })
