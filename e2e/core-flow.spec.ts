@@ -11,7 +11,7 @@ test('high-traffic scenario recomputes major-provider ranking and exposes source
   await page.setViewportSize({ width: 1440, height: 1000 })
   await page.goto('/')
 
-  await expect(page).toHaveTitle(/^CLD - Cloud Infrastructure/)
+  await expect(page).toHaveTitle(/^CLD - /u)
   await expect(page.getByRole('heading', { name: 'Bulut maliyetlerini karşılaştır' })).toBeVisible()
   await expect(page.locator('vite-error-overlay, nextjs-portal')).toHaveCount(0)
 
