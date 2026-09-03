@@ -1,4 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="12" fill="#06172b" />
-  <path d="M17 32a15 15 0 0 1 28.7-6A10 10 0 1 1 44 45H22a11 11 0 0 1-5-13Z" fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" />
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-label="cld">
+  <rect width="320" height="320" rx="64" fill="#121310"/>
+  <circle cx="160" cy="142" r="108" fill="#c8ff36"/>
+  <g transform="translate(60 42)">
+    <path d="M50 150
+             C18 150 12 110 46 96
+             C50 64 102 50 122 76
+             C148 44 200 70 196 108
+             C228 108 234 152 200 160
+             L50 150 Z"
+      fill="none" stroke="#0c0d0a" stroke-width="11" stroke-linejoin="round" /></g>
+  <text x="160" y="296" text-anchor="middle" fill="#c8ff36"
+    font-family="Inter, Helvetica, Arial, sans-serif" font-size="40" font-weight="800"
+    letter-spacing="-2">CLD</text>
 </svg>
