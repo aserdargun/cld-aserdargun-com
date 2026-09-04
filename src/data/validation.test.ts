@@ -62,9 +62,9 @@ describe('catalog validator policy', () => {
     const catalog = clonedCatalog()
     expect(validateCatalog(catalog)).toEqual([])
 
-    catalog.sources[0]!.accessedAt = '2026-08-15'
+    catalog.sources[0]!.accessedAt = '2026-09-05'
     expect(validateCatalog(catalog)).toContain(
-      `source ${catalog.sources[0]!.id} is dated after catalog snapshot 2026-08-14: 2026-08-15`,
+      `source ${catalog.sources[0]!.id} is dated after catalog snapshot 2026-09-04: 2026-09-05`,
     )
   })
 

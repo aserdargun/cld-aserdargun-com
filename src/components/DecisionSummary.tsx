@@ -184,7 +184,7 @@ function EstimateEvidenceSignals({
       <div>
         <dt>Fiyat tabanı</dt>
         <dd className="decision-summary__price-basis">
-          <span>Vergiler hariç genel liste fiyatı · Özgün para birimi: {currencies}</span>
+          <span>{`Vergiler hariç genel liste fiyatı · Özgün para birimi: ${currencies}`}</span>
           {priceBasis.status === 'invalid' && priceBasis.currencies.includes('EUR') ? (
             <strong>ECB dönüşüm kanıtı doğrulanamadı</strong>
           ) : null}

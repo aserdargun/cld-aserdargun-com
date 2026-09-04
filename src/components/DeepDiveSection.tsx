@@ -9,7 +9,7 @@ interface DeepDiveSectionProps {
 
 /**
  * Konu derinleştirme bölümü.
- * Üç derinleştirme: Kubernetes'a giriş, Sunucusuz mimari, GPU/AI iş yükleri.
+ * Üç derinleştirme: Kubernetes’a giriş, Sunucusuz mimari, GPU/AI iş yükleri.
  * Her biri için: ön koşullar, adım adım yolculuk, akış şeması, sık yapılan hata,
  * sonraki adım önerisi, "Öğrendim" düğmesi ve kişisel not paneli.
  */

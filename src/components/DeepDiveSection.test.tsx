@@ -25,7 +25,7 @@ function renderSection(overrides: Partial<Parameters<typeof DeepDiveSection>[0]>
 describe('DeepDiveSection', () => {
   it('renders the three deep dives', () => {
     renderSection()
-    expect(screen.getByText("Kubernetes'a giriş")).toBeInTheDocument()
+    expect(screen.getByText('Kubernetes’a giriş')).toBeInTheDocument()
     expect(screen.getByText('Sunucusuz mimari desenleri')).toBeInTheDocument()
     expect(screen.getByText('GPU ve yapay zeka iş yükleri')).toBeInTheDocument()
   })
@@ -40,7 +40,7 @@ describe('DeepDiveSection', () => {
 
   it('shows prerequisites, steps and pitfalls for each deep dive', () => {
     renderSection()
-    const k8s = screen.getByRole('article', { name: /Kubernetes'a giriş/ })
+    const k8s = screen.getByRole('article', { name: /Kubernetes’a giriş/ })
     expect(within(k8s).getByText('Önce bilmen gereken')).toBeInTheDocument()
     expect(within(k8s).getAllByText(/Sık yapılan hata/).length).toBeGreaterThan(0)
     expect(within(k8s).getAllByText(/Sonraki adım/).length).toBeGreaterThan(0)

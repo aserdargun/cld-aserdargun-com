@@ -2,7 +2,7 @@
 
 ## Amaç ve veri fotoğrafı
 
-Uygulama, Türkiye'den erişilebilen genel bulut tekliflerini kaynaklı ve tekrar denetlenebilir biçimde karşılaştırır. Mevcut katalog fotoğrafı **2026-08-14** tarihlidir. Her görünür fiyat, ücretsiz katman, bölge, satın alma notu ve döviz kuru arayüzde resmî kaynak ve erişim tarihiyle ilişkilidir.
+Uygulama, Türkiye’den erişilebilen genel bulut tekliflerini kaynaklı ve tekrar denetlenebilir biçimde karşılaştırır. Mevcut katalog fotoğrafı **2026-09-04** tarihlidir. Her görünür fiyat, ücretsiz katman, bölge, satın alma notu ve döviz kuru arayüzde resmî kaynak ve erişim tarihiyle ilişkilidir.
 
 Bu çalışma teklif, fatura tahmini garantisi, vergi danışmanlığı veya sağlayıcı önerisi değildir. Fiyatların ve uygunluk koşullarının satın alma öncesinde yeniden doğrulanması gerekir.
 

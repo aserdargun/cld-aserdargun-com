@@ -40,7 +40,7 @@ export const conceptLayers: readonly ConceptLayer[] = [
     id: 'paas',
     title: 'PaaS — Platform hizmeti',
     shortLabel: 'PaaS',
-    whoManages: 'Sağlayıcı işletim sistemi, çalışma zamanı ve veritabanı motorunu yönetir; sen sadece kodu yazarsın.',
+    whoManages: 'Sağlayıcı işletim sistemi ve çalışma zamanını; seçtiğin hizmete göre veritabanı motorunu da yönetir. Sen uygulama kodu, veri ve yapılandırmadan sorumlusun.',
     example: 'Azure App Service, App Engine, Heroku, Vercel.',
     userResponsibility: 30,
   },
@@ -97,7 +97,7 @@ export const serviceCategoryLessons: readonly ServiceCategoryLesson[] = [
     title: 'Yönetilen Veritabanı',
     oneLiner: 'Sağlayıcının sana kurduğu, yedeklediği ve güncellediği veritabanı motorudur.',
     whatIsIt:
-      'PostgreSQL, MySQL, MongoDB gibi bir veritabanını kendın kurmak yerine sağlayıcıya bırakırsın. Sağlayıcı yedek alır, yama yapar, çoğaltır (replication). Saatlik veya aylık ücret ile depolama ve IOPS ayrıca faturalanır.',
+      'PostgreSQL, MySQL, MongoDB gibi bir veritabanını kendin kurmak yerine altyapı işletimini sağlayıcıya bırakırsın. Yedekleme, yama ve çoğaltma seçenekleri hizmete ve yapılandırmaya göre değişir. İşlem gücü, depolama, IOPS ve yedekleme ayrı ayrı faturalanabilir.',
     whenToUse:
       'Veri bütünlüğü kritik uygulamalar, e-ticaret, kullanıcı hesapları, transaksiyonel iş yükleri için idealdir.',
     analogy: 'Profesyonel bir aşçı tutmak: sen malzemeyi söylersin, aşçı yemeği yapar, servisi de o yapar.',
@@ -116,7 +116,7 @@ export const serviceCategoryLessons: readonly ServiceCategoryLesson[] = [
     analogy: 'Taksi: sadece bindiğin dakika ve gidilen mesafe için ödeme, garaj yok.',
     keyTerms: ['istek sayısı', 'GB-saniye', 'soğuk başlangıç (cold start)', 'eşzamanlılık (concurrency)'],
     commonMistake:
-      'Sürekli akan yüksek trafik için kullanmak: klasik VM daha ucuz olabilir, çünkü sunucusuz milyon istek üstünde pahalılayabilir.',
+      'Sürekli akan yüksek trafik için kullanmak: kullanım desenine göre klasik VM daha ucuz olabilir; sunucusuz maliyet milyonlarca istekte hızla artabilir.',
   },
   {
     category: 'cdn-network',
@@ -155,7 +155,7 @@ export const serviceCategoryLessons: readonly ServiceCategoryLesson[] = [
     analogy: 'Süper bilgisayara saatlik erişim: sadece ihtiyacın olduğu an için açarsın.',
     keyTerms: ['GPU saati', 'VRAM', 'eğitim vs çıkarım', 'NVIDIA CUDA', 'kuyruk (queue)'],
     commonMistake:
-      'Modeli GPU’da 7/24 çalışır bırakmak: çıkarım genelde küçük örneklerde veya sunucusuz GPU ile daha ucuzdur.',
+      'Modeli ölçmeden GPU’da 7/24 çalışır durumda bırakmak: nicemleme, daha küçük GPU örneği veya sunucusuz çalışma trafik desenine göre maliyeti düşürebilir.',
   },
 ] as const
 
@@ -210,9 +210,9 @@ export const pricingModels: readonly PricingModel[] = [
   {
     id: 'free-tier',
     title: 'Ücretsiz katman (Free tier)',
-    oneLiner: 'Yeni hesap kredisi veya sürekli küçük bir kota ile bedava başlangıç.',
-    pros: 'Kredi bittiğinde otomatik ücret kesilmez (Always Free), öğrenmek için idealdir.',
-    cons: 'Kapasite sınırlı; üretim iş yükü için yetersiz kalabilir.',
+    oneLiner: 'Yeni hesap kredisi, süreli teklif veya sürekli küçük bir kota ile ücretsiz başlangıç.',
+    pros: 'Koşullar uygunsa öğrenme ve prototipleme maliyetini düşürür.',
+    cons: 'Süre, kota ve aşım davranışı sağlayıcıya ve hesap planına göre değişir; ücretli hesaplarda aşım otomatik faturalanabilir.',
     bestFor: 'Öğrenciler, küçük yan projeler, prototip ve demolar.',
     savingsHint: 100,
   },
@@ -230,10 +230,10 @@ export const regionLesson: RegionLesson = {
   whyItMatters:
     'Verinin fiziksel olarak tutulduğu veri merkezi coğrafyasıdır. Türkiye’den kullanıcıya en yakın bölgeyi seçmek gecikmeyi düşürür; ancak uyumluluk, fiyat ve hizmet kapsamı bölgeye göre değişir.',
   bulletPoints: [
-    'Gecikme (latency): İstanbul’a fiziksel olarak yakın bölgeler (Frankfurt, Amsterdam, Batı Avrupa) genelde 30-50 ms civarıdır.',
+    'Gecikme (latency): İstanbul’a fiziksel olarak yakın bölgeler çoğu bağlantıda daha düşük gecikme verir; gerçek sonucu kendi ağından ölçmelisin.',
     'Veri egemenliği: Bazı sektörler verinin belirli bir ülkede kalmasını zorunlu kılar; bu durumda bölgeyi ona göre seçersin.',
-    'Fiyat: Aynı VM tipi, bölgeye göre %10-30 farklı fiyatlanabilir.',
-    'Hizmet kapsamı: Her yeni servis, önce ABD bölgelerinde açılır; diğer bölgelerde olmayabilir.',
+    'Fiyat: Aynı kaynak, bölgeye göre farklı fiyatlanabilir; hesaplama, depolama ve ağ ücretlerini birlikte karşılaştırmalısın.',
+    'Hizmet kapsamı: Yeni özelliklerin ilk sunulduğu bölgeler sağlayıcıya göre değişir; her hizmet her bölgede bulunmayabilir.',
   ],
   misconception:
     '"En yakın bölge her zaman en iyisidir" değil: bazen uzak bölge daha ucuz veya daha yeni özelliklere sahip olabilir.',
@@ -263,7 +263,7 @@ export const providerSnapshots: readonly ProviderSnapshot[] = [
     providerId: 'aws',
     oneLiner: 'En geniş hizmet kataloğu, olgun ekosistem.',
     forWhom: 'Genel amaçlı üretim, startup, kurumsal.',
-    signature: 'EC2, S3, Lambda — bulutun "klavuzu".',
+    signature: 'EC2, S3 ve Lambda ile geniş bir yapı taşı kataloğu.',
   },
   {
     providerId: 'hetzner',
@@ -279,9 +279,9 @@ export const providerSnapshots: readonly ProviderSnapshot[] = [
   },
   {
     providerId: 'cloudflare',
-    oneLiner: 'Çıkış ücreti olmayan küresel edge ağı.',
+    oneLiner: 'Küresel edge ağı ve R2’de ücretsiz internet çıkışı.',
     forWhom: 'Statik site, API, DDoS koruması arayanlar.',
-    signature: 'Egress bedava; R2 ve Workers ile sunucusuz ekonomi.',
+    signature: 'R2’de ücretsiz internet çıkışı; Workers ile edge tabanlı sunucusuz işlem.',
   },
   {
     providerId: 'digitalocean',
@@ -306,7 +306,7 @@ export interface GlossaryTerm {
 export const glossary: readonly GlossaryTerm[] = [
   {
     term: 'vCPU',
-    definition: 'Sanal işlemci çekirdeği. Genelde 1 fiziksel çekirdeğin 2 iş parçacığına eşdeğerdir.',
+    definition: 'Sağlayıcının sanal makineye ayırdığı işlemci birimi. Fiziksel çekirdek ve iş parçacığı karşılığı sağlayıcıya ve örnek ailesine göre değişir.',
     example: '2 vCPU + 4 GB RAM = küçük bir web uygulamasını rahatça çalıştırır.',
   },
   {
@@ -331,7 +331,7 @@ export const glossary: readonly GlossaryTerm[] = [
   },
   {
     term: 'Availability Zone (AZ)',
-    definition: 'Aynı bölge içindeki bağımsız veri merkezleri. Bir AZ çökerse diğeri hizmeti sürdürür.',
+    definition: 'Aynı bölge içindeki ayrı hata alanlarıdır. Uygulama birden çok AZ’ye uygun tasarlanmışsa tek AZ arızasında hizmet başka bir AZ’den sürebilir.',
     example: 'Bir uygulamayı 2 farklı AZ’ye dağıtmak, tek nokta arızasını önler.',
   },
   {
@@ -360,9 +360,9 @@ export const glossary: readonly GlossaryTerm[] = [
     example: 'Toplu video dönüştürme işini spot ile yapıp %70 tasarruf etmek.',
   },
   {
-    term: 'Ekim (deploy)',
+    term: 'Dağıtım (deploy)',
     definition: 'Uygulamanın yeni sürümünün bulut ortamına yüklenip çalıştırılması.',
-    example: 'CI/CD pipeline, her Git push’ta otomatik olarak yeni sürümü dağıtır.',
+    example: 'CI/CD işlem hattı, her Git gönderiminde yeni sürümü otomatik olarak dağıtır.',
   },
 ] as const
 
@@ -431,7 +431,7 @@ export const quizQuestions: readonly QuizQuestion[] = [
   },
   {
     id: 'q-region',
-    prompt: 'Türkiye’deki bir kullanıcı için en düşük gecikmeyi hangi yaklaşım garanti eder?',
+    prompt: 'Türkiye’deki bir kullanıcı için hangi yaklaşım gecikmeyi genellikle azaltır?',
     options: [
       { id: 'a', text: 'ABD Doğu bölgesi seçmek' },
       { id: 'b', text: 'Coğrafi olarak en yakın bölgeyi seçmek' },
@@ -440,11 +440,11 @@ export const quizQuestions: readonly QuizQuestion[] = [
     ],
     correctId: 'b',
     explanation:
-      'Gecikme, fiziksel uzaklığa bağlıdır. En yakın bölge (ör. Frankfurt, Amsterdam) genelde en düşük gecikmeyi verir; ama uyumluluk ve fiyat da seçimi etkiler.',
+      'Yakınlık çoğu zaman gecikmeyi azaltır; ancak ağ rotası ve sağlayıcı altyapısı sonucu etkiler. Üretim kararı öncesinde gerçek kullanıcı konumlarından ölçüm yapmalısın.',
   },
   {
     id: 'q-gpu',
-    prompt: 'Bir yapay zeka modelini 7/24 GPU’da çalışır bırakmak yerine hangi yaklaşım daha ekonomiktir?',
+    prompt: 'Seyrek ve değişken çıkarım trafiğinde hangi yaklaşım maliyeti düşürebilir?',
     options: [
       { id: 'a', text: 'GPU’yu kapatıp yerine CPU kullanmak' },
       { id: 'b', text: 'Çıkarım için küçük örnek veya sunucusuz GPU kullanmak' },
@@ -453,25 +453,25 @@ export const quizQuestions: readonly QuizQuestion[] = [
     ],
     correctId: 'b',
     explanation:
-      'Çıkarım (inference) genelde küçük örneklerde yapılabilir. Sunucusuz GPU veya spot, eğitim dışı işlerde ciddi tasarruf sağlar.',
+      'Uygun model boyutu, nicemleme, küçük GPU örnekleri veya sunucusuz GPU boşta kalma maliyetini azaltabilir. En iyi seçenek trafik ve gecikme hedeflerine göre ölçülmelidir.',
   },
   {
     id: 'q-free-tier',
     prompt: 'Ücretsiz katman (Free tier) ile ilgili doğru ifade hangisidir?',
     options: [
       { id: 'a', text: 'Süresiz her şeyi ücretsiz kullanabilirsin' },
-      { id: 'b', text: 'Always Free kaynaklar kredi bitince bile otomatik ücretlenmez' },
+      { id: 'b', text: 'Süre, kota ve aşım davranışı sağlayıcıya ve hesap planına göre değişir' },
       { id: 'c', text: 'Free tier sadece ABD vatandaşlarına açıktır' },
       { id: 'd', text: 'Free tier üretim trafiği için tasarlanmıştır' },
     ],
     correctId: 'b',
     explanation:
-      'Always Free kaynaklar (ör. Oracle Cloud, küçük Azure VM) kredi bitse bile ücret kesmez; ancak kapasiteleri küçüktür, üretim yükü için yetersiz kalabilir.',
+      'Yeni hesap kredileri, süreli teklifler ve sürekli ücretsiz kotalar aynı değildir. Ücretli hesapta kota aşımı otomatik faturalanabilir; koşulları kaynak bağlantısından doğrulamalısın.',
   },
 ] as const
 
 /** Tüm eğitim içeriğinin sürümü, gelecekte güncellendiğinde gösterilebilir. */
-export const educationVersion = '2026-08-19' as const
+export const educationVersion = '2026-09-04' as const
 
 /**
  * Konu derinleştirme içerikleri.
@@ -492,8 +492,8 @@ export interface DeepDive {
 export const deepDives: readonly DeepDive[] = [
   {
     id: 'kubernetes-intro',
-    title: "Kubernetes'a giriş",
-    oneLiner: 'Konteynerlerini otomatik ölçekleyen, iyileştiren ve yöneticisini yapan kontrol düzlemi.',
+    title: 'Kubernetes’a giriş',
+    oneLiner: 'Konteynerlerini dağıtan, ölçekleyen ve istenen çalışma durumunda tutan orkestrasyon platformu.',
     prerequisites: ['Hesaplama kavramı', 'Temel Linux (ssh, süreç)', 'Servis kategorisi olarak Kubernetes'],
     steps: [
       {
@@ -504,7 +504,7 @@ export const deepDives: readonly DeepDive[] = [
       {
         title: '2. Pod, servis, deployment',
         text:
-          'Pod bir veya daha fazla konteyneri bir arada tutan en küçük birimdir. Servis, pod’lara sabit bir iç/DIŞ IP verir. Deployment ise “bu pod’un 3 kopyası çalışsın” dediğin kaynak.',
+          'Pod, bir veya daha fazla konteyneri bir arada tutan en küçük dağıtım birimidir. Service, değişen pod’lar için kararlı bir ağ uç noktası ve servis keşfi sağlar; dış erişim seçilen Service türüne bağlıdır. Deployment ise örneğin “bu pod’un üç kopyası çalışsın” dediğin kaynaktır.',
       },
       {
         title: '3. Kontrol düzlemi ve düğümler',
@@ -514,12 +514,12 @@ export const deepDives: readonly DeepDive[] = [
       {
         title: '4. YAML ile niyetini ifade et',
         text:
-          'İstediğin durumu (3 kopya, 512MB RAM, 80 portu açık) YAML manifestinde yazarsın. Kubernetes gerçek durumu bu niyete yaklaştırmaya çalışır. kubectl apply -f deployment.yaml yeterlidir.',
+          'İstediğin durumu (üç kopya, 512 MB RAM, 80 numaralı port) YAML manifestinde yazarsın. kubectl apply -f deployment.yaml ile bildirimi kümeye uygular; ardından dağıtım, sağlık, ağ ve güvenlik ayarlarını doğrularsın.',
       },
       {
         title: '5. Ölçekleme ve kendini iyileştirme',
         text:
-          'Bir pod çökerse controller otomatik yeni pod açar. Yük artınca Horizontal Pod Autoscaler (HPA) kopya sayısını artırır. Düğüm yetmezse Cluster Autoscaler yeni düğüm ekler (genelde 1-2 dakika sürer).',
+          'Bir pod çökerse controller yeni pod oluşturabilir. Yük artınca Horizontal Pod Autoscaler (HPA) kopya sayısını artırır; düğüm kapasitesi yetmezse Cluster Autoscaler yeni düğüm isteyebilir. Tepki süresi sağlayıcıya, imaja ve kapasiteye göre değişir.',
       },
     ],
     architecture: {
@@ -546,7 +546,7 @@ export const deepDives: readonly DeepDive[] = [
       {
         title: '1. Olay kaynağını seç',
         text:
-          'Sunucusuz bir iş, bir olay tarafından tetiklenir: HTTP isteği, kuyruğa mesaj, zamanlayıcı, dosya yükleme. İlk adım, tetikleyiciyi doğru seçmektir; çünkü her sağlayıcı farklı tetikleyiciler sunar (API Gateway, S3 event, EventBridge, Pub/Sub…).',
+          'Sunucusuz bir iş, bir olay tarafından tetiklenir: HTTP isteği, kuyruk mesajı, zamanlayıcı veya dosya yükleme. İlk adım tetikleyiciyi doğru seçmektir; kullanılabilir seçenekler sağlayıcıya göre değişir (API Gateway, S3 olayı, EventBridge, Pub/Sub…).',
       },
       {
         title: '2. Tek sorumluluk ilkesi',
@@ -566,14 +566,14 @@ export const deepDives: readonly DeepDive[] = [
       {
         title: '5. Maliyet ve soğuk başlangıç',
         text:
-          'Seyrek çağrılan fonksiyonlar için soğuk başlangıç 200-500 ms sürebilir; bu, kullanıcıya dönen API’lerde sorun olur. Isınık tutma (provisioned concurrency) ile bu gecikmeyi düşürebilirsin, ama ek maliyet gelir.',
+          'Seyrek çağrılan fonksiyonlarda soğuk başlangıç; çalışma zamanı, paket boyutu, ağ ve sağlayıcıya bağlı olarak onlarca milisaniyeden saniyelere uzayabilir. Hazır eşzamanlılık (provisioned concurrency) gecikmeyi düşürebilir, ancak ek maliyet getirir.',
       },
     ],
     architecture: {
-      caption: 'S3 yüklemesini işleyen sunucusuz boru hattı',
+      caption: 'S3 yüklemesini işleyen sunucusuz işlem hattı',
       flow: [
         'Kullanıcı dosyayı S3/Blob’a yükler',
-        'Event tetikler Lambda/Functions',
+        'S3 olayı Lambda/Functions’ı tetikler',
         'Fonksiyon meta veriyi veritabanına yazar',
         'Sıra (SQS/Pub-Sub) başka bir fonksiyonu tetikler',
         'CDN, küçük resmi son kullanıcıya sunar',
@@ -582,7 +582,7 @@ export const deepDives: readonly DeepDive[] = [
     pitfall:
       '“Sunucusuz = ucuz” her zaman doğru değildir. Milyonlarca istek alan bir API’de klasik VM daha ucuz olabilir. Soğuk başlangıç ve dış servis çağrı maliyetleri gözden kaçar.',
     nextStep:
-      'Bir resim yükleme uygulaması yaz: kullanıcı yükler → S3 event → Lambda küçük resim üretir → API üzerinden döner. Tüm akışı kendin gözlemle.',
+      'Bir resim yükleme uygulaması yaz: kullanıcı yükler → S3 olayı → Lambda küçük resim üretir → API üzerinden döner. Tüm akışı kendin gözlemle.',
   },
   {
     id: 'gpu-ai-workloads',
@@ -593,41 +593,41 @@ export const deepDives: readonly DeepDive[] = [
       {
         title: '1. VRAM ihtiyacını belirle',
         text:
-          'GPU seçiminin anahtarı VRAM (GPU bellek). 7B parametreli bir modeli çıkarımda çalıştırmak için yaklaşık 14 GB VRAM yeterli; 70B için 140 GB gerekir. Eğitim çok daha fazla VRAM ve süre ister.',
+          'GPU seçiminin anahtarı VRAM’dir (GPU belleği). Yalnızca FP16/BF16 ağırlıkları yaklaşık hesaplandığında 7B model 14 GB, 70B model 140 GB yer ister; nicemleme bunu azaltabilir. Çalışma zamanı, KV önbelleği, bağlam uzunluğu ve toplu işleme ek bellek gerektirir.',
       },
       {
         title: '2. Eğitim ve çıkarımı ayır',
         text:
-          'Eğitim (training) saatler/günler sürer, çok pahalıdır. Çıkarım (inference) milisaniyeler sürer, ucuz olabilir. Aynı GPU tipini her ikisinde kullanmak gerekmez: eğitimde H100, çıkarımda L4 veya T4 ile maliyet düşer.',
+          'Eğitim (training) çoğu iş yükünde çıkarımdan daha uzun sürer ve daha fazla kaynak tüketir. Aynı GPU tipini her ikisinde kullanmak gerekmez; donanımı model boyutu, hassasiyet, gecikme ve aktarım hedeflerine göre ayrı seçebilirsin.',
       },
       {
         title: '3. Spot ve rezervasyonu birlikte kullan',
         text:
-          'Eğitim genelde kesintiyi tolere eder → spot örneklerle %60-90 tasarruf. Üretim çıkarımı kesintisiz olmalı → on-demand veya 1 yıllık rezerve. İkisini ayrı pipeline olarak planla.',
+          'Kontrol noktası alınabilen eğitim işleri kesintiye dayanabiliyorsa spot kaynaklar önemli indirim sağlayabilir. Gecikme ve erişilebilirlik hedefi olan üretim çıkarımında isteğe bağlı veya taahhütlü kapasite gerekebilir. İkisini ayrı işlem hatları olarak planla.',
       },
       {
         title: '4. Veri aktarımı ve depolama',
         text:
-          'Eğitim verisi yüzlerce GB olabilir. Veriyi aynı bölgede tutmak (ör. Frankfurt) çıkış trafiğini sıfırlar. Cloudflare R2 gibi çıkışsız depolama, eğitim verisini sık erişimli tutar.',
+          'Eğitim verisi yüzlerce GB olabilir. Veriyi işlemle aynı bölgede tutmak bölgeler arası veya internet çıkışını azaltabilir; ücret hizmet yoluna göre değişir. Cloudflare R2 internet çıkışını ücretsiz sunar, ancak istek ve depolama ücretleri ayrıca değerlendirilmelidir.',
       },
       {
         title: '5. İzleme ve bütçe',
         text:
-          'GPU saatleri hızlıca 4 haneli faturalara ulaşır. Bütçe uyarısı koy (ör. günlük 50$), gereksiz çalışan örnekleri kapat. Kullanmadığın örnekleri mutlaka sonlandır; “silmeyi unuttum” en sık GPU faturasıdır.',
+          'GPU saatleri hızlıca yüksek faturalara ulaşabilir. Bütçe uyarısı koy (ör. günlük 50 USD) ve gereksiz çalışan örnekleri kapat. Kullanmadığın örnekleri mutlaka sonlandır; unutulan kaynaklar sık görülen maliyet nedenlerindendir.',
       },
     ],
     architecture: {
       caption: 'Bir yapay zeka ürününün bileşenleri',
       flow: [
         'Veri → Object Storage (R2/S3/Blob)',
-        'Eğitim pipeline → spot GPU',
-        'Model registry → Container Registry',
+        'Eğitim işlem hattı → spot GPU',
+        'Model kayıt deposu → Container Registry',
         'Çıkarım servisi → küçük GPU / sunucusuz',
         'API → kullanıcı isteğini karşılar',
       ],
     },
     pitfall:
-      'Büyük modeli 7/24 çalışır bırakmak. Çıkarım için genelde 1-2 kopya yeterlidir; model sıcak kalmalıysa provisioned concurrency ile sunucusuz GPU daha ekonomik olabilir.',
+      'Büyük modeli ölçmeden 7/24 çalışır durumda bırakmak. Gerekli kopya sayısı ve sunucusuz GPU’nun ekonomik olup olmadığı trafik, model yükleme süresi, gecikme hedefi ve ölçekleme sınırlarına bağlıdır.',
     nextStep:
       'Hugging Face’teki küçük bir modeli (ör. 1-3B) indir, 4-bit nicemleme ile bir L4 GPU’da 10 dakika çalıştır; saatlik maliyeti fatura tahmincisinden kontrol et.',
   },

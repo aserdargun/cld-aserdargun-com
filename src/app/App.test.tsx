@@ -53,7 +53,7 @@ describe('App', () => {
     ).toBeInTheDocument()
     expect(screen.getByText('8 sağlayıcı')).toBeInTheDocument()
     expect(screen.getByText('41 teklif')).toBeInTheDocument()
-    expect(screen.getByText('65 resmî kaynak')).toBeInTheDocument()
+    expect(screen.getByText('66 resmî kaynak')).toBeInTheDocument()
     expect(screen.getByText('Genel liste fiyatı · Vergiler hariç · USD')).toBeInTheDocument()
     expect(document.getElementById('genel-bakis')).toHaveTextContent('Son doğrulama')
 

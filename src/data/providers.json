@@ -1,7 +1,7 @@
 [
   {
     "id":"azure","name":"Microsoft Azure","shortName":"Azure","officialSite":"https://azure.microsoft.com/","purchaseAvailability":"verified",
-    "purchaseNote":"Azure'ın ülke/bölge ödeme tablosunda Türkiye için American Express, Mastercard ve Visa açıkça listelenir; hesap ve kart doğrulaması yine gereklidir.","purchaseSourceIds":["azure-purchase-methods"],"verifiedAt":"2026-08-13",
+    "purchaseNote":"Azure’ın ülke/bölge ödeme tablosunda Türkiye için American Express, Mastercard ve Visa açıkça listelenir; hesap ve kart doğrulaması yine gereklidir.","purchaseSourceIds":["azure-purchase-methods"],"verifiedAt":"2026-08-13",
     "strengths":["Geniş kurumsal hizmet kataloğu","Batı Avrupa'da çok sayıda yönetilen hizmet"],"limitations":["Toplam fatura yapılandırma, ağ ve lisanslara göre değişir"],
     "regions":[{"id":"westeurope","name":"West Europe (Netherlands)","countryCode":"NL","scope":"regional","sourceId":"azure-regions"}]
   },
@@ -25,7 +25,7 @@
   },
   {
     "id":"oracle","name":"Oracle Cloud Infrastructure","shortName":"Oracle","officialSite":"https://www.oracle.com/cloud/","purchaseAvailability":"conditional",
-    "purchaseNote":"Oracle kayıt için kredi/banka kartı ve kimlik doğrulaması ister; resmi SSS Türkiye'ye satın alma garantisi vermediğinden durum koşulludur.","purchaseSourceIds":["oracle-purchase-free-faq"],"verifiedAt":"2026-08-13",
+    "purchaseNote":"Oracle kayıt için kredi/banka kartı ve kimlik doğrulaması ister; resmî SSS Türkiye’ye satın alma garantisi vermediğinden durum koşulludur.","purchaseSourceIds":["oracle-purchase-free-faq"],"verifiedAt":"2026-08-13",
     "strengths":["Cömert Always Free kaynakları","Ampere tabanlı esnek hesaplama"],"limitations":["Always Free kapasitesi ve uygunluğu garanti edilmez"],
     "regions":[{"id":"eu-frankfurt-1","name":"Germany Central (Frankfurt)","countryCode":"DE","scope":"regional","sourceId":"oracle-regions"}]
   },

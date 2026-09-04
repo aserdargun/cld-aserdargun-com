@@ -35,6 +35,36 @@ function blockAfter(source: string, prelude: string): string {
 }
 
 describe('visual source contract', () => {
+  it('uses theme-aware surfaces across learning cards and feedback states', () => {
+    const root = blockAfter(styles.global, ':root {')
+    const dark = blockAfter(styles.global, "[data-theme='dark'] {")
+
+    for (const token of [
+      '--surface-muted:',
+      '--surface-info:',
+      '--surface-warning:',
+      '--surface-note:',
+      '--surface-success:',
+      '--surface-danger:',
+    ]) {
+      expect(root, token).toContain(token)
+      expect(dark, token).toContain(token)
+    }
+
+    expect(blockAfter(styles.global, '.education__card {')).toContain(
+      'background: var(--surface-muted);',
+    )
+    expect(blockAfter(styles.global, '.quiz__item {')).toContain(
+      'background: var(--surface-muted);',
+    )
+    expect(blockAfter(styles.global, '.notes-panel {')).toContain(
+      'background: var(--surface-note);',
+    )
+    expect(blockAfter(styles.global, '.deep-dive__steps li {')).toContain(
+      'background: var(--surface-muted);',
+    )
+  })
+
   it('keeps source links touch-safe while title and icon share the primary row', () => {
     const sourceLink = blockAfter(styles.global, '\n.source-link {')
     const sourceTitle = blockAfter(styles.global, '\n.source-link > span:first-child {')

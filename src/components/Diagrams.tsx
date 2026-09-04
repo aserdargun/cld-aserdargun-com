@@ -249,18 +249,20 @@ interface LatencyMapProps {
  */
 export function LatencyMap({ regions }: LatencyMapProps) {
   const max = Math.max(...regions.map((region) => region.ms), 1)
+  const plotStart = 210
+  const plotWidth = 195
   return (
-    <div className="diagram-card" role="img" aria-label="Türkiye'den bölgelere yaklaşık gecikme">
-      <svg viewBox="0 0 480 220" className="diagram-svg" xmlns="http://www.w3.org/2000/svg">
+    <div className="diagram-card" role="img" aria-label="Türkiye’den bölgelere yaklaşık gecikme">
+      <svg viewBox="0 0 480 252" className="diagram-svg" xmlns="http://www.w3.org/2000/svg">
         <text x="20" y="22" className="diagram-axis-label">Türkiye (İstanbul) → bölge</text>
         {regions.map((region, index) => {
-          const barWidth = (region.ms / max) * 360
+          const barWidth = (region.ms / max) * plotWidth
           const y = 40 + index * 28
           return (
             <g key={region.id}>
               <text x={20} y={y + 14} className="diagram-row-label-small">{region.label}</text>
               <rect
-                x={140}
+                x={plotStart}
                 y={y + 4}
                 width={barWidth}
                 height={16}
@@ -269,18 +271,18 @@ export function LatencyMap({ regions }: LatencyMapProps) {
                 opacity="0.85"
               />
               <text
-                x={140 + barWidth + 6}
+                x={plotStart + barWidth + 6}
                 y={y + 16}
                 className="diagram-row-label-small"
-                fill="#0b223f"
               >
                 ~{region.ms} ms
               </text>
             </g>
           )
         })}
-        <text x={20} y={210} className="diagram-axis-label">
-          Gösterilen değerler yaklaşıktır; gerçek gecikme sağlayıcı ve yola göre değişir.
+        <text x={20} y={230} className="diagram-axis-label">Yaklaşık değerlerdir.</text>
+        <text x={20} y={248} className="diagram-axis-label">
+          Gerçek gecikme sağlayıcıya ve ağ yoluna göre değişir.
         </text>
       </svg>
     </div>

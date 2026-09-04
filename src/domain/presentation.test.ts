@@ -222,8 +222,8 @@ describe('presentation models', () => {
     expect(getCatalogStats(catalog)).toEqual({
       providerCount: 8,
       offerCount: 41,
-      sourceCount: 65,
-      latestVerificationDate: '2026-08-14',
+      sourceCount: 66,
+      latestVerificationDate: '2026-09-04',
     })
   })
 
