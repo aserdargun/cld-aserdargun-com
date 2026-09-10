@@ -48,7 +48,7 @@ export const conceptLayers: readonly ConceptLayer[] = [
     id: 'saas',
     title: 'SaaS — Yazılım hizmeti',
     shortLabel: 'SaaS',
-    whoManages: 'Her şeyi sağlayıcı yönetir; sen sadece kullanırsın.',
+    whoManages: 'Sağlayıcı uygulamayı ve altyapıyı işletir; sen verinin korunması, hesaplar, erişim izinleri ve güvenli yapılandırmadan sorumlusun.',
     example: 'Gmail, Microsoft 365, Slack, Dropbox.',
     userResponsibility: 5,
   },
@@ -471,7 +471,7 @@ export const quizQuestions: readonly QuizQuestion[] = [
 ] as const
 
 /** Tüm eğitim içeriğinin sürümü, gelecekte güncellendiğinde gösterilebilir. */
-export const educationVersion = '2026-09-04' as const
+export const educationVersion = '2026-09-10' as const
 
 /**
  * Konu derinleştirme içerikleri.

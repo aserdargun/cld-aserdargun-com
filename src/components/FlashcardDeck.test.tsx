@@ -79,3 +79,16 @@ describe('FlashcardDeck', () => {
     expect(within(stats).getByText((_, node) => node?.textContent === '1 tekrar')).toBeInTheDocument()
   })
 })
+
+it('advances in all cards mode and allows leaving an empty repeat queue', async () => {
+  const user = userEvent.setup()
+  render(<FlashcardDeck statuses={{}} onStatusChange={() => {}} onReset={() => {}} />)
+  const first = screen.getByRole('heading', { level: 4 }).textContent
+  await user.click(screen.getByTestId('flashcard-reveal'))
+  await user.click(screen.getByTestId('flashcard-mark-known'))
+  expect(screen.getByRole('heading', { level: 4 }).textContent).not.toBe(first)
+  await user.click(screen.getByTestId('flashcard-filter-repeat'))
+  expect(screen.getByText(/Tekrar kuyruğu boş/)).toBeInTheDocument()
+  await user.click(screen.getByTestId('flashcard-filter-all'))
+  expect(screen.getByRole('heading', { level: 4 })).toHaveTextContent(first!)
+})

@@ -34,7 +34,8 @@ export function useLocalStorage<T>(
   useEffect(() => {
     if (typeof window === 'undefined') return
     const handleStorage = (event: StorageEvent) => {
-      if (event.key !== key) return
+      if (event.storageArea && event.storageArea !== window.localStorage) return
+      if (event.key !== null && event.key !== key) return
       try {
         if (event.newValue === null) {
           setValue(defaultValue)
@@ -43,6 +44,7 @@ export function useLocalStorage<T>(
         }
       } catch {
         // Bozuk payload: sessizce varsayılana dön.
+        setValue(defaultValue)
       }
     }
     window.addEventListener('storage', handleStorage)

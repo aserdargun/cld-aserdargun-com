@@ -19,8 +19,8 @@
 1. **Hızlı başlangıç** — Senaryo, sağlayıcı filtresi ve sonuç okuma adımları.
 2. **Bulut bileşenleri** — On-prem / IaaS / PaaS / SaaS için sorumluluk payı piramidi (SVG) ve her katmanın kartı.
 3. **Servis kategorileri** — Hesaplama, GPU, nesne depolama, yönetilen veritabanı, sunucusuz, CDN/ağ, Kubernetes. Her kategori için sekmeli anlatım: ne, ne zaman, benzetme, anahtar terimler, sık yapılan hata.
-4. **Fiyatlandırma modelleri** — On-demand, Reserved, Spot, Savings Plan, Free tier kartları; her biri için göreli tasarruf çubuğu (SVG).
-5. **Bölge ve gecikme** — İstanbul’dan başlıca bölgelere yaklaşık gecikme grafiği, egemenlik ve fiyat etkisi, yaygın inanış düzeltmesi.
+4. **Fiyatlandırma modelleri** — On-demand, Reserved, Spot, Savings Plan, Free tier kartları; her biri için güncel indirim iddiası taşımayan temsili tasarruf çubuğu.
+5. **Bölge ve gecikme** — Ölçüm olmadığı açıkça belirtilen temsili bölge gecikmesi grafiği, egemenlik ve fiyat etkisi, yaygın inanış düzeltmesi.
 6. **Sağlayıcı kartları** — Sekiz sağlayıcının her biri için tek cümle özet, “kime uygun?” ve imza özellik.
 7. **Sözlük** — vCPU, RAM, egress, IOPS, SLA, konteyner gibi 12 temel terim; arama destekli kart listesi **ve flashcard modu** (terim/örnek çevirme, “Biliyorum / Tekrar” işaretleme, tekrar kuyruğu filtresi).
 8. **Bilgi testi** — Yedi soruluk, geri bildirimli mini sınav; tüm sorular yanıtlanmadan “Değerlendir” devre dışı, sonuçta yeşil/kırmızı renk kodlu doğru/yanlış işaretleme ve açıklayıcı notlar.
@@ -34,7 +34,7 @@
 - **“Öğrendim” işaretleme** — Her kavram katmanı, kategori, fiyat modeli, sağlayıcı kartı, sözlük terimi ve derinleştirme kartı üzerinde. Bölüm başında toplam ilerleme yüzdesi görünür.
 - **Flashcard modu** — Sözlük sekmesinde “Kart listesi / Flashcard modu” geçişi; her kart için “Tanımı göster → Biliyorum / Tekrar” akışı, tekrar kuyruğu filtresi.
 - **Kişisel notlar** — Her ana bölümün altında “Kişisel notun” paneli; kelime sayacı, “Notu temizle” düğmesi. Deep-dive kartlarında inline not alanı.
-- **Son ziyaret** — Sıralı yol haritasında “şu anki adım” otomatik kaydedilir; sayfa yenilense de geri yüklenir.
+- **Son ziyaret** — Sıralı yol haritasında “şu anki adım” otomatik kaydedilir; sayfa yenilense de geri yüklenir. Bozuk veya eski kayıtların geçerli notları korunur; geçersiz alanları güvenli varsayılanlara döner.
 
 Tüm kişisel veriler tek bir `cld:learning:v1` `localStorage` anahtarı altında tutulur; sunucuya gönderilmez, başka tarayıcı/cihazla senkronize olmaz.
 
@@ -92,6 +92,8 @@ Kalite ve tarayıcı kontrolleri:
 npm run check
 npm run e2e
 ```
+
+Canlı sürümün aynı tarayıcı senaryolarıyla doğrulanması için `CLD_E2E_BASE_URL=https://cld.aserdargun.com npm run e2e` kullanılır; bu kip yerel sunucu başlatmaz.
 
 `npm run check`; kod kalitesi, birim/bileşen testleri, katalog doğrulaması ve üretim derlemesini birlikte çalıştırır.
 

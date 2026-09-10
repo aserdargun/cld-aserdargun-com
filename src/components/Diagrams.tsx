@@ -70,8 +70,9 @@ export function ResponsibilityPyramid({ layers }: ResponsibilityPyramidProps) {
         })}
       </svg>
       <p className="diagram-caption">
-        Yukarı çıktıkça senden sorumluluk azalır: SaaS’te neredeyse sadece kullanırsın,
-        on-prem’de her şey sana aittir.
+        Aşağıya, SaaS’e doğru altyapı işletimi sağlayıcıya geçer. Veri, kimlik ve erişim
+        sorumluluğun devam eder. Çubuk oranları kavramsaldır; ölçülmüş yüzdeler değildir.
+        {' '}<a href="https://learn.microsoft.com/en-in/azure/security/fundamentals/shared-responsibility" target="_blank" rel="noopener noreferrer">Microsoft ortak sorumluluk modeli</a>
       </p>
     </div>
   )
@@ -252,7 +253,7 @@ export function LatencyMap({ regions }: LatencyMapProps) {
   const plotStart = 210
   const plotWidth = 195
   return (
-    <div className="diagram-card" role="img" aria-label="Türkiye’den bölgelere yaklaşık gecikme">
+    <div className="diagram-card" role="img" aria-label="Bölgelere gecikme: temsili örnek">
       <svg viewBox="0 0 480 252" className="diagram-svg" xmlns="http://www.w3.org/2000/svg">
         <text x="20" y="22" className="diagram-axis-label">Türkiye (İstanbul) → bölge</text>
         {regions.map((region, index) => {
@@ -280,7 +281,7 @@ export function LatencyMap({ regions }: LatencyMapProps) {
             </g>
           )
         })}
-        <text x={20} y={230} className="diagram-axis-label">Yaklaşık değerlerdir.</text>
+        <text x={20} y={230} className="diagram-axis-label">Temsili değerler; ölçüm değildir.</text>
         <text x={20} y={248} className="diagram-axis-label">
           Gerçek gecikme sağlayıcıya ve ağ yoluna göre değişir.
         </text>

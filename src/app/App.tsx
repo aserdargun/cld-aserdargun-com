@@ -86,6 +86,12 @@ function Dashboard({ catalog, today }: { catalog: Catalog; today: Date }) {
       <Hero stats={stats} />
 
       <main className="app-main">
+        {health.staleCount > 0 ? (
+          <p className="catalog-notice" role="status">
+            {health.staleCount} teklif veya ücretsiz katman kaydı 30 günden eski.
+            {' '}Bu kayıtlar güncel fiyat sıralamasına alınmaz. Satın almadan önce resmî kaynakları yeniden kontrol edin.
+          </p>
+        ) : null}
         <section className="scenario-workspace" id="senaryolar" aria-label="Senaryolar">
           <div className="scenario-workspace__grid">
             <ScenarioCalculator state={state} scenarios={catalog.scenarios} />

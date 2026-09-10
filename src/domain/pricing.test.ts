@@ -335,3 +335,25 @@ describe('estimateOffer', () => {
     ).toBe('invalid')
   })
 })
+
+it.each([NaN, Infinity, -1])('rejects invalid USD values: %s', (amount) => {
+  expect(convertToUsd(amount, 'USD', [])).toEqual({ amountUsd: null, converted: false })
+})
+
+it('rejects multiplication overflow and invalid exchange rates', () => {
+  expect(convertToUsd(Number.MAX_VALUE, 'EUR', [{ base: 'EUR', quote: 'USD', rate: 2 }]).amountUsd).toBeNull()
+  expect(convertToUsd(10, 'EUR', [{ base: 'EUR', quote: 'USD', rate: -2 }]).amountUsd).toBeNull()
+  expect(estimateOffer(offer([{kind: 'requests-million', price: 10, currency: 'USD', includedQuantity: 0}]),
+    {...webScenario(), requestsMillion: Number.MAX_VALUE}, emptyContext())).toMatchObject({ status: 'invalid', totalUsd: null })
+})
+
+it('does not grant a timed free tier at or after its expiry', () => {
+  const timed = freeTier({ type: 'time-limited', durationMonths: 12 })
+  const priced = offer([{kind: 'requests-million', price: 2, currency: 'USD', includedQuantity: 0}])
+  const context = { ...emptyContext(), freeTiers: [timed], eligibleFreeTierIds: [timed.id],
+    statusByFreeTierId: { [timed.id]: 'current' as const } }
+  expect(estimateOffer(priced, webScenario(), { ...context, monthsSinceAccountCreation: 11.9 }).totalUsd).toBe(2)
+  for (const monthsSinceAccountCreation of [12, 13, -1, Infinity]) {
+    expect(estimateOffer(priced, webScenario(), { ...context, monthsSinceAccountCreation }).totalUsd).toBe(4)
+  }
+})

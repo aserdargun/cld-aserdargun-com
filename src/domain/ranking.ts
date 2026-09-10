@@ -35,9 +35,9 @@ export function meetsCapacityRequirements(offer: Offer, scenario: Scenario): boo
 }
 
 function sumOrNull(values: readonly (number | null)[]): number | null {
-  return values.some((value) => value === null)
-    ? null
-    : values.reduce<number>((total, value) => total + (value ?? 0), 0)
+  if (values.some((value) => value === null || !Number.isFinite(value))) return null
+  const sum = values.reduce<number>((total, value) => total + (value ?? 0), 0)
+  return Number.isFinite(sum) ? sum : null
 }
 
 function providerStatus(lineItems: readonly OfferEstimate[], isComplete: boolean): VerificationStatus {
@@ -84,7 +84,9 @@ export function estimateProvider(
     }
   })
 
-  const isComplete = missingCategories.length === 0 && missingDimensions.size === 0
+  const isComplete = scenario.requiredCategories.length > 0 &&
+    missingCategories.length === 0 && missingDimensions.size === 0 &&
+    sumOrNull(lineItems.map((lineItem) => lineItem.totalUsd)) !== null
   return {
     providerId,
     totalUsd: isComplete ? sumOrNull(lineItems.map((lineItem) => lineItem.totalUsd)) : null,
@@ -99,7 +101,7 @@ export function estimateProvider(
 }
 
 function isComplete(estimate: ProviderEstimate): boolean {
-  return estimate.missingCategories.length === 0 && estimate.missingDimensions.length === 0 && estimate.totalUsd !== null
+  return estimate.missingCategories.length === 0 && estimate.missingDimensions.length === 0 && estimate.totalUsd !== null && Number.isFinite(estimate.totalUsd)
 }
 
 export function rankProviderEstimates(

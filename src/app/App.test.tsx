@@ -38,7 +38,7 @@ const appProvenanceMutations: Array<{
 
 describe('App', () => {
   it('renders the source-backed page sections in the required order', () => {
-    render(<App />)
+    render(<App today={new Date('2026-09-10T12:00:00Z')} />)
 
     expect(
       screen.getByRole('heading', {
@@ -142,7 +142,7 @@ describe('App', () => {
 
   it('updates a high-traffic scenario and shows a monthly USD ranking', async () => {
     const user = userEvent.setup()
-    render(<App />)
+    render(<App today={new Date('2026-09-10T12:00:00Z')} />)
 
     await user.selectOptions(screen.getByLabelText('Kullanım senaryosu'), 'high-traffic')
     const ranking = screen.getByRole('region', { name: 'Karar özeti' })
@@ -164,7 +164,7 @@ describe('App', () => {
 
   it('applies a provider-region toggle to both ranking coverage and detailed offers', async () => {
     const user = userEvent.setup()
-    render(<App />)
+    render(<App today={new Date('2026-09-10T12:00:00Z')} />)
     await openOfferExplorer(user)
     await openOfferFilters(user)
 
@@ -194,7 +194,7 @@ describe('App', () => {
 
   it('constrains rankings and detailed offers with provider and category filters', async () => {
     const user = userEvent.setup()
-    render(<App />)
+    render(<App today={new Date('2026-09-10T12:00:00Z')} />)
     await openOfferExplorer(user)
     await openOfferFilters(user)
 
@@ -216,7 +216,7 @@ describe('App', () => {
 
   it('keeps filters available when clear-all empties offers and restores the table for the scenario', async () => {
     const user = userEvent.setup()
-    render(<App />)
+    render(<App today={new Date('2026-09-10T12:00:00Z')} />)
     await openOfferExplorer(user)
     await openOfferFilters(user)
 
@@ -242,7 +242,7 @@ describe('App', () => {
 
   it('never applies free-tier savings without an explicit eligibility choice', async () => {
     const user = userEvent.setup()
-    render(<App />)
+    render(<App today={new Date('2026-09-10T12:00:00Z')} />)
 
     await user.selectOptions(screen.getByLabelText('Kullanım senaryosu'), 'api-backend')
 

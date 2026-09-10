@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { getCatalogHealth, getUsableExchangeRates, loadCatalog } from '../data/catalog'
+import { catalogSnapshotDate } from '../data/validation'
 import type {
   Currency,
   Offer,
@@ -27,7 +28,7 @@ const evidenceContext = {
   sources: catalog.sources,
   statusByExchangeRateId: currentExchangeRateStatuses,
 }
-const seededHealth = getCatalogHealth(catalog, new Date('2026-08-29T00:00:00.000Z'))
+const seededHealth = getCatalogHealth(catalog, new Date(`${catalogSnapshotDate}T00:00:00.000Z`))
 const seededPricingContext = {
   exchangeRates: getUsableExchangeRates(catalog, seededHealth),
   freeTiers: catalog.freeTiers,

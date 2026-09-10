@@ -28,6 +28,8 @@ Sağlayıcı, kaynak, teklif, ücretsiz katman, kur ve senaryo kimlikleri kendi 
 
 Kaynakların `accessedAt` tarihi, teklifler ve ücretsiz katmanların `verifiedAt` tarihi ile katalog fotoğrafı birlikte ilerletilir. Sadece dönüştürülmüş USD tutarını değiştirmeyin; özgün fiyat, para birimi, birim ve tarihli ECB oranı kanonik kayıttır.
 
+Kaynak URL'si, `src/domain/sourceEvidence.ts` içindeki sağlayıcıya ait resmî alan adlarından biriyle eşleşmelidir. Yalnız `owner` alanına sağlayıcı adını yazmak kanıt oluşturmaz. Yeni resmî alan adları doğrulandıktan sonra bu listeye eklenir. Şema; yinelenen kaynak/teklif/kota/kur kimliklerini, sağlayıcı içindeki yinelenen bölge kimliklerini ve senaryoda iki kez yazılan hizmet kategorilerini yükleme sırasında reddeder.
+
 ## Ekonomik alternatif doğrulaması
 
 Doğrulayıcı, alternatif sağlayıcı kanıtlarını gerçek senaryonun kategori projeksiyonu ve fiyat motoruyla yeniden hesaplar. Hetzner, Oracle Cloud, DigitalOcean ve Vultr için iki ayrı güncel, sıralanabilir, kategori-tam ve ana sağlayıcılara karşı savunulabilir fiyat avantajı gösteren teklif gerekir. İnsan onaylı kapsam istisnası nedeniyle Cloudflare için statik site depolama projeksiyonundaki R2 Standard kanıtı yeterlidir. Aynı teklif farklı senaryolarda tekrar sayılmaz; atanmamış/eksik boyut, uydurma kapasite veya uygun olmayan sabit/elastik karşılaştırma kanıt değildir.

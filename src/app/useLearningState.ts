@@ -30,8 +30,25 @@ const defaultState: LearningPersistedState = {
   lastVisited: null,
 }
 
+function deserializeLearningState(raw: string): LearningPersistedState {
+  const parsed: unknown = JSON.parse(raw)
+  const record = (value: unknown): Record<string, unknown> =>
+    value !== null && typeof value === 'object' && !Array.isArray(value)
+      ? value as Record<string, unknown> : {}
+  const saved = record(parsed)
+  const pick = <T,>(value: unknown, valid: (entry: unknown) => entry is T): Record<string, T> =>
+    Object.fromEntries(Object.entries(record(value)).filter(([, entry]) => valid(entry))) as Record<string, T>
+  return {
+    learnedIds: pick(saved.learnedIds, (entry): entry is true => entry === true),
+    notes: pick(saved.notes, (entry): entry is string => typeof entry === 'string'),
+    flashcard: pick(saved.flashcard, (entry): entry is FlashcardStatus =>
+      entry === 'new' || entry === 'known' || entry === 'repeat'),
+    lastVisited: typeof saved.lastVisited === 'string' ? saved.lastVisited : null,
+  }
+}
+
 export function useLearningState() {
-  const [state, setState, reset] = useLocalStorage<LearningPersistedState>(STORAGE_KEY, defaultState)
+  const [state, setState, reset] = useLocalStorage<LearningPersistedState>(STORAGE_KEY, defaultState, { deserializer: deserializeLearningState })
 
   const isLearned = useCallback(
     (id: string) => Boolean(state.learnedIds[id]),

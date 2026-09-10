@@ -19,6 +19,34 @@ const sourceBackedOffer = {
 }
 
 describe('catalog schemas', () => {
+  it.each(['sources', 'offers', 'freeTiers', 'exchangeRates'] as const)(
+    'rejects duplicate %s IDs before they can overwrite evidence maps', (key) => {
+      const catalog = loadCatalog()
+      const records = catalog[key]
+      expect(catalogSchema.safeParse({ ...catalog, [key]: [...records, records[0]] }).success).toBe(false)
+    },
+  )
+
+  it('rejects a third-party URL carrying official provider metadata', () => {
+    const catalog = loadCatalog()
+    catalog.sources[0]!.url = 'https://prices.example.org/azure'
+    expect(catalogSchema.safeParse(catalog).success).toBe(false)
+  })
+
+  it('rejects repeated scenario categories that would double count a service', () => {
+    const catalog = loadCatalog()
+    const scenario = catalog.scenarios[0]!
+    scenario.requiredCategories.push(scenario.requiredCategories[0]!)
+    expect(catalogSchema.safeParse(catalog).success).toBe(false)
+  })
+
+  it('rejects ambiguous duplicate region identifiers', () => {
+    const catalog = loadCatalog()
+    const provider = catalog.providers[0]!
+    provider.regions.push({ ...provider.regions[0]!, name: 'Conflicting region' })
+    expect(catalogSchema.safeParse(catalog).success).toBe(false)
+  })
+
   it('accepts explicit purchase evidence on a provider', () => {
     const catalog = loadCatalog()
     const provider = catalog.providers[0]
@@ -398,7 +426,7 @@ describe('catalog schemas', () => {
         freeTier.id === affectedTierId ? { ...freeTier, sourceIds: [sourceId] } : freeTier,
       ),
     })
-    const health = getCatalogHealth(parsed, new Date('2026-08-14T00:00:00Z'))
+    const health = getCatalogHealth(parsed, new Date('2026-09-04T00:00:00Z'))
 
     expect(health.statusByFreeTierId[affectedTierId]).toBe('invalid')
     expect(health.invalidReferences).toContain(
@@ -590,4 +618,11 @@ describe('official catalog policy', () => {
       expect(offer.notes.length).toBeGreaterThan(0)
     }
   })
+})
+
+it('does not mark future-dated prices as verified', () => {
+  const catalog = loadCatalog()
+  const offer = { ...catalog.offers[0]!, verifiedAt: '2026-09-11' }
+  const health = getCatalogHealth({ ...catalog, offers: [offer] }, new Date('2026-09-10T00:00:00Z'))
+  expect(health.statusByOfferId[offer.id]).toBe('invalid')
 })

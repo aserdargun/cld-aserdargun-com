@@ -2868,3 +2868,11 @@ output,
     animation-iteration-count: 1 !important;
   }
 }
+
+.catalog-notice {
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid currentColor;
+  border-radius: 0.5rem;
+  line-height: 1.6;
+}

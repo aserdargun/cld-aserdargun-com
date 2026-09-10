@@ -13,7 +13,8 @@ import { estimateOffer, priceKindForFreeTierUnit, type PricingContext } from '..
 import { estimateProvider } from '../domain/ranking'
 import { getCatalogHealth, getUsableExchangeRates, sourceEvidenceIssue } from './catalog'
 
-export const catalogSnapshotDate = '2026-09-04'
+import { catalogSnapshotDate } from './snapshot'
+export { catalogSnapshotDate } from './snapshot'
 const validationDate = new Date(`${catalogSnapshotDate}T00:00:00.000Z`)
 const majorProviderIds = ['azure', 'gcp', 'aws'] as const
 const alternativeProviderIds = ['hetzner', 'oracle', 'cloudflare', 'digitalocean', 'vultr'] as const

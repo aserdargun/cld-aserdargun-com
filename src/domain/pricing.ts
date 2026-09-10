@@ -40,6 +40,7 @@ export function selectEurUsdExchangeRate<T extends ExchangeRateInput>(
     (exchangeRate) =>
       exchangeRate.base === 'EUR' &&
       exchangeRate.quote === 'USD' &&
+      Number.isFinite(exchangeRate.rate) && exchangeRate.rate > 0 &&
       (!verifiedAt || (exchangeRate.date !== undefined && exchangeRate.date <= verifiedAt)),
   )
 
@@ -101,12 +102,14 @@ export function convertToUsd(
   exchangeRates: readonly ExchangeRateInput[],
   verifiedAt?: string,
 ): CurrencyConversion {
+  if (!Number.isFinite(amount) || amount < 0) return { amountUsd: null, converted: false }
   if (currency === 'USD') return { amountUsd: amount, converted: true }
 
   const latestRate = selectEurUsdExchangeRate(exchangeRates, verifiedAt)
 
-  return latestRate
-    ? { amountUsd: amount * latestRate.rate, converted: true }
+  const converted = latestRate ? amount * latestRate.rate : NaN
+  return Number.isFinite(converted)
+    ? { amountUsd: converted, converted: true }
     : { amountUsd: null, converted: false }
 }
 
@@ -128,7 +131,9 @@ function allocateFreeTierQuantity(
     const isWithinDuration =
       freeTier.durationMonths === null ||
       (context.monthsSinceAccountCreation !== undefined &&
-        context.monthsSinceAccountCreation <= freeTier.durationMonths)
+        Number.isFinite(context.monthsSinceAccountCreation) &&
+        context.monthsSinceAccountCreation >= 0 &&
+        context.monthsSinceAccountCreation < freeTier.durationMonths)
     const quotaKind = priceKindForFreeTierUnit(freeTier.quota.unit)
     const isMatchingQuota =
       freeTier.quota.period === 'month' && quotaKind !== null && quotaKind === component.kind
@@ -164,6 +169,13 @@ function estimateLineItem(
   usedStaleFreeTier: { value: boolean },
 ): PriceLineItemEstimate {
   const quantity = quantityByKind[component.kind](scenario)
+  if (!Number.isFinite(quantity) || quantity < 0 ||
+    !Number.isFinite(component.price) || component.price < 0 ||
+    !Number.isFinite(component.includedQuantity) || component.includedQuantity < 0 ||
+    (component.monthlyCap !== undefined && (!Number.isFinite(component.monthlyCap) || component.monthlyCap <= 0))) {
+    return { component, quantity, includedQuantity: component.includedQuantity, freeTierQuantity: 0,
+      subtotalBeforeFreeTierUsd: null, freeTierSavingsUsd: null, totalUsd: null }
+  }
   const chargeableQuantity = Math.max(0, quantity - component.includedQuantity)
   const allocation = allocateFreeTierQuantity(
     offer,
@@ -194,9 +206,9 @@ function estimateLineItem(
 }
 
 function sumOrNull(values: readonly (number | null)[]): number | null {
-  return values.some((value) => value === null)
-    ? null
-    : values.reduce<number>((total, value) => total + (value ?? 0), 0)
+  if (values.some((value) => value === null || !Number.isFinite(value))) return null
+  const sum = values.reduce<number>((total, value) => total + (value ?? 0), 0)
+  return Number.isFinite(sum) ? sum : null
 }
 
 export function estimateOffer(offer: Offer, scenario: Scenario, context: PricingContext): OfferEstimate {
@@ -214,7 +226,8 @@ export function estimateOffer(offer: Offer, scenario: Scenario, context: Pricing
   )
   const offerStatus = context.statusByOfferId?.[offer.id] ?? 'invalid'
   const hasPrices = lineItems.length > 0
-  const hasInvalidPricing = !hasPrices || lineItems.some(
+  const hasInvalidPricing = !hasPrices ||
+    sumOrNull(lineItems.map((lineItem) => lineItem.totalUsd)) === null || lineItems.some(
     (lineItem) => lineItem.subtotalBeforeFreeTierUsd === null || lineItem.totalUsd === null,
   )
   const status = offerStatus === 'invalid' || hasInvalidPricing

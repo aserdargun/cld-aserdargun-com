@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { providerIds, scenarioUsageDimensions, serviceCategories } from '../domain/catalog'
 import { priceKindForFreeTierUnit } from '../domain/pricing'
+import { isOfficialSourceUrl } from '../domain/sourceEvidence'
 
 const nonEmptyString = z.string().trim().min(1)
 const nonNegativeNumber = z.number().finite().nonnegative()
@@ -63,7 +64,8 @@ export const providerSchema = z
             context.addIssue({ code: 'custom', path: ['countryCode'], message: 'Regional entries require a country code' })
           }
         }),
-    ).min(1),
+    ).min(1).refine((regions) => new Set(regions.map((region) => region.id)).size === regions.length,
+      'Region IDs must be unique within a provider'),
   })
   .strict()
 
@@ -77,6 +79,10 @@ export const sourceSchema = z
     accessedAt: isoDate,
   })
   .strict()
+  .refine((source) => isOfficialSourceUrl(source.url, source.owner), {
+    path: ['url'],
+    message: 'Source URL must belong to the declared official provider',
+  })
 
 export const offerSchema = z
   .object({
@@ -145,7 +151,8 @@ export const scenarioSchema = z
     name: nonEmptyString,
     description: nonEmptyString,
     scopeNote: nonEmptyString,
-    requiredCategories: z.array(z.enum(serviceCategories)).min(1),
+    requiredCategories: z.array(z.enum(serviceCategories)).min(1)
+      .refine((categories) => new Set(categories).size === categories.length, 'Required categories must be unique'),
     coverageByCategory: z.partialRecord(
       z.enum(serviceCategories),
       z.array(z.enum(scenarioUsageDimensions)),
@@ -195,6 +202,12 @@ export const catalogSchema = z
   })
   .strict()
   .superRefine((catalog, context) => {
+    for (const key of ['sources', 'offers', 'freeTiers', 'exchangeRates'] as const) {
+      const ids = catalog[key].map((record) => record.id)
+      if (new Set(ids).size !== ids.length) {
+        context.addIssue({ code: 'custom', path: [key], message: 'Record IDs must be unique' })
+      }
+    }
     const requireExactIds = (ids: string[], requiredIds: readonly string[], path: PropertyKey[]) => {
       const actualIds = new Set(ids)
       const hasRequiredSet = requiredIds.every((id) => actualIds.has(id))

@@ -264,3 +264,28 @@ describe('ScenarioCalculator', () => {
     expect(screen.getByRole('tabpanel', { name: 'Yüksek trafikli uygulama' })).toHaveAttribute('id', panelId)
   })
 })
+
+it('keeps advanced fields open throughout a multi-digit edit', async () => {
+  const user = userEvent.setup()
+  render(<CalculatorFixture />)
+  await user.click(screen.getByText('Gelişmiş kullanım ayarları'))
+  const gpu = screen.getByRole('spinbutton', { name: 'Aylık GPU kullanımı' })
+  await user.clear(gpu)
+  await user.type(gpu, '125')
+  expect(screen.getByRole('spinbutton', { name: 'Aylık GPU kullanımı' })).toHaveValue(125)
+  expect(gpu.closest('details')).toHaveAttribute('open')
+})
+
+it('preserves an invalid draft when another field changes', async () => {
+  const user = userEvent.setup()
+  render(<CalculatorFixture />)
+  const storage = screen.getByRole('spinbutton', { name: 'Depolama' })
+  await user.clear(storage)
+  const ram = screen.getByRole('spinbutton', { name: 'RAM' })
+  await user.clear(ram)
+  await user.type(ram, '8')
+  expect(storage).toHaveValue(null)
+  expect(storage).toHaveAttribute('aria-invalid', 'true')
+  await user.click(screen.getByRole('button', { name: 'Hesaplamayı güncelle' }))
+  expect(screen.queryByText('Hesaplama güncellendi.')).not.toBeInTheDocument()
+})

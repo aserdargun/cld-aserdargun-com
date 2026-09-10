@@ -1,7 +1,15 @@
 import { expect, test, type Page } from '@playwright/test'
 
+import { catalogSnapshotDate } from '../src/data/snapshot'
+
+test.beforeEach(async ({ page }) => {
+  // Price freshness is tested separately; UI fixtures use the catalog's own date.
+  await page.clock.setFixedTime(new Date(`${catalogSnapshotDate}T12:00:00Z`))
+})
+
 function collectConsoleProblems(page: Page): string[] {
   const problems: string[] = []
+  page.on('pageerror', (error) => problems.push(error.message))
   page.on('console', (message) => {
     if (message.type() === 'error' || message.type() === 'warning') {
       problems.push(message.text())
@@ -294,4 +302,53 @@ test('tablet trust, calculator, decision, and provider surfaces fit with 44px pr
 
   await expectNoDocumentOverflow(page)
   await expect.poll(() => consoleProblems).toEqual([])
+})
+
+test('learning recovers invalid storage, advances cards, preserves notes and counts deep dives', async ({ page }) => {
+  const problems = collectConsoleProblems(page)
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.addInitScript(() => {
+    if (!localStorage.getItem('cld:learning:v1')) localStorage.setItem('cld:learning:v1', 'null')
+  })
+  await page.goto('/')
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  const progress = page.getByTestId('education-overall-progress')
+  await expect(progress).toContainText('0 /')
+  await page.locator('[data-testid^="learned-toggle-deep-dive:"]').first().click()
+  await expect(progress).toContainText('1 /')
+  const note = page.getByTestId('notes-bulut-bilesenleri')
+  await note.fill('Veri ve erişim sorumluluğum devam eder.')
+  await page.getByTestId('glossary-mode-flashcard').click()
+  const deck = page.getByTestId('flashcard-deck')
+  const first = await deck.getByRole('heading').textContent()
+  await page.getByTestId('flashcard-reveal').click()
+  await page.getByTestId('flashcard-mark-known').click()
+  await expect(deck.getByRole('heading')).not.toHaveText(first!)
+  await page.getByTestId('flashcard-filter-repeat').click()
+  await expect(deck).toContainText('Tekrar kuyruğu boş')
+  await page.getByTestId('flashcard-filter-all').click()
+  await expect(deck.getByRole('heading')).toHaveText(first!)
+  await expectNoDocumentOverflow(page)
+  await page.reload()
+  await expect(note).toHaveValue('Veri ve erişim sorumluluğum devam eder.')
+  await expect(progress).toContainText('1 /')
+  expect(problems).toEqual([])
+})
+
+test('advanced input remains usable and stale catalog never produces a current winner', async ({ page }) => {
+  const problems = collectConsoleProblems(page)
+  await page.goto('/')
+  await page.getByText('Gelişmiş kullanım ayarları', { exact: true }).click()
+  const input = page.getByRole('spinbutton', { name: 'Aylık GPU kullanımı' })
+  await input.fill('')
+  await input.pressSequentially('125')
+  await expect(input).toBeVisible()
+  await expect(input).toHaveValue('125')
+  await page.getByRole('button', { name: 'Varsayılan değerlere sıfırla' }).click()
+  await page.clock.setFixedTime(new Date('2026-12-01T12:00:00Z'))
+  await page.reload()
+  await expect(page.locator('.catalog-notice')).toContainText('30 günden eski')
+  await expect(page.getByRole('listitem', { name: /doğrulanmış tahmin/i })).toHaveCount(0)
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  expect(problems).toEqual([])
 })

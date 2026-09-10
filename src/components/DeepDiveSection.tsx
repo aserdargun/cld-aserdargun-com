@@ -123,6 +123,7 @@ function DeepDiveCard({ dive, isLearned, onMarkLearned, note, onSetNote }: DeepD
         </header>
         <textarea
           className="notes-panel__textarea"
+          aria-label={`${dive.title} için kişisel not`}
           rows={2}
           placeholder={`${dive.title} hakkında notun...`}
           value={note}

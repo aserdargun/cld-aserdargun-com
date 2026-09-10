@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { memo, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import {
   CategoryIcon,
   LatencyMap,
@@ -12,6 +12,7 @@ import { LearningPath, type LearningPathStep } from './LearningPath'
 import { NotesPanel } from './NotesPanel'
 import {
   conceptLayers,
+  deepDives,
   educationVersion,
   glossary,
   pricingModels,
@@ -60,7 +61,9 @@ const latencyRegions = [
   { id: 'asia-tokyo', label: 'Asya (Tokyo)', ms: 220 },
 ] as const
 
-export function Education() {
+export const Education = memo(EducationContent)
+
+function EducationContent() {
   const {
     state,
     isLearned,
@@ -101,6 +104,8 @@ export function Education() {
       total['sozluk'] = (total['sozluk'] ?? 0) + 1
       if (isLearned(key)) learned['sozluk'] = (learned['sozluk'] ?? 0) + 1
     }
+    total['derinleştirme'] = deepDives.length
+    learned['derinleştirme'] = deepDives.filter((dive) => isLearned(`deep-dive:${dive.id}`)).length
     return { learnedByStep: learned, totalPerStep: total }
   }, [isLearned])
 
@@ -316,6 +321,17 @@ function ServiceCategoryGuide({
 }) {
   const firstLesson = serviceCategoryLessons[0]!
   const [activeCategory, setActiveCategory] = useState<ServiceCategory>(firstLesson.category)
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([])
+  function handleCategoryKey(event: KeyboardEvent<HTMLButtonElement>, index: number) {
+    const last = serviceCategoryLessons.length - 1
+    const next = event.key === 'Home' ? 0 : event.key === 'End' ? last
+      : event.key === 'ArrowRight' ? (index + 1) % (last + 1)
+      : event.key === 'ArrowLeft' ? (index + last) % (last + 1) : null
+    if (next === null) return
+    event.preventDefault()
+    setActiveCategory(serviceCategoryLessons[next]!.category)
+    tabRefs.current[next]?.focus()
+  }
   const active: ServiceCategoryLesson = useMemo(
     () => serviceCategoryLessons.find((lesson) => lesson.category === activeCategory) ?? firstLesson,
     [activeCategory, firstLesson],
@@ -327,11 +343,16 @@ function ServiceCategoryGuide({
       lead="Her sekmenin arkasındaki kategori, uygulamanın bir ihtiyacını karşılar. Tıkla, detayını gör."
     >
       <div className="category-tabs" role="tablist" aria-label="Servis kategorisi seç">
-        {serviceCategoryLessons.map((lesson) => (
+        {serviceCategoryLessons.map((lesson, index) => (
           <button
             key={lesson.category}
             type="button"
             role="tab"
+            id={`${id}-tab-${lesson.category}`}
+            aria-controls={`${id}-panel`}
+            tabIndex={activeCategory === lesson.category ? 0 : -1}
+            ref={(element) => { tabRefs.current[index] = element }}
+            onKeyDown={(event) => handleCategoryKey(event, index)}
             aria-selected={activeCategory === lesson.category}
             className={`category-tabs__button${activeCategory === lesson.category ? ' is-active' : ''}`}
             onClick={() => setActiveCategory(lesson.category)}
@@ -342,7 +363,7 @@ function ServiceCategoryGuide({
         ))}
       </div>
 
-      <article className="category-detail" role="tabpanel" aria-labelledby={`${id}-${active.category}`}>
+      <article className="category-detail" id={`${id}-panel`} role="tabpanel" aria-labelledby={`${id}-tab-${active.category}`}>
         <header className="category-detail__header">
           <div>
             <h4 id={`${id}-${active.category}`}>{active.title}</h4>
@@ -422,6 +443,7 @@ function PricingModelsGuide({
               />
             </header>
             <SavingsBar savings={model.savingsHint} label={model.title} />
+            <p className="diagram-caption">Temsili öğretim örneği; güncel indirim oranı veya tasarruf garantisi değildir.</p>
             <dl>
               <div>
                 <dt>Artı</dt>
@@ -470,7 +492,13 @@ function RegionGuide({
             <strong>Yaygın inanış:</strong> {regionLesson.misconception}
           </p>
         </div>
-        <LatencyMap regions={latencyRegions} />
+        <div>
+          <LatencyMap regions={latencyRegions} />
+          <p className="diagram-caption">Sayılar öğretim için seçilmiş örneklerdir; İstanbul’dan yapılmış ölçümler değildir.
+            {' '}Bölge kararını kendi ağından ölçerek ver.
+            {' '}<a href="https://aws.amazon.com/blogs/networking-and-content-delivery/measuring-network-latency-to-aws-region-before-deployment/" target="_blank" rel="noopener noreferrer">AWS gecikme ölçüm rehberi</a>
+          </p>
+        </div>
       </div>
       <NotesPanel sectionId={id} value={note} onChange={onSetNote} />
     </Section>
@@ -562,11 +590,10 @@ function Glossary({
       lead="Bulutla ilgili sık karşılaşılan terimlerin kısa, kalıcı tanımları. Flashcard moduyla hızlıca tekrar edebilirsin."
     >
       <div className="glossary__toolbar">
-        <div className="glossary__modes" role="tablist" aria-label="Sözlük görünümü">
+        <div className="glossary__modes" role="group" aria-label="Sözlük görünümü">
           <button
             type="button"
-            role="tab"
-            aria-selected={mode === 'list'}
+            aria-pressed={mode === 'list'}
             className={`glossary__mode${mode === 'list' ? ' is-active' : ''}`}
             onClick={() => setMode('list')}
             data-testid="glossary-mode-list"
@@ -575,8 +602,7 @@ function Glossary({
           </button>
           <button
             type="button"
-            role="tab"
-            aria-selected={mode === 'flashcard'}
+            aria-pressed={mode === 'flashcard'}
             className={`glossary__mode${mode === 'flashcard' ? ' is-active' : ''}`}
             onClick={() => setMode('flashcard')}
             data-testid="glossary-mode-flashcard"

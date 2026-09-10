@@ -122,3 +122,19 @@ describe('Education', () => {
     expect(screen.getByText('Vultr')).toBeInTheDocument()
   })
 })
+
+it('includes deep dives in the overall progress and supports category arrow navigation', async () => {
+  localStorage.clear()
+  const user = userEvent.setup()
+  render(<Education />)
+  expect(screen.getByTestId('education-overall-progress')).toHaveTextContent('0 /')
+  const deepDive = document.querySelector<HTMLButtonElement>('[data-testid^="learned-toggle-deep-dive:"]')!
+  await user.click(deepDive)
+  expect(screen.getByTestId('education-overall-progress')).toHaveTextContent('1 /')
+  const tabs = screen.getByRole('tablist', { name: 'Servis kategorisi seç' })
+  within(tabs).getAllByRole('tab')[0]!.focus()
+  await user.keyboard('{ArrowRight}')
+  expect(within(tabs).getAllByRole('tab')[1]).toHaveFocus()
+  expect(within(tabs).getAllByRole('tab')[1]).toHaveAttribute('aria-selected', 'true')
+  localStorage.clear()
+})

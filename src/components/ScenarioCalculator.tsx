@@ -91,9 +91,13 @@ export function ScenarioCalculator({
 
   if (scenarioSnapshot !== state.scenario) {
     setScenarioSnapshot(state.scenario)
-    setDrafts(draftValuesFor(state.scenario))
-    setErrors({})
-    setAdvancedOpen(false)
+    setDrafts((current) => scenarioSnapshot.id !== state.scenario.id
+      ? draftValuesFor(state.scenario)
+      : Object.fromEntries(fields.map(({ key }) => [key, errors[key] ? current[key] : String(state.scenario[key])])) as DraftValues)
+    if (scenarioSnapshot.id !== state.scenario.id) {
+      setErrors({})
+      setAdvancedOpen(false)
+    }
   }
 
   function updateField(field: NumericScenarioField, value: string) {

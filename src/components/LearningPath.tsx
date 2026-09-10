@@ -50,7 +50,7 @@ export function LearningPath({ steps, learnedByStep, totalPerStep, lastVisited, 
       <div className="learning-path__header">
         <div>
           <h3>Sıralı öğrenme yolu</h3>
-          <p>Yukarıdan aşağıya 9 adım. Her adımda “Öğrendim” işaretleyebilir, altta kişisel not bırakabilirsin.</p>
+          <p>Yukarıdan aşağıya {steps.length} adım. Kavramları “Öğrendim” ile işaretle; not alanlarına kendi örneklerini ekle.</p>
         </div>
         <div className="learning-path__progress" role="status" aria-live="polite">
           <strong>{totalLearned}</strong> / {totalItems} öğrenildi
@@ -85,7 +85,7 @@ export function LearningPath({ steps, learnedByStep, totalPerStep, lastVisited, 
                 <span className="learning-path__step-index">{index + 1}</span>
                 <span className="learning-path__step-label">{step.label}</span>
                 <span className="learning-path__step-progress">
-                  {learned} / {total}
+                  {total > 0 ? `${learned} / ${total}` : 'Rehber'}
                 </span>
               </button>
             </li>

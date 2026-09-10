@@ -40,6 +40,7 @@ function verificationStatus(
     sourcesById,
     expectedOwner,
     expectedKind,
+    true,
   )) {
     return 'invalid'
   }
@@ -47,6 +48,8 @@ function verificationStatus(
   const verifiedOn = new Date(`${verifiedAt}T00:00:00.000Z`)
   const todayAtUtcMidnight = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate())
   const ageInDays = Math.floor((todayAtUtcMidnight - verifiedOn.getTime()) / 86_400_000)
+  if (!Number.isFinite(ageInDays) || ageInDays < 0 ||
+    sourceIds.some((id) => new Date(`${sourcesById.get(id)!.accessedAt}T00:00:00.000Z`).getTime() > todayAtUtcMidnight)) return 'invalid'
   return ageInDays > 30 ? 'stale' : 'current'
 }
 

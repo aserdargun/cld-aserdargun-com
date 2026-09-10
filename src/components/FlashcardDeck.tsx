@@ -30,6 +30,7 @@ type DeckFilter = 'all' | 'repeat' | 'new'
 export function FlashcardDeck({ statuses, onStatusChange, onReset }: FlashcardDeckProps) {
   const [filter, setFilter] = useState<DeckFilter>('all')
   const [revealed, setRevealed] = useState(false)
+  const [currentTerm, setCurrentTerm] = useState(glossary[0]?.term)
 
   const filtered = useMemo(() => {
     if (filter === 'repeat') {
@@ -49,45 +50,35 @@ export function FlashcardDeck({ statuses, onStatusChange, onReset }: FlashcardDe
     return { total, known, repeat, fresh }
   }, [statuses])
 
-  const handleNext = () => {
+  const current = filtered.find((entry) => entry.term === currentTerm) ?? filtered[0]
+  const currentIndex = current ? filtered.indexOf(current) : 0
+  const status: FlashcardStatus = current ? statuses[current.term] ?? 'new' : 'new'
+
+  const handleMark = (entry: GlossaryTerm, nextStatus: FlashcardStatus) => {
+    setCurrentTerm(filtered[(currentIndex + 1) % filtered.length]?.term)
     setRevealed(false)
+    onStatusChange(entry.term, nextStatus)
   }
 
-  const handleMark = (entry: GlossaryTerm, status: FlashcardStatus) => {
-    onStatusChange(entry.term, status)
-    handleNext()
+  const resetDeck = () => {
+    setFilter('all')
+    setCurrentTerm(glossary[0]?.term)
+    setRevealed(false)
+    onReset()
   }
-
-  if (filtered.length === 0) {
-    return (
-      <div className="flashcard" data-testid="flashcard-deck">
-        <p className="flashcard__empty">
-          {filter === 'repeat'
-            ? 'Tekrar kuyruğu boş. Tüm kartlar biliyorum olarak işaretlenmiş olabilir.'
-            : 'Gösterilecek kart yok.'}
-        </p>
-        <button type="button" onClick={onReset} className="flashcard__reset">
-          İlerlemeyi sıfırla
-        </button>
-      </div>
-    )
-  }
-
-  const current = filtered[0]!
-  const status: FlashcardStatus = statuses[current.term] ?? 'new'
 
   return (
     <div className="flashcard" data-testid="flashcard-deck">
       <div className="flashcard__toolbar">
-        <div className="flashcard__filters" role="tablist" aria-label="Flashcard filtresi">
+        <div className="flashcard__filters" role="group" aria-label="Flashcard filtresi">
           {(['all', 'repeat', 'new'] as const).map((value) => (
             <button
               key={value}
               type="button"
-              role="tab"
-              aria-selected={filter === value}
+              aria-pressed={filter === value}
               onClick={() => {
                 setFilter(value)
+                setCurrentTerm(undefined)
                 setRevealed(false)
               }}
               className={`flashcard__filter${filter === value ? ' is-active' : ''}`}
@@ -103,7 +94,7 @@ export function FlashcardDeck({ statuses, onStatusChange, onReset }: FlashcardDe
         </div>
       </div>
 
-      <article
+      {current ? <article
         className={`flashcard__card${revealed ? ' is-revealed' : ''}`}
         data-testid={`flashcard-card-${current.term}`}
       >
@@ -160,12 +151,17 @@ export function FlashcardDeck({ statuses, onStatusChange, onReset }: FlashcardDe
             </button>
           </div>
         ) : null}
-      </article>
+      </article> : (
+        <p className="flashcard__empty" role="status">
+          {filter === 'repeat' ? 'Tekrar kuyruğu boş.' : 'Bu filtrede gösterilecek kart yok.'}
+          {' '}Diğer kartları görmek için Tümü filtresini seçebilirsin.
+        </p>
+      )}
 
       <footer className="flashcard__footer">
         <button
           type="button"
-          onClick={onReset}
+          onClick={resetDeck}
           className="flashcard__reset"
           data-testid="flashcard-reset"
         >

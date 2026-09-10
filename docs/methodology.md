@@ -69,3 +69,5 @@ Hetzner, Oracle Cloud, DigitalOcean ve Vultr için en az iki ayrı teklif; aynı
 - EUR→USD örneği, Hetzner CX23 ve 730 saat: önce `min(730 × 0,0088 EUR, 5,49 EUR) = 5,49 EUR`; ardından 2026-08-13 tarihli `1 EUR = 1,1534 USD` ECB kuru ile `5,49 × 1,1534 = 6,332166 USD/ay`.
 
 Yuvarlatılmış arayüz gösterimi ile hesap motorunun tam hassasiyetli değeri farklı basamak sayısına sahip olabilir.
+
+Fiyat modelinin davranış sürümü: **2026-09-10**. Süreli ücretsiz katmanda hesap yaşı tamamlanan ay olarak değerlendirilir: yaş, kota süresinden küçük olmalıdır. Örneğin 12 aylık hak 12. ay tamamlandığında sona erer. Negatif veya sonlu olmayan hesap yaşı hak oluşturmaz; taşan sayısal tutarlar fiyat sıralamasına alınmaz.

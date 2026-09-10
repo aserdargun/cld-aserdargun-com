@@ -147,13 +147,13 @@ function isIsoDate(value: string): boolean {
 
 function hasCurrentEstimateEvidence(estimate: ProviderEstimate): boolean {
   return estimate.status === 'current' &&
-    estimate.totalUsd !== null &&
+    estimate.totalUsd !== null && Number.isFinite(estimate.totalUsd) &&
     estimate.missingCategories.length === 0 &&
     estimate.missingDimensions.length === 0 &&
     estimate.lineItems.length > 0 &&
     estimate.lineItems.every((offerEstimate) =>
       offerEstimate.status === 'current' &&
-      offerEstimate.totalUsd !== null &&
+      offerEstimate.totalUsd !== null && Number.isFinite(offerEstimate.totalUsd) &&
       offerEstimate.offer.providerId === estimate.providerId)
 }
 
