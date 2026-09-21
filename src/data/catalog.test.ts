@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { providerIds, serviceCategories } from '../domain/catalog'
 import { estimateProvider, rankProviderEstimates } from '../domain/ranking'
-import { getCatalogHealth, loadCatalog } from './catalog'
+import { getCatalogHealth, getUsableExchangeRates, loadCatalog } from './catalog'
 import { catalogSchema, freeTierSchema, offerSchema, priceComponentSchema, providerSchema } from './schemas'
 
 const sourceBackedOffer = {
@@ -19,6 +19,50 @@ const sourceBackedOffer = {
 }
 
 describe('catalog schemas', () => {
+  it.each([
+    ['2026-09-12', 'current'],
+    ['2026-09-13', 'stale'],
+    ['2026-08-12', 'invalid'],
+  ] as const)('checks ECB rate age at the UTC day boundary on %s', (date, status) => {
+    const catalog = loadCatalog()
+    const health = getCatalogHealth(catalog, new Date(`${date}T23:59:59Z`))
+    expect(health.statusByExchangeRateId[catalog.exchangeRates[0]!.id]).toBe(status)
+    expect(getUsableExchangeRates(catalog, health)).toHaveLength(status === 'current' ? 1 : 0)
+  })
+
+  it('rejects a future ECB source access date even when the rate date is valid', () => {
+    const catalog = loadCatalog()
+    catalog.sources.find((source) => source.owner === 'ecb')!.accessedAt = '2026-09-22'
+    const health = getCatalogHealth(catalog, new Date('2026-08-20T00:00:00Z'))
+    expect(getUsableExchangeRates(catalog, health)).toEqual([])
+  })
+
+  it('keeps a newly verified EUR offer out of ranking when only an expired ECB rate exists', () => {
+    const catalog = loadCatalog()
+    catalog.offers.forEach((offer) => { offer.verifiedAt = '2026-09-21' })
+    const health = getCatalogHealth(catalog, new Date('2026-09-21T00:00:00Z'))
+    const scenario = {
+      ...catalog.scenarios[0]!,
+      requiredCategories: ['compute' as const],
+      coverageByCategory: { compute: ['hoursPerMonth' as const, 'vcpu' as const, 'ramGb' as const] },
+      storageGb: 0,
+      outboundGb: 0,
+    }
+    const context = {
+      exchangeRates: catalog.exchangeRates,
+      freeTiers: [],
+      statusByOfferId: health.statusByOfferId,
+      statusByExchangeRateId: health.statusByExchangeRateId,
+    }
+    const eur = estimateProvider('hetzner', catalog.offers, scenario, context)
+    const usd = estimateProvider('azure', catalog.offers, scenario, context)
+    expect(eur).toMatchObject({ status: 'invalid', totalUsd: null })
+    expect(usd.status).toBe('current')
+    expect(rankProviderEstimates([eur, usd]).map((item) => [item.providerId, item.rank])).toEqual([
+      ['azure', 'best-price'], ['hetzner', null],
+    ])
+  })
+
   it.each(['sources', 'offers', 'freeTiers', 'exchangeRates'] as const)(
     'rejects duplicate %s IDs before they can overwrite evidence maps', (key) => {
       const catalog = loadCatalog()

@@ -120,3 +120,11 @@ Ayrıntılar için [fiyat metodolojisini](docs/methodology.md) ve [veri güncell
 ## Uyarı
 
 Fiyatlar ve uygunluk koşulları sağlayıcılar tarafından değiştirilebilir. Son satın alma kararından önce arayüzdeki resmî kaynak, bölge, ölçüm birimi, doğrulama tarihi ve hariç tutulan bileşenler yeniden kontrol edilmelidir.
+
+## Portföy ve güncellik sınırı
+
+CLD, aserdargun.com öğrenme sisteminin bulut maliyeti aracıdır. LCL yerel çalıştırma koludur; DCL her ikisinin ortak karar laboratuvarıdır. WFM ve SWI paralel araştırma devamlarıdır. Bu bağlantılar fiyat, kişisel not veya senaryo aktarımı gerçekleştirmez. Bağlantı açıklamaları TR/EN sunulur; mevcut hesaplayıcı ve eğitim arayüzü Türkçedir. Tam İngilizce arayüz henüz uygulanmamıştır.
+
+2026-09-21 içerik düzenlemesi, tüm katalog fiyatlarının yeniden doğrulandığı anlamına gelmez. Sürümlü fiyat fotoğrafı 2026-09-04 olarak korunur; kayıtların çoğunun doğrulama tarihi 2026-08-13’tür. Güncel kullanımda 30 günü aşan kayıtlar sıralanmaz. `validate:data` ve sabit tarihli tarayıcı testleri bu tarihli fotoğrafın bütünlüğünü sınar; güncel ticari doğrulama kanıtı değildir. Güncel tarihle tarayıcı kontrolü ayrıca yapılmalıdır.
+
+EUR dönüşümlerinde ECB kurunun tarihi ve kaynağı da kontrol edilir. 30 günden eski veya ileri tarihli kur, güncel bir EUR teklifini dahi USD sıralamasına sokamaz. Davranış sürümü 2026-09-21, eğitim içeriği sürümü 2026-09-21’dir. Mevcut arayüz senaryo dışa aktarımı sunmaz.

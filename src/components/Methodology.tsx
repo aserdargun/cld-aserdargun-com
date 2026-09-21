@@ -13,12 +13,12 @@ const principles = [
   },
   {
     title: 'Özgün para birimi ve ECB',
-    text: 'EUR fiyat korunur ve doğrulama tarihindeki Avrupa Merkez Bankası (ECB) kuru ile ayrıca USD’ye çevrilir.',
+    text: 'EUR fiyat korunur. Teklifin doğrulama gününde veya öncesindeki en yakın tarihli ECB EUR/USD kuru kullanılır; 30 günden eski veya ileri tarihli kurla USD toplamı üretilmez.',
     Icon: Scale,
   },
   {
     title: '30 günlük güncellik',
-    text: '30 günü aşan fiyat ve ücretsiz katman kayıtları yeniden doğrulanmalı olarak işaretlenir.',
+    text: '30 günü aşan fiyat ve ücretsiz katman kayıtları sıralamadan çıkarılır. Aynı süre sınırı döviz kuru için de geçerlidir. Katalog tarihi, tüm kayıtların yeniden doğrulandığı anlamına gelmez.',
     Icon: CalendarClock,
   },
   {
@@ -72,6 +72,11 @@ export function Methodology() {
           için garanti değildir.
         </p>
       </div>
+      <p className="learning-system__note">
+        Senaryo kapsamları farklıdır: API arka ucu yalnız istek ücretini, statik site yalnız
+        depolama ve CDN çıkışını karşılaştırır. GPU belleğinin yeterli olması aynı hız veya
+        aynı iş tamamlama süresi anlamına gelmez. 730 saat bir ayın standart model varsayımıdır.
+      </p>
     </section>
   )
 }

@@ -31,3 +31,31 @@ test('aged catalog cannot advertise verified ranked prices', async ({ page }) =>
   await expect(summary).not.toContainText(/En düşük doğrulanmış tahmin/u)
   await expect(page.getByRole('heading', { name: 'Senaryo hesaplayıcı' })).toBeVisible()
 })
+
+test('current-date notices and portfolio context stay visible on desktop and mobile', async ({ page }) => {
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  page.on('console', (message) => {
+    if (['error', 'warning'].includes(message.type())) errors.push(message.text())
+  })
+  await page.clock.setFixedTime(new Date('2026-09-21T12:00:00Z'))
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 900 })
+    await page.goto('/')
+    await expect(page).toHaveTitle('CLD - Bulut Sağlayıcı Maliyet Karşılaştırması')
+    await expect(page.getByText('Güncel ve kaynaklı ECB EUR/USD kuru yok.', { exact: false })).toBeVisible()
+    const lastNotice = await page.locator('.catalog-notice').last().boundingBox()
+    const workspace = await page.locator('.scenario-workspace').boundingBox()
+    expect(workspace!.y).toBeGreaterThanOrEqual(lastNotice!.y + lastNotice!.height)
+    await expect(page.getByRole('listitem', { name: /doğrulanmış tahmin/i })).toHaveCount(0)
+    const system = page.getByRole('region', { name: 'aserdargun.com öğrenme sistemi' })
+    await system.scrollIntoViewIfNeeded()
+    await expect(system.getByRole('link', { name: 'DCL · Ortak CLD / LCL laboratuvarı' })).toHaveAttribute('href', 'https://dcl.aserdargun.com/')
+    await expect(system.locator('[lang="en"]').first()).toContainText('shared decision laboratory')
+    await expect(system.getByRole('link')).toHaveCount(5)
+    await page.getByText('Eğitim açıklamalarının resmî kaynakları', { exact: true }).click()
+    await expect(page.getByRole('link', { name: /AWS · Spot kesinti bildirimleri/ })).toBeVisible()
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width)
+  }
+  expect(errors).toEqual([])
+})

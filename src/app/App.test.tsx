@@ -55,7 +55,7 @@ describe('App', () => {
     expect(screen.getByText('41 teklif')).toBeInTheDocument()
     expect(screen.getByText('66 resmî kaynak')).toBeInTheDocument()
     expect(screen.getByText('Genel liste fiyatı · Vergiler hariç · USD')).toBeInTheDocument()
-    expect(document.getElementById('genel-bakis')).toHaveTextContent('Son doğrulama')
+    expect(document.getElementById('genel-bakis')).toHaveTextContent('En son kayıt doğrulaması')
 
     const sectionIds = [
       'genel-bakis',

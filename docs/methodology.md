@@ -11,7 +11,7 @@ Bu çalışma teklif, fatura tahmini garantisi, vergi danışmanlığı veya sa�
 - Sürekli çalışan işlem kaynaklarında aylık süre **730 saat** kabul edilir. Arayüzdeki “Modellenen aylık tutar”, yalnız seçili senaryonun görünür kapsam notunda sayılan ve katalogda fiyatı bulunan bileşenlerin toplamıdır; tam fatura vaadi değildir.
 - Sağlayıcının resmî USD fiyatı varsa doğrudan kullanılır.
 - EUR fiyatlarda özgün tutar, ölçüm birimi ve varsa aylık üst sınır korunur. USD karşılığı, teklifin doğrulama gününde geçerli olan ECB EUR→USD referans kuru ile hesaplanır. Arayüz hem özgün EUR değerini hem dönüşmüş USD değerini hem de kur tarihini gösterir.
-- Uygun tarihli ECB kuru yoksa özgün fiyat gösterilebilir; USD toplamı üretilemez ve teklif sıralamaya alınmaz.
+- Uygun tarihli ECB kuru yoksa, kur 30 günden eskiyse veya kur/kaynak tarihi gelecekteyse özgün fiyat gösterilebilir; USD toplamı üretilemez ve teklif sıralamaya alınmaz. Kur tarihi teklifin doğrulama gününden ileri olamaz. Yaş, çalıştırma gününün UTC takvim tarihi üzerinden hesaplanır; tam 30 gün geçerli, 31 gün eskidir. USD teklifleri eksik EUR kurundan etkilenmez.
 - Vergiler, kart/ödeme kuruluşu ücretleri, rezervasyon/taahhüt fiyatları, pazarlık indirimleri, kuponlar, startup/öğrenci/davet kredileri ve belgelenmemiş fatura bileşenleri hesaplamaya alınmaz.
 - Promosyon, spot/preemptible ve kurumsal sözleşme fiyatları yerine aksi açıkça belirtilmedikçe taahhütsüz genel liste fiyatı kullanılır.
 
@@ -70,4 +70,4 @@ Hetzner, Oracle Cloud, DigitalOcean ve Vultr için en az iki ayrı teklif; aynı
 
 Yuvarlatılmış arayüz gösterimi ile hesap motorunun tam hassasiyetli değeri farklı basamak sayısına sahip olabilir.
 
-Fiyat modelinin davranış sürümü: **2026-09-10**. Süreli ücretsiz katmanda hesap yaşı tamamlanan ay olarak değerlendirilir: yaş, kota süresinden küçük olmalıdır. Örneğin 12 aylık hak 12. ay tamamlandığında sona erer. Negatif veya sonlu olmayan hesap yaşı hak oluşturmaz; taşan sayısal tutarlar fiyat sıralamasına alınmaz.
+Fiyat modelinin davranış sürümü: **2026-09-21**. Süreli ücretsiz katmanda hesap yaşı tamamlanan ay olarak değerlendirilir: yaş, kota süresinden küçük olmalıdır. Örneğin 12 aylık hak 12. ay tamamlandığında sona erer. Negatif veya sonlu olmayan hesap yaşı hak oluşturmaz; taşan sayısal tutarlar fiyat sıralamasına alınmaz.

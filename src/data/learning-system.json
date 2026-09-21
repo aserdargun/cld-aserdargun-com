@@ -1,0 +1,35 @@
+{
+  "version": "2026-09-21",
+  "links": [
+    {
+      "code": "portfolio",
+      "href": "https://aserdargun.com/tr/",
+      "label": { "tr": "Öğrenme sistemine dön", "en": "Return to the learning system" },
+      "description": { "tr": "Uygulamalar ve aralarındaki öğrenme ilişkileri.", "en": "Applications and their learning relationships." }
+    },
+    {
+      "code": "lcl",
+      "href": "https://lcl.aserdargun.com/",
+      "label": { "tr": "LCL · Yerel çalıştırma", "en": "LCL · Local deployment" },
+      "description": { "tr": "Bulut seçeneğine paralel olarak yerel donanım ve model uygunluğunu incele.", "en": "Explore local hardware and model fit alongside the cloud option." }
+    },
+    {
+      "code": "dcl",
+      "href": "https://dcl.aserdargun.com/",
+      "label": { "tr": "DCL · Ortak CLD / LCL laboratuvarı", "en": "DCL · Shared CLD / LCL laboratory" },
+      "description": { "tr": "Yerel, bulut ve hibrit dağıtımı açık iş yükü, bellek, gizlilik ve maliyet varsayımlarıyla karşılaştır.", "en": "Compare local, cloud and hybrid deployment using explicit workload, memory, privacy and cost assumptions." }
+    },
+    {
+      "code": "wfm",
+      "href": "https://wfm.aserdargun.com/",
+      "label": { "tr": "WFM · Dünya modelleri", "en": "WFM · World models" },
+      "description": { "tr": "Dağıtım kararından sonra dünya modeli araştırmalarına geç.", "en": "Continue from deployment decisions to world-model research." }
+    },
+    {
+      "code": "swi",
+      "href": "https://swi.aserdargun.com/",
+      "label": { "tr": "SWI · Kolektif zekâ", "en": "SWI · Collective intelligence" },
+      "description": { "tr": "WFM ile paralel araştırma kolunda kolektif davranış deneylerini keşfet.", "en": "Explore collective-behaviour experiments in a research branch parallel to WFM." }
+    }
+  ]
+}

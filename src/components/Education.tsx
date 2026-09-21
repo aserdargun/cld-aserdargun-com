@@ -1,4 +1,5 @@
 import { memo, useMemo, useRef, useState, type KeyboardEvent } from 'react'
+import educationSources from '../data/education-sources.json'
 import {
   CategoryIcon,
   LatencyMap,
@@ -202,6 +203,20 @@ function EducationContent() {
         onSetNote={setNote}
         notes={state.notes}
       />
+      <details className="education__section">
+        <summary>Eğitim açıklamalarının resmî kaynakları</summary>
+        <p>Bu kaynaklar kavramsal açıklamaları destekler; fiyat kataloğunun yeniden doğrulama tarihini değiştirmez.</p>
+        <ul>
+          {educationSources.sources.map((source) => (
+            <li key={source.url}>
+              <a className="source-link" href={source.url} target="_blank" rel="noopener noreferrer">
+                <span>{source.title}</span>
+                <time dateTime={source.verifiedAt}>{source.verifiedAt}</time>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </details>
     </section>
   )
 }
@@ -426,7 +441,7 @@ function PricingModelsGuide({
     <Section
       id={id}
       title="Fiyatlandırma modelleri"
-      lead="Aynı sanal makine, farklı taahhütlerle farklı fiyata gelir. Çubuk ne kadar uzunsa o kadar çok tasarruf."
+      lead="Fiyat modeli, kullanım ve taahhüt birlikte değerlendirilir. Çubuklar yalnız öğretim amaçlıdır; sağlayıcılar arasında gerçek tasarruf sıralaması yapmaz."
     >
       <div className="education__grid education__grid--two">
         {pricingModels.map((model) => (

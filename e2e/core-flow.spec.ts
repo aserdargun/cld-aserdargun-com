@@ -116,7 +116,7 @@ test('desktop decision-first flow recomputes a scenario and reaches official off
   await expect(includeStale).not.toBeChecked()
   await expect(filterSummary).toContainText('Filtreler · 20')
 
-  await expect(page.getByRole('heading', { name: 'Öğren', level: 2 })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Öğren', level: 2, exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: /temaya geç/ })).toBeVisible()
 
   await expectNoDocumentOverflow(page)
@@ -347,7 +347,7 @@ test('advanced input remains usable and stale catalog never produces a current w
   await page.getByRole('button', { name: 'Varsayılan değerlere sıfırla' }).click()
   await page.clock.setFixedTime(new Date('2026-12-01T12:00:00Z'))
   await page.reload()
-  await expect(page.locator('.catalog-notice')).toContainText('30 günden eski')
+  await expect(page.locator('.catalog-notice').filter({ hasText: '30 günden eski' })).toBeVisible()
   await expect(page.getByRole('listitem', { name: /doğrulanmış tahmin/i })).toHaveCount(0)
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
   expect(problems).toEqual([])

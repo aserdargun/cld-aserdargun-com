@@ -101,16 +101,16 @@ export const serviceCategoryLessons: readonly ServiceCategoryLesson[] = [
     whenToUse:
       'Veri bütünlüğü kritik uygulamalar, e-ticaret, kullanıcı hesapları, transaksiyonel iş yükleri için idealdir.',
     analogy: 'Profesyonel bir aşçı tutmak: sen malzemeyi söylersin, aşçı yemeği yapar, servisi de o yapar.',
-    keyTerms: ['saatlik örnek', 'depolama GB/ay', 'IOPS', 'yedekleme penceresi', 'çoklu bölge (HA)'],
+    keyTerms: ['saatlik örnek', 'depolama GB/ay', 'IOPS', 'yedekleme penceresi', 'yüksek erişilebilirlik (HA)'],
     commonMistake:
       'Sadece saatlik ücrete bakıp IOPS ve yedekleme boyutunu hesaba katmamak: gerçek fatura bunların üstünde büyür.',
   },
   {
     category: 'serverless',
     title: 'Sunucusuz (Serverless)',
-    oneLiner: 'Sadece kodunu yazarsın; kaynak yalnızca çalıştığı saniye/istek için ücretlenir.',
+    oneLiner: 'Sunucu işletimini sağlayıcıya bırakırsın; ücret, seçilen plan ve kullanım bileşenlerine bağlıdır.',
     whatIsIt:
-      'Lambda, Cloud Functions, Azure Functions gibi servislerle çalışır. Sunucu yok, ölçeklendirme otomatik, boşta iken fatura gelmez. Faturalama istek sayısı ve yürütme süresi (GB-saniye) üzerinden olur.',
+      'Lambda, Cloud Run functions ve Azure Functions gibi servislerde sunucuları sağlayıcı işletir. İstek, yürütme süresi ve ayrılan bellek/CPU ücretlenebilir. Minimum örnek, hazır kapasite, ağ, günlük ve depolama ücretleri boşta da sürebilir.',
     whenToUse:
       'Anlık tetiklenen işler: bir resmi dönüştürmek, webhook karşılamak, planlanmış cron görevi, düşük trafiğe sahip API uçları.',
     analogy: 'Taksi: sadece bindiğin dakika ve gidilen mesafe için ödeme, garaj yok.',
@@ -149,7 +149,7 @@ export const serviceCategoryLessons: readonly ServiceCategoryLesson[] = [
     title: 'AI / GPU',
     oneLiner: 'Yapay zeka model eğitimi ve çıkarımı için GPU gücü.',
     whatIsIt:
-      'NVIDIA H100, A100, L4 gibi GPU’ları saatlik veya aylık kiralarsın. VRAM (GB) ve saat, fiyatı belirleyen iki temel bileşendir. Eğitim (training) saatleri çıkarımdan (inference) çok daha pahalıdır.',
+      'NVIDIA H100, A100, L4 gibi GPU’ları saatlik veya aylık kiralarsın. VRAM (GB) ve saat, fiyatı belirleyen iki temel bileşendir. Aynı GPU için saatlik ücret kullanım amacından çok ürün ve plana bağlıdır; toplam maliyet çalışma süresi, verim ve ek kaynaklarla değişir.',
     whenToUse:
       'Derin öğrenme modeli eğitimi, büyük dil modeli (LLM) ince ayarı, video işleme, bilimsel simülasyon için idealdir.',
     analogy: 'Süper bilgisayara saatlik erişim: sadece ihtiyacın olduğu an için açarsın.',
@@ -176,25 +176,25 @@ export const pricingModels: readonly PricingModel[] = [
     title: 'İsteğe bağlı (On-demand)',
     oneLiner: 'Saniye/saat bazında, taahhütsüz faturalandırma.',
     pros: 'İstediğin an açıp kapatabilirsin; taahhüt yok, esnek.',
-    cons: 'En pahalı seçenek; uzun süreli çalıştırmada maliyet şişer.',
+    cons: 'Sürekli kullanımda uygun bir taahhütten pahalı olabilir; seyrek kullanımda taahhüt vermek daha maliyetli olabilir.',
     bestFor: 'Kısa süreli testler, ödev/proje, değişken iş yükü.',
     savingsHint: 0,
   },
   {
     id: 'reserved',
     title: 'Rezerve / Taahhütlü (Reserved)',
-    oneLiner: '1 veya 3 yıl taahhüt vererek %30-60 arası indirim alırsın.',
-    pros: 'En yüksek indirim; bütçe planlaması kolaylaşır.',
+    oneLiner: 'Belirli kaynak veya kullanım için süreli taahhüt karşılığında indirim alabilirsin; oran ve süre ürüne göre değişir.',
+    pros: 'Düzenli ve öngörülebilir kullanımda bütçe planlamasını kolaylaştırabilir.',
     cons: 'Taahhüt süresi boyunca ödeme devam eder; erken iptal varsa ceza olabilir.',
     bestFor: '7/24 çalışacak, ölçeği bilinen üretim iş yükleri.',
     savingsHint: 60,
   },
   {
     id: 'spot',
-    title: 'Spot (Açık artırma / kalan kapasite)',
+    title: 'Spot (Kesilebilir kapasite)',
     oneLiner: 'Sağlayıcının boş kalan kapasitesini çok ucuza alırsın; her an geri alınabilir.',
-    pros: 'On-demand’a göre %60-90 daha ucuz olabilir.',
-    cons: 'Sağlayıcı 2 dakika uyarıyla kapasiteyi geri alabilir; hata toleransı şart.',
+    pros: 'İsteğe bağlı fiyatın altında olabilir; indirim ve kapasite sağlayıcıya, bölgeye ve zamana bağlıdır.',
+    cons: 'Kesinti uyarısı ve süre sağlayıcıya göre değişir; AWS EC2’deki iki dakikalık bildirim bile en iyi çaba esaslıdır ve hibernasyonda ön süre yoktur. Kontrol noktası ve yeniden deneme gerekir.',
     bestFor: 'Toplu iş (batch), simülasyon, kuyruk tabanlı iş yükleri, ML eğitimi.',
     savingsHint: 80,
   },
@@ -202,8 +202,8 @@ export const pricingModels: readonly PricingModel[] = [
     id: 'savings-plan',
     title: 'Tasarruf planı (Savings plan)',
     oneLiner: 'Saatlik harcama taahhüdü vererek esnek indirim.',
-    pros: 'Rezerve kadar katı değil; örnek tipini değiştirebilirsin.',
-    cons: 'Taahhüt edilen saatlik tutarı belirli bir süre aşarsan ek ödeme gelir.',
+    pros: 'Seçilen planın kapsamı içinde örnek ailesi veya hizmet değiştirme esnekliği sağlayabilir.',
+    cons: 'Taahhüdü kullanmasan da ödersin; kapsam dışı veya taahhüdü aşan kullanım ayrıca faturalanır.',
     bestFor: 'Birden çok servis kullanan, ölçeği yıldan yıla değişen ekipler.',
     savingsHint: 40,
   },
@@ -261,7 +261,7 @@ export const providerSnapshots: readonly ProviderSnapshot[] = [
   },
   {
     providerId: 'aws',
-    oneLiner: 'En geniş hizmet kataloğu, olgun ekosistem.',
+    oneLiner: 'Geniş hizmet kataloğu, olgun ekosistem.',
     forWhom: 'Genel amaçlı üretim, startup, kurumsal.',
     signature: 'EC2, S3 ve Lambda ile geniş bir yapı taşı kataloğu.',
   },
@@ -273,7 +273,7 @@ export const providerSnapshots: readonly ProviderSnapshot[] = [
   },
   {
     providerId: 'oracle',
-    oneLiner: 'Cömert Always Free katmanı, Oracle veritabanı ile doğal uyum.',
+    oneLiner: 'Koşullara ve kapasiteye bağlı Always Free kaynakları, Oracle veritabanı hizmetleri.',
     forWhom: 'Öğrenciler, Oracle DB kullanan ekipler.',
     signature: 'Sürekli ücretsiz küçük VM + Autonomous DB kotası.',
   },
@@ -293,7 +293,7 @@ export const providerSnapshots: readonly ProviderSnapshot[] = [
     providerId: 'vultr',
     oneLiner: 'Çok sayıda bölge, basit saatlik genel amaçlı sunucu.',
     forWhom: 'Konum esnekliği isteyen küçük ekipler.',
-    signature: '32+ lokasyon, saatlik faturalama, hazır uygulama imajları.',
+    signature: 'Birden çok bölge, saatlik faturalama ve hazır uygulama imajları; bulunabilirlik ürüne göre değişir.',
   },
 ] as const
 
@@ -307,7 +307,7 @@ export const glossary: readonly GlossaryTerm[] = [
   {
     term: 'vCPU',
     definition: 'Sağlayıcının sanal makineye ayırdığı işlemci birimi. Fiziksel çekirdek ve iş parçacığı karşılığı sağlayıcıya ve örnek ailesine göre değişir.',
-    example: '2 vCPU + 4 GB RAM = küçük bir web uygulamasını rahatça çalıştırır.',
+    example: '2 vCPU + 4 GB RAM bir başlangıç senaryosudur; yeterliliği uygulama, eşzamanlılık ve yük testi belirler.',
   },
   {
     term: 'RAM',
@@ -322,7 +322,7 @@ export const glossary: readonly GlossaryTerm[] = [
   {
     term: 'Ingress (Giriş trafiği)',
     definition: 'Buluta dışarıdan gelen veri. Çoğu sağlayıcıda ücretsizdir.',
-    example: 'Kullanıcının yüklediği bir fotoğraf, genelde ek ücret getirmez.',
+    example: 'Fotoğrafın giriş trafiği ücretsiz olsa bile yazma isteği, depolama ve işleme ücretlenebilir.',
   },
   {
     term: 'Bölge (Region)',
@@ -332,7 +332,7 @@ export const glossary: readonly GlossaryTerm[] = [
   {
     term: 'Availability Zone (AZ)',
     definition: 'Aynı bölge içindeki ayrı hata alanlarıdır. Uygulama birden çok AZ’ye uygun tasarlanmışsa tek AZ arızasında hizmet başka bir AZ’den sürebilir.',
-    example: 'Bir uygulamayı 2 farklı AZ’ye dağıtmak, tek nokta arızasını önler.',
+    example: 'İki AZ, uygun çoğaltma ve yük devriyle AZ arızasına dayanıklılığı artırabilir; ortak bağımlılıklar ayrıca incelenir.',
   },
   {
     term: 'IOPS',
@@ -341,13 +341,13 @@ export const glossary: readonly GlossaryTerm[] = [
   },
   {
     term: 'SLA',
-    definition: 'Hizmet seviyesi anlaşması; sağlayıcının taahhüt ettiği çalışma süresi yüzdesi.',
-    example: '%99,99 SLA = yılda en fazla ~52 dakika kesinti.',
+    definition: 'Hizmet seviyesi anlaşması; tanımlı ölçüm dönemi, koşullar ve istisnalar içeren hizmet hedefi. İhlalde hizmet kredisi koşulları uygulanabilir.',
+    example: '%99,99 kullanılabilirlik hedefinin 30 günlük matematiksel karşılığı 4,32 dakikadır; bu bir kesinti üst sınırı garantisi değildir.',
   },
   {
     term: 'Konteyner',
     definition: 'Uygulamanın kod, bağımlılık ve yapılandırmasıyla birlikte taşınabilir paketi.',
-    example: 'Bir Docker imajı, geliştirici makinesinde de bulutta da aynı şekilde çalışır.',
+    example: 'Aynı imajın çalışması CPU mimarisi, çekirdek, yapılandırma ve dış bağımlılık uyumuna bağlıdır.',
   },
   {
     term: 'Otomatik ölçekleme',
@@ -357,7 +357,7 @@ export const glossary: readonly GlossaryTerm[] = [
   {
     term: 'Spot örnek',
     definition: 'Sağlayıcının boş kapasitesini çok ucuza kiralamak; her an geri alınabilir.',
-    example: 'Toplu video dönüştürme işini spot ile yapıp %70 tasarruf etmek.',
+    example: 'Toplu video dönüştürmeyi kontrol noktalarıyla spot üzerinde denemek; toplam maliyete yeniden başlatmaları da eklemek.',
   },
   {
     term: 'Dağıtım (deploy)',
@@ -395,17 +395,17 @@ export const quizQuestions: readonly QuizQuestion[] = [
     prompt: 'CDN kullanmanın asıl ekonomik faydası nedir?',
     options: [
       { id: 'a', text: 'Egress trafiğini tamamen ücretsiz yapar' },
-      { id: 'b', text: 'Origin’den çıkışı azaltır, böylece toplam egress ücreti düşer' },
+      { id: 'b', text: 'Önbellek isabetleri origin yükünü azaltabilir; toplam maliyet CDN ücretleriyle birlikte değerlendirilir' },
       { id: 'c', text: 'Veritabanı sorgu sayısını azaltır' },
       { id: 'd', text: 'Disk IOPS’unu sıfırlar' },
     ],
     correctId: 'b',
     explanation:
-      'CDN içeriği ucuz edge noktalarından verir; asıl pahalı olan origin’den çıkış azalır. (Cloudflare R2 gibi servislerde egress 0 olabilir, ama genel kural "azaltır"dır.)',
+      'CDN önbelleği origin isteklerini azaltabilir. Tasarruf; isabet oranı, CDN çıkışı, istekler ve origin ücretlerinin toplamına bağlıdır; otomatik değildir.',
   },
   {
     id: 'q-reserved',
-    prompt: '1 yıl taahhütle %30-60 indirim alacağın fiyat modeli hangisidir?',
+    prompt: 'Süreli kaynak veya harcama taahhüdü karşılığında indirim sunabilen fiyat modeli hangisidir?',
     options: [
       { id: 'a', text: 'On-demand' },
       { id: 'b', text: 'Spot' },
@@ -414,11 +414,11 @@ export const quizQuestions: readonly QuizQuestion[] = [
     ],
     correctId: 'c',
     explanation:
-      'Reserved Instance ve Savings Plan, uzun taahhüt karşılığı büyük indirim sağlar. Spot çok ucuzdur ama güvenilir değildir, on-demand ise taahhütsüz ve pahalıdır.',
+      'Reserved Instance ve Savings Plan, plan kapsamındaki kullanım için taahhüt karşılığı indirim sunar. Kullanılmayan taahhüt de maliyetlidir; oran ve koşullar ürüne göre değişir.',
   },
   {
     id: 'q-serverless',
-    prompt: 'Sunucusuz (serverless) faturalandırma hangi iki bileşene dayanır?',
+    prompt: 'İsteğe bağlı Lambda Functions kullanımında iki temel fiyat bileşeni hangisidir?',
     options: [
       { id: 'a', text: 'vCPU ve RAM kapasitesi' },
       { id: 'b', text: 'İstek sayısı ve yürütme süresi (GB-saniye)' },
@@ -427,7 +427,7 @@ export const quizQuestions: readonly QuizQuestion[] = [
     ],
     correctId: 'b',
     explanation:
-      'Lambda/Functions gibi servislerde fiyat, çağrı sayısı + yürütülen GB-saniye üzerinden hesaplanır. Boşta duran kaynak yoktur.',
+      'İsteğe bağlı Lambda Functions için istek ve bellekle ağırlıklandırılmış süre temel bileşenlerdir. Hazır kapasite, ağ, günlük ve depolama ayrıca ücretlenebilir; CLD API senaryosu yalnız istek bileşenini modeller.',
   },
   {
     id: 'q-region',
@@ -471,7 +471,7 @@ export const quizQuestions: readonly QuizQuestion[] = [
 ] as const
 
 /** Tüm eğitim içeriğinin sürümü, gelecekte güncellendiğinde gösterilebilir. */
-export const educationVersion = '2026-09-10' as const
+export const educationVersion = '2026-09-21' as const
 
 /**
  * Konu derinleştirme içerikleri.
@@ -529,7 +529,7 @@ export const deepDives: readonly DeepDive[] = [
         'API Server → etcd (durumu yazar)',
         'Scheduler → uygun düğüm seçer',
         'kubelet → konteyneri düğümde başlatır',
-        'Servis → dış trafiği pod’a yönlendirir',
+        'Service → uygun tür ve ağ ayarıyla trafiği pod’a yönlendirir',
       ],
     },
     pitfall:
@@ -540,7 +540,7 @@ export const deepDives: readonly DeepDive[] = [
   {
     id: 'serverless-architectures',
     title: 'Sunucusuz mimari desenleri',
-    oneLiner: 'Sunucu yönetmeden, yalnızca çalıştığı an için faturalanan olay tabanlı bileşimler.',
+    oneLiner: 'Sunucu işletimini sağlayıcıya bırakan, kullanım ve kapasite planına göre ücretlenen olay tabanlı bileşimler.',
     prerequisites: ['Sunucusuz (serverless) kavramı', 'HTTP temelleri', 'En az bir bulut sağlayıcısında deneyim'],
     steps: [
       {
@@ -561,7 +561,7 @@ export const deepDives: readonly DeepDive[] = [
       {
         title: '4. Hata yönetimi ve tekrar deneme',
         text:
-          'Geçici hatalarda sağlayıcı otomatik tekrar dener. Kalıcı hatalarda ölü mektup kuyruğu (DLQ) kullan; olayları kaybetmek sessiz veri bozulmasına yol açar. Idempotent (aynı olayı iki kez işlemek aynı sonucu vermeli) fonksiyonlar yaz.',
+          'Tekrar deneme davranışı tetikleyiciye ve ayarlara bağlıdır; senkron çağrıda istemci sorumlu olabilir. Desteklenen akışlarda DLQ veya hata hedefi yapılandır. Aynı olayın tekrar işlenmesi yan etkiyi çoğaltmayacak şekilde idempotent fonksiyonlar yaz.',
       },
       {
         title: '5. Maliyet ve soğuk başlangıç',
@@ -613,7 +613,7 @@ export const deepDives: readonly DeepDive[] = [
       {
         title: '5. İzleme ve bütçe',
         text:
-          'GPU saatleri hızlıca yüksek faturalara ulaşabilir. Bütçe uyarısı koy (ör. günlük 50 USD) ve gereksiz çalışan örnekleri kapat. Kullanmadığın örnekleri mutlaka sonlandır; unutulan kaynaklar sık görülen maliyet nedenlerindendir.',
+          'GPU saatleri hızlıca yüksek faturalara ulaşabilir. Bütçe uyarısı koy (ör. günlük 50 USD); uyarı harcamayı kendiliğinden durdurmaz. Gerekirse ayrıca kaynak kapatma otomasyonu tanımla. Kullanmadığın örnekleri mutlaka sonlandır; unutulan kaynaklar sık görülen maliyet nedenlerindendir.',
       },
     ],
     architecture: {

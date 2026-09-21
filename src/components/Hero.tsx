@@ -75,7 +75,7 @@ export function Hero({ stats }: HeroProps) {
         </div>
         <dl className="hero__trust" aria-label="Katalog güven özeti">
           <div>
-            <dt>Son doğrulama</dt>
+            <dt>En son kayıt doğrulaması</dt>
             <dd><time dateTime={stats.latestVerificationDate}>{formattedDate}</time></dd>
           </div>
           <div>
@@ -92,6 +92,7 @@ export function Hero({ stats }: HeroProps) {
           </div>
         </dl>
         <p className="hero__basis">Genel liste fiyatı · Vergiler hariç · USD</p>
+        <p className="hero__basis">Her kaydın tarihi ayrıdır; en son tarih tüm kataloğun güncel olduğu anlamına gelmez.</p>
       </section>
     </div>
   )

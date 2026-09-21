@@ -149,9 +149,14 @@ export function getCatalogHealth(catalog: Catalog, today: Date): CatalogHealth {
   const statusByExchangeRateId = Object.fromEntries(
     catalog.exchangeRates.map((exchangeRate) => [
       exchangeRate.id,
-      sourceEvidenceIssue(sourcesById.get(exchangeRate.sourceId), 'ecb', 'exchange-rate') === null
-        ? 'current'
-        : 'invalid',
+      verificationStatus(
+        exchangeRate.date,
+        [exchangeRate.sourceId],
+        sourcesById,
+        'ecb',
+        'exchange-rate',
+        today,
+      ),
     ] satisfies [string, VerificationStatus]),
   )
   const statusValues = [...Object.values(statusByOfferId), ...Object.values(statusByFreeTierId)]

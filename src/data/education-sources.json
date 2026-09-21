@@ -1,0 +1,12 @@
+{
+  "version": "2026-09-21",
+  "sources": [
+    { "title": "AWS · Spot kesinti bildirimleri", "url": "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-instance-termination-notices.html", "verifiedAt": "2026-09-21" },
+    { "title": "AWS · Savings Plans taahhütleri", "url": "https://aws.amazon.com/savingsplans/faqs/", "verifiedAt": "2026-09-21" },
+    { "title": "AWS · Lambda fiyat bileşenleri", "url": "https://aws.amazon.com/lambda/pricing/", "verifiedAt": "2026-09-21" },
+    { "title": "Google Cloud · Cloud Run fiyat bileşenleri", "url": "https://cloud.google.com/run/pricing", "verifiedAt": "2026-09-21" },
+    { "title": "AWS · Compute SLA koşulları", "url": "https://aws.amazon.com/compute/sla/", "verifiedAt": "2026-09-21" },
+    { "title": "AWS · Bütçe uyarıları ve gecikme", "url": "https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-managing-costs.html", "verifiedAt": "2026-09-21" },
+    { "title": "AWS · Lambda tekrar deneme davranışı", "url": "https://docs.aws.amazon.com/lambda/latest/dg/invocation-retries.html", "verifiedAt": "2026-09-21" }
+  ]
+}

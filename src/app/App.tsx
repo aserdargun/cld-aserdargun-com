@@ -9,6 +9,7 @@ import { FilterBar } from '../components/FilterBar'
 import { FreeTierGuide } from '../components/FreeTierGuide'
 import { Hero } from '../components/Hero'
 import { Methodology } from '../components/Methodology'
+import { LearningSystem } from '../components/LearningSystem'
 import { OfferExplorer } from '../components/OfferExplorer'
 import { ProviderCompare } from '../components/ProviderCompare'
 import { ProviderDetails } from '../components/ProviderDetails'
@@ -86,6 +87,12 @@ function Dashboard({ catalog, today }: { catalog: Catalog; today: Date }) {
       <Hero stats={stats} />
 
       <main className="app-main">
+        {usableExchangeRates.length === 0 ? (
+          <p className="catalog-notice" role="status">
+            Güncel ve kaynaklı ECB EUR/USD kuru yok. EUR fiyatlar için USD toplamı ve sıralama üretilmez.
+            {' '}Katalogdaki kur tarihi: {catalog.exchangeRates.map((rate) => rate.date).join(', ') || 'kayıt yok'}.
+          </p>
+        ) : null}
         {health.staleCount > 0 ? (
           <p className="catalog-notice" role="status">
             {health.staleCount} teklif veya ücretsiz katman kaydı 30 günden eski.
@@ -141,6 +148,7 @@ function Dashboard({ catalog, today }: { catalog: Catalog; today: Date }) {
 
         <ProviderDetails providers={catalog.providers} sources={catalog.sources} />
         <Methodology />
+        <LearningSystem />
       </main>
 
       <footer className="site-footer">
@@ -149,7 +157,10 @@ function Dashboard({ catalog, today }: { catalog: Catalog; today: Date }) {
           <span aria-hidden="true">{' · '}</span>
           <span>Kaynaklı bulut maliyet karşılaştırması</span>
         </div>
-        <a href="#genel-bakis">Başa dön</a>
+        <nav aria-label="Portföy ve sayfa bağlantıları">
+          <a href="https://aserdargun.com/tr/">aserdargun.com</a>
+          <a href="#genel-bakis">Başa dön</a>
+        </nav>
       </footer>
     </div>
   )

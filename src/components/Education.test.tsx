@@ -23,7 +23,7 @@ describe('Education', () => {
     render(<Education />)
     expect(screen.getAllByText('İsteğe bağlı (On-demand)').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Rezerve / Taahhütlü (Reserved)').length).toBeGreaterThan(0)
-    expect(screen.getAllByText('Spot (Açık artırma / kalan kapasite)').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Spot (Kesilebilir kapasite)').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Ücretsiz katman (Free tier)').length).toBeGreaterThan(0)
   })
 
