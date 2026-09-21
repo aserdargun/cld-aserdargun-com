@@ -1,3 +1,4 @@
+import { t } from '../i18n'
 import { ExternalLink } from 'lucide-react'
 import type { Source } from '../domain/catalog'
 
@@ -10,7 +11,7 @@ export function SourceLink({ sourceId, sources }: SourceLinkProps) {
   const source = sources.find((candidate) => candidate.id === sourceId)
 
   if (!source) {
-    return <span className="source-link source-link--missing">Doğrulanamadı</span>
+    return <span className="source-link source-link--missing">{t('Doğrulanamadı')}</span>
   }
 
   return (

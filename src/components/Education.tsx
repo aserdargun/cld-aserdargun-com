@@ -1,11 +1,7 @@
+import { formatLocale, t, tf, localizedData } from '../i18n'
 import { memo, useMemo, useRef, useState, type KeyboardEvent } from 'react'
-import educationSources from '../data/education-sources.json'
-import {
-  CategoryIcon,
-  LatencyMap,
-  ResponsibilityPyramid,
-  SavingsBar,
-} from './Diagrams'
+import rawEducationSources from '../data/education-sources.json'
+import { CategoryIcon, LatencyMap, ResponsibilityPyramid, SavingsBar } from './Diagrams'
 import { DeepDiveSection } from './DeepDiveSection'
 import { FlashcardDeck } from './FlashcardDeck'
 import { LearnedToggle } from './LearnedToggle'
@@ -35,31 +31,33 @@ import type { ServiceCategory } from '../domain/catalog'
  * flashcard modu, kişisel notlar ve konu derinleştirmesi sunar.
  */
 
+const educationSources = localizedData(rawEducationSources)
+
 const subSections: readonly LearningPathStep[] = [
-  { id: 'hizli-baslangic', label: 'Hızlı başlangıç', href: '#hizli-baslangic' },
-  { id: 'bulut-bilesenleri', label: 'Bulut bileşenleri', href: '#bulut-bilesenleri' },
-  { id: 'servis-kategorileri', label: 'Servis kategorileri', href: '#servis-kategorileri' },
-  { id: 'fiyatlandirma', label: 'Fiyatlandırma', href: '#fiyatlandirma' },
-  { id: 'bolge', label: 'Bölge ve gecikme', href: '#bolge' },
-  { id: 'saglayicilar', label: 'Sağlayıcı kartları', href: '#saglayicilar' },
-  { id: 'sozluk', label: 'Sözlük', href: '#sozluk' },
-  { id: 'bilgi-testi', label: 'Bilgi testi', href: '#bilgi-testi' },
-  { id: 'derinleştirme', label: 'Konu derinleştirme', href: '#derinleştirme' },
+  { id: 'hizli-baslangic', label: t('Hızlı başlangıç'), href: '#hizli-baslangic' },
+  { id: 'bulut-bilesenleri', label: t('Bulut bileşenleri'), href: '#bulut-bilesenleri' },
+  { id: 'servis-kategorileri', label: t('Servis kategorileri'), href: '#servis-kategorileri' },
+  { id: 'fiyatlandirma', label: t('Fiyatlandırma'), href: '#fiyatlandirma' },
+  { id: 'bolge', label: t('Bölge ve gecikme'), href: '#bolge' },
+  { id: 'saglayicilar', label: t('Sağlayıcı kartları'), href: '#saglayicilar' },
+  { id: 'sozluk', label: t('Sözlük'), href: '#sozluk' },
+  { id: 'bilgi-testi', label: t('Bilgi testi'), href: '#bilgi-testi' },
+  { id: 'derinleştirme', label: t('Konu derinleştirme'), href: '#derinleştirme' },
 ]
 
 const stepById = (id: string): LearningPathStep => {
   const step = subSections.find((s) => s.id === id)
-  if (!step) throw new Error(`Bilinmeyen bölüm: ${id}`)
+  if (!step) throw new Error(tf('Bilinmeyen bölüm: {0}', [id]))
   return step
 }
 
 const latencyRegions = [
-  { id: 'tr-istanbul', label: 'İstanbul (aynı şehir)', ms: 5 },
+  { id: 'tr-istanbul', label: t('İstanbul (aynı şehir)'), ms: 5 },
   { id: 'eu-frankfurt', label: 'Frankfurt (eu-central-1)', ms: 45 },
-  { id: 'eu-west', label: 'Batı Avrupa (NL/BE)', ms: 50 },
-  { id: 'eu-north', label: 'Kuzey Avrupa (Stockholm)', ms: 70 },
-  { id: 'us-east', label: 'ABD Doğu (Virginia)', ms: 130 },
-  { id: 'asia-tokyo', label: 'Asya (Tokyo)', ms: 220 },
+  { id: 'eu-west', label: t('Batı Avrupa (NL/BE)'), ms: 50 },
+  { id: 'eu-north', label: t('Kuzey Avrupa (Stockholm)'), ms: 70 },
+  { id: 'us-east', label: t('ABD Doğu (Virginia)'), ms: 130 },
+  { id: 'asia-tokyo', label: t('Asya (Tokyo)'), ms: 220 },
 ] as const
 
 export const Education = memo(EducationContent)
@@ -101,7 +99,7 @@ function EducationContent() {
       if (isLearned(key)) learned['saglayicilar'] = (learned['saglayicilar'] ?? 0) + 1
     }
     for (const term of glossary) {
-      const key = `term:${term.term}`
+      const key = `term:${term.id}`
       total['sozluk'] = (total['sozluk'] ?? 0) + 1
       if (isLearned(key)) learned['sozluk'] = (learned['sozluk'] ?? 0) + 1
     }
@@ -116,18 +114,19 @@ function EducationContent() {
   return (
     <section className="education page-section" id="ogren" aria-labelledby="education-heading">
       <header className="page-section__heading">
-        <h2 id="education-heading">Öğren</h2>
+        <h2 id="education-heading">{t('Öğren')}</h2>
         <p>
-          Bulut kavramlarını, servis kategorilerini, fiyatlandırma modellerini ve
-          bölge seçimini üniversite öğrencisi düzeyinde, görsellerle desteklenmiş
-          olarak anlatan kalıcı bir referans. Sıralı yol haritası, “Öğrendim”
-          işaretleri, kişisel notlar ve flashcard modu tarayıcına kaydedilir.
+          {t(
+            'Bulut kavramlarını, servis kategorilerini, fiyatlandırma modellerini ve bölge seçimini üniversite öğrencisi düzeyinde, görsellerle desteklenmiş olarak anlatan kalıcı bir referans. Sıralı yol haritası, “Öğrendim” işaretleri, kişisel notlar ve flashcard modu tarayıcına kaydedilir.',
+          )}
         </p>
         <p className="education__version">
-          İçerik sürümü: <time dateTime={educationVersion}>{educationVersion}</time>
+          {t('İçerik sürümü: ')}
+          <time dateTime={educationVersion}>{educationVersion}</time>
           {' • '}
           <strong data-testid="education-overall-progress">
-            {overallLearned} / {overallTotal} kavram öğrenildi
+            {overallLearned} / {overallTotal}
+            {t(' kavram öğrenildi')}
           </strong>
         </p>
       </header>
@@ -140,7 +139,7 @@ function EducationContent() {
         onVisit={recordVisit}
       />
 
-      <nav className="education__tabs" aria-label="Eğitim alt başlıkları">
+      <nav className="education__tabs" aria-label={t('Eğitim alt başlıkları')}>
         {subSections.map((sub) => (
           <a key={sub.id} href={sub.href}>
             {sub.label}
@@ -204,12 +203,21 @@ function EducationContent() {
         notes={state.notes}
       />
       <details className="education__section">
-        <summary>Eğitim açıklamalarının resmî kaynakları</summary>
-        <p>Bu kaynaklar kavramsal açıklamaları destekler; fiyat kataloğunun yeniden doğrulama tarihini değiştirmez.</p>
+        <summary>{t('Eğitim açıklamalarının resmî kaynakları')}</summary>
+        <p>
+          {t(
+            'Bu kaynaklar kavramsal açıklamaları destekler; fiyat kataloğunun yeniden doğrulama tarihini değiştirmez.',
+          )}
+        </p>
         <ul>
           {educationSources.sources.map((source) => (
             <li key={source.url}>
-              <a className="source-link" href={source.url} target="_blank" rel="noopener noreferrer">
+              <a
+                className="source-link"
+                href={source.url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <span>{source.title}</span>
                 <time dateTime={source.verifiedAt}>{source.verifiedAt}</time>
               </a>
@@ -221,7 +229,17 @@ function EducationContent() {
   )
 }
 
-function Section({ id, title, lead, children }: { id: string; title: string; lead?: string; children: React.ReactNode }) {
+function Section({
+  id,
+  title,
+  lead,
+  children,
+}: {
+  id: string
+  title: string
+  lead?: string
+  children: React.ReactNode
+}) {
   return (
     <article className="education__section" id={id} aria-labelledby={`${id}-heading`}>
       <header className="education__section-header">
@@ -237,37 +255,40 @@ function QuickStart({ id }: { id: string }) {
   return (
     <Section
       id={id}
-      title="Hızlı başlangıç"
-      lead="Bu uygulamayı ilk kez açtıysan aşağıdaki üç adımla başlayabilirsin."
+      title={t('Hızlı başlangıç')}
+      lead={t('Bu uygulamayı ilk kez açtıysan aşağıdaki üç adımla başlayabilirsin.')}
     >
       <ol className="quickstart">
         <li>
           <span className="quickstart__step">1</span>
           <div>
-            <h4>Bir senaryo seç</h4>
+            <h4>{t('Bir senaryo seç')}</h4>
             <p>
-              “Senaryolar” bölümünden öğrenci projenle eşleşen hazır bir kalıbı seç:
-              küçük web uygulaması, API arka ucu, statik site, AI GPU gibi.
+              {t(
+                '“Senaryolar” bölümünden öğrenci projenle eşleşen hazır bir kalıbı seç: küçük web uygulaması, API arka ucu, statik site, AI GPU gibi.',
+              )}
             </p>
           </div>
         </li>
         <li>
           <span className="quickstart__step">2</span>
           <div>
-            <h4>Sağlayıcı ve bölgeyi daralt</h4>
+            <h4>{t('Sağlayıcı ve bölgeyi daralt')}</h4>
             <p>
-              Filtre çubuğundan ilgilendiğin sağlayıcıları (Azure, GCP, AWS, Hetzner, Oracle,
-              Cloudflare, DigitalOcean, Vultr) ve bölgeleri seç; tabloyu karşılaştır.
+              {t(
+                'Filtre çubuğundan ilgilendiğin sağlayıcıları (Azure, GCP, AWS, Hetzner, Oracle, Cloudflare, DigitalOcean, Vultr) ve bölgeleri seç; tabloyu karşılaştır.',
+              )}
             </p>
           </div>
         </li>
         <li>
           <span className="quickstart__step">3</span>
           <div>
-            <h4>Sonucu öğren</h4>
+            <h4>{t('Sonucu öğren')}</h4>
             <p>
-              “Öğren” bölümünde her kategorinin neden o fiyatlandırıldığını, fiyat
-              modellerinin farkını ve bölge seçiminin gecikmeye etkisini oku.
+              {t(
+                '“Öğren” bölümünde her kategorinin neden o fiyatlandırıldığını, fiyat modellerinin farkını ve bölge seçiminin gecikmeye etkisini oku.',
+              )}
             </p>
           </div>
         </li>
@@ -292,8 +313,10 @@ function ConceptLayers({
   return (
     <Section
       id={id}
-      title="Bulut bileşenleri: IaaS, PaaS, SaaS"
-      lead="Sorumluluk payı yukarı çıktıkça senden uzaklaşır. Aşağıdaki piramit, her katmanda neyi senin yönettiğini özetler."
+      title={t('Bulut bileşenleri: IaaS, PaaS, SaaS')}
+      lead={t(
+        'Sorumluluk payı yukarı çıktıkça senden uzaklaşır. Aşağıdaki piramit, her katmanda neyi senin yönettiğini özetler.',
+      )}
     >
       <ResponsibilityPyramid layers={conceptLayers} />
       <div className="education__grid">
@@ -308,10 +331,10 @@ function ConceptLayers({
               />
             </header>
             <p>
-              <strong>Kim yönetir?</strong> {layer.whoManages}
+              <strong>{t('Kim yönetir?')}</strong> {layer.whoManages}
             </p>
             <p>
-              <strong>Örnek:</strong> {layer.example}
+              <strong>{t('Örnek:')}</strong> {layer.example}
             </p>
           </article>
         ))}
@@ -339,25 +362,35 @@ function ServiceCategoryGuide({
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([])
   function handleCategoryKey(event: KeyboardEvent<HTMLButtonElement>, index: number) {
     const last = serviceCategoryLessons.length - 1
-    const next = event.key === 'Home' ? 0 : event.key === 'End' ? last
-      : event.key === 'ArrowRight' ? (index + 1) % (last + 1)
-      : event.key === 'ArrowLeft' ? (index + last) % (last + 1) : null
+    const next =
+      event.key === 'Home'
+        ? 0
+        : event.key === 'End'
+          ? last
+          : event.key === 'ArrowRight'
+            ? (index + 1) % (last + 1)
+            : event.key === 'ArrowLeft'
+              ? (index + last) % (last + 1)
+              : null
     if (next === null) return
     event.preventDefault()
     setActiveCategory(serviceCategoryLessons[next]!.category)
     tabRefs.current[next]?.focus()
   }
   const active: ServiceCategoryLesson = useMemo(
-    () => serviceCategoryLessons.find((lesson) => lesson.category === activeCategory) ?? firstLesson,
+    () =>
+      serviceCategoryLessons.find((lesson) => lesson.category === activeCategory) ?? firstLesson,
     [activeCategory, firstLesson],
   )
   return (
     <Section
       id={id}
-      title="Servis kategorileri ne işe yarar?"
-      lead="Her sekmenin arkasındaki kategori, uygulamanın bir ihtiyacını karşılar. Tıkla, detayını gör."
+      title={t('Servis kategorileri ne işe yarar?')}
+      lead={t(
+        'Her sekmenin arkasındaki kategori, uygulamanın bir ihtiyacını karşılar. Tıkla, detayını gör.',
+      )}
     >
-      <div className="category-tabs" role="tablist" aria-label="Servis kategorisi seç">
+      <div className="category-tabs" role="tablist" aria-label={t('Servis kategorisi seç')}>
         {serviceCategoryLessons.map((lesson, index) => (
           <button
             key={lesson.category}
@@ -366,7 +399,9 @@ function ServiceCategoryGuide({
             id={`${id}-tab-${lesson.category}`}
             aria-controls={`${id}-panel`}
             tabIndex={activeCategory === lesson.category ? 0 : -1}
-            ref={(element) => { tabRefs.current[index] = element }}
+            ref={(element) => {
+              tabRefs.current[index] = element
+            }}
             onKeyDown={(event) => handleCategoryKey(event, index)}
             aria-selected={activeCategory === lesson.category}
             className={`category-tabs__button${activeCategory === lesson.category ? ' is-active' : ''}`}
@@ -378,7 +413,12 @@ function ServiceCategoryGuide({
         ))}
       </div>
 
-      <article className="category-detail" id={`${id}-panel`} role="tabpanel" aria-labelledby={`${id}-tab-${active.category}`}>
+      <article
+        className="category-detail"
+        id={`${id}-panel`}
+        role="tabpanel"
+        aria-labelledby={`${id}-tab-${active.category}`}
+      >
         <header className="category-detail__header">
           <div>
             <h4 id={`${id}-${active.category}`}>{active.title}</h4>
@@ -392,29 +432,31 @@ function ServiceCategoryGuide({
         </header>
         <dl className="category-detail__list">
           <div>
-            <dt>Ne?</dt>
+            <dt>{t('Ne?')}</dt>
             <dd>{active.whatIsIt}</dd>
           </div>
           <div>
-            <dt>Ne zaman?</dt>
+            <dt>{t('Ne zaman?')}</dt>
             <dd>{active.whenToUse}</dd>
           </div>
           <div>
-            <dt>Benzetme</dt>
+            <dt>{t('Benzetme')}</dt>
             <dd>{active.analogy}</dd>
           </div>
           <div>
-            <dt>Anahtar terimler</dt>
+            <dt>{t('Anahtar terimler')}</dt>
             <dd>
               <ul className="chip-list">
                 {active.keyTerms.map((term) => (
-                  <li key={term}><span className="chip">{term}</span></li>
+                  <li key={term}>
+                    <span className="chip">{term}</span>
+                  </li>
                 ))}
               </ul>
             </dd>
           </div>
           <div>
-            <dt>Sık yapılan hata</dt>
+            <dt>{t('Sık yapılan hata')}</dt>
             <dd>{active.commonMistake}</dd>
           </div>
         </dl>
@@ -440,8 +482,10 @@ function PricingModelsGuide({
   return (
     <Section
       id={id}
-      title="Fiyatlandırma modelleri"
-      lead="Fiyat modeli, kullanım ve taahhüt birlikte değerlendirilir. Çubuklar yalnız öğretim amaçlıdır; sağlayıcılar arasında gerçek tasarruf sıralaması yapmaz."
+      title={t('Fiyatlandırma modelleri')}
+      lead={t(
+        'Fiyat modeli, kullanım ve taahhüt birlikte değerlendirilir. Çubuklar yalnız öğretim amaçlıdır; sağlayıcılar arasında gerçek tasarruf sıralaması yapmaz.',
+      )}
     >
       <div className="education__grid education__grid--two">
         {pricingModels.map((model) => (
@@ -458,18 +502,20 @@ function PricingModelsGuide({
               />
             </header>
             <SavingsBar savings={model.savingsHint} label={model.title} />
-            <p className="diagram-caption">Temsili öğretim örneği; güncel indirim oranı veya tasarruf garantisi değildir.</p>
+            <p className="diagram-caption">
+              {t('Temsili öğretim örneği; güncel indirim oranı veya tasarruf garantisi değildir.')}
+            </p>
             <dl>
               <div>
-                <dt>Artı</dt>
+                <dt>{t('Artı')}</dt>
                 <dd>{model.pros}</dd>
               </div>
               <div>
-                <dt>Eksi</dt>
+                <dt>{t('Eksi')}</dt>
                 <dd>{model.cons}</dd>
               </div>
               <div>
-                <dt>En uygun kullanım</dt>
+                <dt>{t('En uygun kullanım')}</dt>
                 <dd>{model.bestFor}</dd>
               </div>
             </dl>
@@ -491,11 +537,7 @@ function RegionGuide({
   note: string
 }) {
   return (
-    <Section
-      id={id}
-      title="Bölge ve gecikme"
-      lead={regionLesson.whyItMatters}
-    >
+    <Section id={id} title={t('Bölge ve gecikme')} lead={regionLesson.whyItMatters}>
       <div className="education__grid education__grid--two">
         <div>
           <ul className="region-bullets">
@@ -504,14 +546,23 @@ function RegionGuide({
             ))}
           </ul>
           <p className="region-misconception">
-            <strong>Yaygın inanış:</strong> {regionLesson.misconception}
+            <strong>{t('Yaygın inanış:')}</strong> {regionLesson.misconception}
           </p>
         </div>
         <div>
           <LatencyMap regions={latencyRegions} />
-          <p className="diagram-caption">Sayılar öğretim için seçilmiş örneklerdir; İstanbul’dan yapılmış ölçümler değildir.
-            {' '}Bölge kararını kendi ağından ölçerek ver.
-            {' '}<a href="https://aws.amazon.com/blogs/networking-and-content-delivery/measuring-network-latency-to-aws-region-before-deployment/" target="_blank" rel="noopener noreferrer">AWS gecikme ölçüm rehberi</a>
+          <p className="diagram-caption">
+            {t(
+              'Sayılar öğretim için seçilmiş örneklerdir; İstanbul’dan yapılmış ölçümler değildir.',
+            )}{' '}
+            {t('Bölge kararını kendi ağından ölçerek ver.')}{' '}
+            <a
+              href="https://aws.amazon.com/blogs/networking-and-content-delivery/measuring-network-latency-to-aws-region-before-deployment/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {t('AWS gecikme ölçüm rehberi')}
+            </a>
           </p>
         </div>
       </div>
@@ -536,8 +587,8 @@ function ProviderSnapshots({
   return (
     <Section
       id={id}
-      title="Sağlayıcı kartları"
-      lead="Her sağlayıcıyı tek cümlede tanı, kimin için uygun olduğunu gör."
+      title={t('Sağlayıcı kartları')}
+      lead={t('Her sağlayıcıyı tek cümlede tanı, kimin için uygun olduğunu gör.')}
     >
       <div className="education__grid education__grid--two">
         {providerSnapshots.map((snapshot) => (
@@ -553,11 +604,11 @@ function ProviderSnapshots({
             <p className="education__card-oneliner">{snapshot.oneLiner}</p>
             <dl>
               <div>
-                <dt>Kime uygun?</dt>
+                <dt>{t('Kime uygun?')}</dt>
                 <dd>{snapshot.forWhom}</dd>
               </div>
               <div>
-                <dt>İmza özellik</dt>
+                <dt>{t('İmza özellik')}</dt>
                 <dd>{snapshot.signature}</dd>
               </div>
             </dl>
@@ -583,29 +634,34 @@ function Glossary({
   isLearned: (id: string) => boolean
   toggleLearned: (id: string) => void
   flashcardStatuses: Record<string, import('../app/useLearningState').FlashcardStatus>
-  onFlashcardStatusChange: (termId: string, status: import('../app/useLearningState').FlashcardStatus) => void
+  onFlashcardStatusChange: (
+    termId: string,
+    status: import('../app/useLearningState').FlashcardStatus,
+  ) => void
   onFlashcardReset: () => void
   onSetNote: (id: string, text: string) => void
   note: string
 }) {
   const [query, setQuery] = useState('')
   const [mode, setMode] = useState<'list' | 'flashcard'>('list')
-  const normalized = query.trim().toLocaleLowerCase('tr-TR')
+  const normalized = query.trim().toLocaleLowerCase(formatLocale)
   const filtered = glossary.filter((entry) => {
     if (!normalized) return true
     return (
-      entry.term.toLocaleLowerCase('tr-TR').includes(normalized) ||
-      entry.definition.toLocaleLowerCase('tr-TR').includes(normalized)
+      entry.term.toLocaleLowerCase(formatLocale).includes(normalized) ||
+      entry.definition.toLocaleLowerCase(formatLocale).includes(normalized)
     )
   })
   return (
     <Section
       id={id}
-      title="Sözlük"
-      lead="Bulutla ilgili sık karşılaşılan terimlerin kısa, kalıcı tanımları. Flashcard moduyla hızlıca tekrar edebilirsin."
+      title={t('Sözlük')}
+      lead={t(
+        'Bulutla ilgili sık karşılaşılan terimlerin kısa, kalıcı tanımları. Flashcard moduyla hızlıca tekrar edebilirsin.',
+      )}
     >
       <div className="glossary__toolbar">
-        <div className="glossary__modes" role="group" aria-label="Sözlük görünümü">
+        <div className="glossary__modes" role="group" aria-label={t('Sözlük görünümü')}>
           <button
             type="button"
             aria-pressed={mode === 'list'}
@@ -613,7 +669,7 @@ function Glossary({
             onClick={() => setMode('list')}
             data-testid="glossary-mode-list"
           >
-            Kart listesi
+            {t('Kart listesi')}
           </button>
           <button
             type="button"
@@ -622,15 +678,15 @@ function Glossary({
             onClick={() => setMode('flashcard')}
             data-testid="glossary-mode-flashcard"
           >
-            Flashcard modu
+            {t('Flashcard modu')}
           </button>
         </div>
         {mode === 'list' ? (
           <label className="glossary__search">
-            <span className="visually-hidden">Sözlükte ara</span>
+            <span className="visually-hidden">{t('Sözlükte ara')}</span>
             <input
               type="search"
-              placeholder="Terim veya açıklama ara..."
+              placeholder={t('Terim veya açıklama ara...')}
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               data-testid="glossary-search"
@@ -642,21 +698,24 @@ function Glossary({
       {mode === 'list' ? (
         <div className="glossary__grid" data-testid="glossary-list">
           {filtered.length === 0 ? (
-            <p className="glossary__empty">“{query}” için eşleşen terim bulunamadı.</p>
+            <p className="glossary__empty">
+              “{query}
+              {t('” için eşleşen terim bulunamadı.')}
+            </p>
           ) : (
             filtered.map((entry) => (
-              <article key={entry.term} className="glossary__item">
+              <article key={entry.id} className="glossary__item">
                 <header className="glossary__item-header">
                   <h4>{entry.term}</h4>
                   <LearnedToggle
-                    id={`term:${entry.term}`}
-                    learned={isLearned(`term:${entry.term}`)}
+                    id={`term:${entry.id}`}
+                    learned={isLearned(`term:${entry.id}`)}
                     onToggle={toggleLearned}
                   />
                 </header>
                 <p>{entry.definition}</p>
                 <p className="glossary__example">
-                  <strong>Örnek:</strong> {entry.example}
+                  <strong>{t('Örnek:')}</strong> {entry.example}
                 </p>
               </article>
             ))
@@ -681,7 +740,10 @@ interface KnowledgeCheckProps {
 }
 
 function KnowledgeCheck({ id, onSetNote, note }: KnowledgeCheckProps) {
-  const [state, setState] = useState<{ answers: Record<string, QuizOptionId | undefined>; submitted: boolean }>({
+  const [state, setState] = useState<{
+    answers: Record<string, QuizOptionId | undefined>
+    submitted: boolean
+  }>({
     answers: {},
     submitted: false,
   })
@@ -704,15 +766,17 @@ function KnowledgeCheck({ id, onSetNote, note }: KnowledgeCheckProps) {
   return (
     <Section
       id={id}
-      title="Bilgi testi"
-      lead="Yedi kısa soru. Hepsini yanıtla, “Testi değerlendir”e tıkla, eksiklerini öğren."
+      title={t('Bilgi testi')}
+      lead={t('Yedi kısa soru. Hepsini yanıtla, “Testi değerlendir”e tıkla, eksiklerini öğren.')}
     >
       <ol className="quiz">
         {quizQuestions.map((question, index) => {
           const selected = state.answers[question.id]
           return (
             <li key={question.id} className="quiz__item">
-              <h4>{index + 1}. {question.prompt}</h4>
+              <h4>
+                {index + 1}. {question.prompt}
+              </h4>
               <ul className="quiz__options" role="radiogroup" aria-label={question.prompt}>
                 {question.options.map((option) => {
                   const isSelected = selected === option.id
@@ -740,9 +804,7 @@ function KnowledgeCheck({ id, onSetNote, note }: KnowledgeCheckProps) {
                   )
                 })}
               </ul>
-              {state.submitted ? (
-                <p className="quiz__explanation">{question.explanation}</p>
-              ) : null}
+              {state.submitted ? <p className="quiz__explanation">{question.explanation}</p> : null}
             </li>
           )
         })}
@@ -756,12 +818,14 @@ function KnowledgeCheck({ id, onSetNote, note }: KnowledgeCheckProps) {
             className="quiz__button quiz__button--primary"
             data-testid="quiz-submit"
           >
-            Testi değerlendir ({answeredCount}/{quizQuestions.length})
+            {t('Testi değerlendir (')}
+            {answeredCount}/{quizQuestions.length})
           </button>
         ) : (
           <>
             <p className="quiz__score" role="status" data-testid="quiz-score">
-              {correctCount} / {quizQuestions.length} doğru
+              {correctCount} / {quizQuestions.length}
+              {t(' doğru')}
             </p>
             <button
               type="button"
@@ -769,7 +833,7 @@ function KnowledgeCheck({ id, onSetNote, note }: KnowledgeCheckProps) {
               className="quiz__button"
               data-testid="quiz-reset"
             >
-              Yeniden dene
+              {t('Yeniden dene')}
             </button>
           </>
         )}

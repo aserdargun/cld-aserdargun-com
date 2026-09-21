@@ -1,3 +1,4 @@
+import { formatLocale, t, tf } from '../i18n'
 import { useId, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
 import { RotateCcw } from 'lucide-react'
 import type { ComparisonState } from '../app/useComparisonState'
@@ -6,12 +7,12 @@ import type { Scenario, ServiceCategory } from '../domain/catalog'
 import './ScenarioCalculator.css'
 
 const categoryLabels: Record<ServiceCategory, string> = {
-  compute: 'hesaplama',
+  compute: t('hesaplama'),
   'gpu-ai': 'AI / GPU',
-  'object-storage': 'nesne depolama',
-  'managed-database': 'yönetilen veritabanı',
-  serverless: 'sunucusuz işlem',
-  'cdn-network': 'CDN / ağ',
+  'object-storage': t('nesne depolama'),
+  'managed-database': t('yönetilen veritabanı'),
+  serverless: t('sunucusuz işlem'),
+  'cdn-network': t('CDN / ağ'),
   kubernetes: 'Kubernetes',
 }
 
@@ -28,27 +29,27 @@ interface FieldDefinition {
 }
 
 const fields: readonly FieldDefinition[] = [
-  { key: 'hoursPerMonth', label: 'Aylık çalışma süresi', unit: 'saat/ay' },
-  { key: 'vcpu', label: 'vCPU', unit: 'çekirdek', step: 1 },
+  { key: 'hoursPerMonth', label: t('Aylık çalışma süresi'), unit: t('saat/ay') },
+  { key: 'vcpu', label: 'vCPU', unit: t('çekirdek'), step: 1 },
   { key: 'ramGb', label: 'RAM', unit: 'GB' },
-  { key: 'storageGb', label: 'Depolama', unit: 'GB' },
-  { key: 'outboundGb', label: 'Aylık dış trafik', unit: 'GB/ay' },
-  { key: 'requestsMillion', label: 'Aylık istek sayısı', unit: 'milyon istek/ay' },
-  { key: 'databaseGb', label: 'Veritabanı depolaması', unit: 'GB' },
-  { key: 'gpuHours', label: 'Aylık GPU kullanımı', unit: 'GPU saat/ay' },
+  { key: 'storageGb', label: t('Depolama'), unit: 'GB' },
+  { key: 'outboundGb', label: t('Aylık dış trafik'), unit: t('GB/ay') },
+  { key: 'requestsMillion', label: t('Aylık istek sayısı'), unit: t('milyon istek/ay') },
+  { key: 'databaseGb', label: t('Veritabanı depolaması'), unit: 'GB' },
+  { key: 'gpuHours', label: t('Aylık GPU kullanımı'), unit: t('GPU saat/ay') },
   { key: 'gpuVramGb', label: 'GPU VRAM', unit: 'GB' },
 ]
 
 const requirementTextByField: Record<NumericScenarioField, (value: number) => string> = {
-  hoursPerMonth: (value) => `${value.toLocaleString('tr-TR')} saat/ay`,
-  vcpu: (value) => `${value.toLocaleString('tr-TR')} vCPU`,
-  ramGb: (value) => `${value.toLocaleString('tr-TR')} GB RAM`,
-  storageGb: (value) => `${value.toLocaleString('tr-TR')} GB depolama`,
-  outboundGb: (value) => `${value.toLocaleString('tr-TR')} GB dış trafik`,
-  requestsMillion: (value) => `${value.toLocaleString('tr-TR')} milyon istek/ay`,
-  databaseGb: (value) => `${value.toLocaleString('tr-TR')} GB veritabanı depolaması`,
-  gpuHours: (value) => `${value.toLocaleString('tr-TR')} GPU saat/ay`,
-  gpuVramGb: (value) => `${value.toLocaleString('tr-TR')} GB GPU VRAM`,
+  hoursPerMonth: (value) => tf('{0} saat/ay', [value.toLocaleString(formatLocale)]),
+  vcpu: (value) => `${value.toLocaleString(formatLocale)} vCPU`,
+  ramGb: (value) => `${value.toLocaleString(formatLocale)} GB RAM`,
+  storageGb: (value) => tf('{0} GB depolama', [value.toLocaleString(formatLocale)]),
+  outboundGb: (value) => tf('{0} GB dış trafik', [value.toLocaleString(formatLocale)]),
+  requestsMillion: (value) => tf('{0} milyon istek/ay', [value.toLocaleString(formatLocale)]),
+  databaseGb: (value) => tf('{0} GB veritabanı depolaması', [value.toLocaleString(formatLocale)]),
+  gpuHours: (value) => tf('{0} GPU saat/ay', [value.toLocaleString(formatLocale)]),
+  gpuVramGb: (value) => `${value.toLocaleString(formatLocale)} GB GPU VRAM`,
 }
 
 type DraftValues = Record<NumericScenarioField, string>
@@ -67,10 +68,7 @@ function parseUsageValue(value: string): number | null {
 }
 
 interface ScenarioCalculatorProps {
-  state: Pick<
-    ComparisonState,
-    'scenario' | 'selectScenario' | 'updateScenario' | 'resetScenario'
-  >
+  state: Pick<ComparisonState, 'scenario' | 'selectScenario' | 'updateScenario' | 'resetScenario'>
   scenarios?: readonly Scenario[]
 }
 
@@ -91,9 +89,16 @@ export function ScenarioCalculator({
 
   if (scenarioSnapshot !== state.scenario) {
     setScenarioSnapshot(state.scenario)
-    setDrafts((current) => scenarioSnapshot.id !== state.scenario.id
-      ? draftValuesFor(state.scenario)
-      : Object.fromEntries(fields.map(({ key }) => [key, errors[key] ? current[key] : String(state.scenario[key])])) as DraftValues)
+    setDrafts((current) =>
+      scenarioSnapshot.id !== state.scenario.id
+        ? draftValuesFor(state.scenario)
+        : (Object.fromEntries(
+            fields.map(({ key }) => [
+              key,
+              errors[key] ? current[key] : String(state.scenario[key]),
+            ]),
+          ) as DraftValues),
+    )
     if (scenarioSnapshot.id !== state.scenario.id) {
       setErrors({})
       setAdvancedOpen(false)
@@ -105,7 +110,7 @@ export function ScenarioCalculator({
     const parsed = parseUsageValue(value)
 
     if (parsed === null) {
-      setErrors((current) => ({ ...current, [field]: '0 veya daha büyük bir sayı girin.' }))
+      setErrors((current) => ({ ...current, [field]: t('0 veya daha büyük bir sayı girin.') }))
       return
     }
 
@@ -124,14 +129,14 @@ export function ScenarioCalculator({
 
     fields.forEach((field) => {
       const parsed = parseUsageValue(drafts[field.key])
-      if (parsed === null) nextErrors[field.key] = '0 veya daha büyük bir sayı girin.'
+      if (parsed === null) nextErrors[field.key] = t('0 veya daha büyük bir sayı girin.')
       else patch[field.key] = parsed
     })
 
     setErrors(nextErrors)
     if (Object.keys(nextErrors).length === 0) {
       state.updateScenario(patch)
-      setAnnouncement('Hesaplama güncellendi.')
+      setAnnouncement(t('Hesaplama güncellendi.'))
       setAnnouncementId((current) => current + 1)
     }
   }
@@ -172,7 +177,8 @@ export function ScenarioCalculator({
     return value > 0 ? [requirementTextByField[field.key](value)] : []
   })
   const activeTabId = `${formId}-tab-${state.scenario.id}`
-  const selectedPreset = scenarios.find((scenario) => scenario.id === state.scenario.id) ?? state.scenario
+  const selectedPreset =
+    scenarios.find((scenario) => scenario.id === state.scenario.id) ?? state.scenario
   const primaryFields = fields.filter((field) => selectedPreset[field.key] > 0)
   const advancedFields = fields.filter((field) => selectedPreset[field.key] === 0)
 
@@ -212,7 +218,7 @@ export function ScenarioCalculator({
 
   return (
     <section className="scenario-calculator" aria-labelledby={`${formId}-heading`}>
-      <div className="scenario-tabs" role="tablist" aria-label="Kullanım senaryoları">
+      <div className="scenario-tabs" role="tablist" aria-label={t('Kullanım senaryoları')}>
         {scenarios.map((scenario, index) => (
           <button
             className="scenario-tabs__tab"
@@ -223,7 +229,9 @@ export function ScenarioCalculator({
             aria-selected={state.scenario.id === scenario.id}
             aria-controls={panelId}
             tabIndex={state.scenario.id === scenario.id ? 0 : -1}
-            ref={(element) => { tabRefs.current[index] = element }}
+            ref={(element) => {
+              tabRefs.current[index] = element
+            }}
             onClick={() => state.selectScenario(scenario.id)}
             onKeyDown={(event) => handleTabKeyDown(event, index)}
           >
@@ -238,12 +246,12 @@ export function ScenarioCalculator({
         role="tabpanel"
         aria-labelledby={activeTabId}
       >
-        <h2 id={`${formId}-heading`}>Senaryo hesaplayıcı</h2>
+        <h2 id={`${formId}-heading`}>{t('Senaryo hesaplayıcı')}</h2>
         <p className="scenario-calculator__description">{state.scenario.description}</p>
 
         <form onSubmit={submitValidValues} noValidate>
           <label className="scenario-calculator__scenario" htmlFor={`${formId}-scenario`}>
-            <span>Kullanım senaryosu</span>
+            <span>{t('Kullanım senaryosu')}</span>
             <select
               id={`${formId}-scenario`}
               value={state.scenario.id}
@@ -257,8 +265,8 @@ export function ScenarioCalculator({
             </select>
           </label>
 
-          <fieldset className="scenario-calculator__fieldset" aria-label="Temel kullanım">
-            <legend>Temel kullanım</legend>
+          <fieldset className="scenario-calculator__fieldset" aria-label={t('Temel kullanım')}>
+            <legend>{t('Temel kullanım')}</legend>
             <div className="scenario-calculator__fields">{primaryFields.map(renderField)}</div>
           </fieldset>
 
@@ -267,43 +275,51 @@ export function ScenarioCalculator({
             open={advancedOpen}
             onToggle={(event) => setAdvancedOpen(event.currentTarget.open)}
           >
-            <summary>Gelişmiş kullanım ayarları</summary>
+            <summary>{t('Gelişmiş kullanım ayarları')}</summary>
             <div className="scenario-calculator__fields" aria-hidden={!advancedOpen}>
               {advancedFields.map(renderField)}
             </div>
           </details>
 
-        <div className="scenario-calculator__actions">
-          <button className="scenario-calculator__reset" type="button" onClick={resetToSelectedPreset}>
-            <RotateCcw aria-hidden="true" size={16} strokeWidth={2} />
-            Varsayılan değerlere sıfırla
-          </button>
-          <button className="scenario-calculator__submit" type="submit">
-            Hesaplamayı güncelle
-          </button>
-        </div>
+          <div className="scenario-calculator__actions">
+            <button
+              className="scenario-calculator__reset"
+              type="button"
+              onClick={resetToSelectedPreset}
+            >
+              <RotateCcw aria-hidden="true" size={16} strokeWidth={2} />
+              {t('Varsayılan değerlere sıfırla')}
+            </button>
+            <button className="scenario-calculator__submit" type="submit">
+              {t('Hesaplamayı güncelle')}
+            </button>
+          </div>
         </form>
 
-        <div className="scenario-calculator__requirements" aria-label="Senaryo gereksinim özeti">
-          <span className="scenario-calculator__requirements-label">Gereken hizmetler</span>
+        <div
+          className="scenario-calculator__requirements"
+          aria-label={t('Senaryo gereksinim özeti')}
+        >
+          <span className="scenario-calculator__requirements-label">{t('Gereken hizmetler')}</span>
           <span>{categorySummary}; </span>
           {requirementSummary.map((requirement, index) => (
             <span key={requirement}>
-              {requirement}{index < requirementSummary.length - 1 ? ', ' : ''}
+              {requirement}
+              {index < requirementSummary.length - 1 ? ', ' : ''}
             </span>
           ))}
         </div>
         <aside
           className="scenario-calculator__scope-note"
           role="note"
-          aria-label="Modelleme kapsamı"
+          aria-label={t('Modelleme kapsamı')}
         >
           <div>
-            <strong>Bu tahmine dahil</strong>
+            <strong>{t('Bu tahmine dahil')}</strong>
             <span>{categorySummary}</span>
           </div>
           <div>
-            <strong>Dahil değil</strong>
+            <strong>{t('Dahil değil')}</strong>
             <span>{state.scenario.scopeNote}</span>
           </div>
         </aside>

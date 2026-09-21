@@ -1,3 +1,4 @@
+import { formatLocale, t, tf } from '../i18n'
 import { useState } from 'react'
 import type {
   ExchangeRate,
@@ -21,27 +22,27 @@ import { StatusBadge } from './StatusBadge'
 import './ProviderCompare.css'
 
 const priceKindLabels: Record<PriceKind, string> = {
-  'instance-hour': 'Çalışma süresi',
-  'flat-month': 'Sabit aylık ücret',
-  'storage-gb-month': 'Depolama',
-  'outbound-gb': 'Dış trafik',
-  'requests-million': 'İstekler',
-  'database-gb-month': 'Veritabanı',
-  'gpu-hour': 'GPU kullanımı',
+  'instance-hour': t('Çalışma süresi'),
+  'flat-month': t('Sabit aylık ücret'),
+  'storage-gb-month': t('Depolama'),
+  'outbound-gb': t('Dış trafik'),
+  'requests-million': t('İstekler'),
+  'database-gb-month': t('Veritabanı'),
+  'gpu-hour': t('GPU kullanımı'),
 }
 
 const availabilityLabels: Record<PurchaseAvailability, string> = {
-  verified: 'Doğrulandı; hesap ve ödeme kontrolleri uygulanabilir',
-  conditional: 'Koşullu; ülke, ödeme yöntemi ve hesap doğrulamasına bağlıdır',
-  unverified: 'Doğrulanamadı; satın alma uygunluğu garanti edilmez',
+  verified: t('Doğrulandı; hesap ve ödeme kontrolleri uygulanabilir'),
+  conditional: t('Koşullu; ülke, ödeme yöntemi ve hesap doğrulamasına bağlıdır'),
+  unverified: t('Doğrulanamadı; satın alma uygunluğu garanti edilmez'),
 }
 
-const monthlyUsdFormatter = new Intl.NumberFormat('tr-TR', {
+const monthlyUsdFormatter = new Intl.NumberFormat(formatLocale, {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 })
 
-const dateFormatter = new Intl.DateTimeFormat('tr-TR', {
+const dateFormatter = new Intl.DateTimeFormat(formatLocale, {
   day: 'numeric',
   month: 'long',
   year: 'numeric',
@@ -49,7 +50,7 @@ const dateFormatter = new Intl.DateTimeFormat('tr-TR', {
 })
 
 function formatMonthlyUsd(value: number | null): string {
-  return value === null ? 'Doğrulanamadı' : `${monthlyUsdFormatter.format(value)} USD/ay`
+  return value === null ? t('Doğrulanamadı') : tf('{0} USD/ay', [monthlyUsdFormatter.format(value)])
 }
 
 function formatRegion(region: ProviderRegion): string {
@@ -65,7 +66,7 @@ function notesFor(estimate: RankedProviderEstimate, provider: Provider): string 
     ...provider.limitations,
     ...estimate.lineItems.flatMap((lineItem) => lineItem.offer.notes),
   ]
-  return [...new Set(notes)].join(' · ') || 'Doğrulanamadı'
+  return [...new Set(notes)].join(' · ') || t('Doğrulanamadı')
 }
 
 interface ProviderCompareProps {
@@ -94,14 +95,14 @@ function ProviderCompareSelection({ comparable }: ProviderCompareSelectionProps)
     })
   }
 
-  const selectedEstimates = comparable.filter(({ estimate }) => (
-    selectedIds.has(estimate.providerId)
-  ))
+  const selectedEstimates = comparable.filter(({ estimate }) =>
+    selectedIds.has(estimate.providerId),
+  )
   const selectionLimitReached = selectedIds.size >= 4
 
   return (
     <>
-      <div className="provider-compare__selector" aria-label="Karşılaştırılacak sağlayıcılar">
+      <div className="provider-compare__selector" aria-label={t('Karşılaştırılacak sağlayıcılar')}>
         {comparable.map(({ provider }) => {
           const selected = selectedIds.has(provider.id)
 
@@ -120,11 +121,13 @@ function ProviderCompareSelection({ comparable }: ProviderCompareSelectionProps)
       </div>
 
       {selectionLimitReached ? (
-        <p className="provider-compare__limit">En fazla 4 sağlayıcı seçebilirsiniz</p>
+        <p className="provider-compare__limit">{t('En fazla 4 sağlayıcı seçebilirsiniz')}</p>
       ) : null}
 
       {selectedEstimates.length === 0 ? (
-        <p className="provider-compare__empty">Karşılaştırmak için en az bir sağlayıcı seçin.</p>
+        <p className="provider-compare__empty">
+          {t('Karşılaştırmak için en az bir sağlayıcı seçin.')}
+        </p>
       ) : (
         <div className="provider-compare__cards">
           {selectedEstimates.map((evidence) => {
@@ -132,7 +135,11 @@ function ProviderCompareSelection({ comparable }: ProviderCompareSelectionProps)
             const dominantKind = dominantCostKind(estimate)
 
             return (
-              <article className="provider-compare__card" key={provider.id} aria-label={provider.name}>
+              <article
+                className="provider-compare__card"
+                key={provider.id}
+                aria-label={provider.name}
+              >
                 <header className="provider-compare__card-head">
                   <div className="provider-compare__identity">
                     <span className="provider-compare__mark" aria-hidden="true">
@@ -143,38 +150,40 @@ function ProviderCompareSelection({ comparable }: ProviderCompareSelectionProps)
                   <StatusBadge status={estimate.status} />
                 </header>
 
-                <output className="provider-compare__total" aria-label="Aylık toplam">
+                <output className="provider-compare__total" aria-label={t('Aylık toplam')}>
                   {formatMonthlyUsd(estimate.totalUsd)}
                 </output>
-                <p className="provider-compare__basis">Vergiler hariç</p>
+                <p className="provider-compare__basis">{t('Vergiler hariç')}</p>
 
                 <dl className="provider-compare__facts">
                   <div>
-                    <dt>En büyük maliyet kalemi</dt>
-                    <dd>{dominantKind === null ? 'Doğrulanamadı' : priceKindLabels[dominantKind]}</dd>
+                    <dt>{t('En büyük maliyet kalemi')}</dt>
+                    <dd>
+                      {dominantKind === null ? t('Doğrulanamadı') : priceKindLabels[dominantKind]}
+                    </dd>
                   </div>
                   <div>
-                    <dt>Bölgeler</dt>
+                    <dt>{t('Bölgeler')}</dt>
                     <dd>{regionSignal.regions.map(formatRegion).join(' · ')}</dd>
                   </div>
                   <div>
-                    <dt>Kapsam</dt>
-                    <dd>Eksiksiz</dd>
+                    <dt>{t('Kapsam')}</dt>
+                    <dd>{t('Eksiksiz')}</dd>
                   </div>
                   <div>
-                    <dt>Ücretsiz katman</dt>
-                    <dd>Bilgi amaçlı; tahmine uygulanmadı</dd>
+                    <dt>{t('Ücretsiz katman')}</dt>
+                    <dd>{t('Bilgi amaçlı; tahmine uygulanmadı')}</dd>
                   </div>
                   <div>
-                    <dt>Türkiye’den satın alma</dt>
+                    <dt>{t('Türkiye’den satın alma')}</dt>
                     <dd>{availabilityLabels[provider.purchaseAvailability]}</dd>
                   </div>
                   <div>
-                    <dt>Kritik notlar / hariçler</dt>
+                    <dt>{t('Kritik notlar / hariçler')}</dt>
                     <dd>{notesFor(estimate, provider)}</dd>
                   </div>
                   <div>
-                    <dt>Son doğrulama</dt>
+                    <dt>{t('Son doğrulama')}</dt>
                     <dd>
                       <time dateTime={latestVerificationDate}>
                         {formatDate(latestVerificationDate)}
@@ -201,30 +210,34 @@ export function ProviderCompare({
   statusByExchangeRateId,
 }: ProviderCompareProps) {
   const comparable = estimates
-    .map((estimate) => assessEstimateEvidence(estimate, providers, {
-      exchangeRates,
-      sources,
-      statusByExchangeRateId,
-    }))
+    .map((estimate) =>
+      assessEstimateEvidence(estimate, providers, {
+        exchangeRates,
+        sources,
+        statusByExchangeRateId,
+      }),
+    )
     .filter(isEstimateEvidenceEligible)
-  const comparableSignature = comparable
-    .map(({ estimate }) => estimate.providerId)
-    .join('|')
+  const comparableSignature = comparable.map(({ estimate }) => estimate.providerId).join('|')
 
   return (
-    <section className="provider-compare page-section" id="saglayici-karsilastirma" aria-label="Sağlayıcıları karşılaştır">
+    <section
+      className="provider-compare page-section"
+      id="saglayici-karsilastirma"
+      aria-label={t('Sağlayıcıları karşılaştır')}
+    >
       <header className="provider-compare__heading">
         <div>
-          <span>Yan yana inceleme</span>
-          <h2>Sağlayıcıları karşılaştır</h2>
+          <span>{t('Yan yana inceleme')}</span>
+          <h2>{t('Sağlayıcıları karşılaştır')}</h2>
         </div>
-        <p><strong>Genel liste fiyatı</strong> · Vergiler hariç; yalnızca güncel ve eksiksiz tahminler karşılaştırılır.</p>
+        <p>
+          <strong>{t('Genel liste fiyatı')}</strong>
+          {t(' · Vergiler hariç; yalnızca güncel ve eksiksiz tahminler karşılaştırılır.')}
+        </p>
       </header>
 
-      <ProviderCompareSelection
-        key={comparableSignature}
-        comparable={comparable}
-      />
+      <ProviderCompareSelection key={comparableSignature} comparable={comparable} />
     </section>
   )
 }

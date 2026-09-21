@@ -1,3 +1,4 @@
+import { t, tf } from '../i18n'
 import type { ConceptLayer } from '../data/education'
 
 /**
@@ -17,7 +18,7 @@ interface ResponsibilityPyramidProps {
  */
 export function ResponsibilityPyramid({ layers }: ResponsibilityPyramidProps) {
   return (
-    <div className="diagram-card" role="img" aria-label="Bulut sorumluluk payı piramidi">
+    <div className="diagram-card" role="img" aria-label={t('Bulut sorumluluk payı piramidi')}>
       <svg viewBox="0 0 480 320" className="diagram-svg" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id="userFill" x1="0" x2="1" y1="0" y2="0">
@@ -30,8 +31,12 @@ export function ResponsibilityPyramid({ layers }: ResponsibilityPyramidProps) {
           </linearGradient>
         </defs>
 
-        <text x="20" y="22" className="diagram-axis-label">Sen yönetirsin</text>
-        <text x="460" y="22" className="diagram-axis-label" textAnchor="end">Sağlayıcı yönetir</text>
+        <text x="20" y="22" className="diagram-axis-label">
+          {t('Sen yönetirsin')}
+        </text>
+        <text x="460" y="22" className="diagram-axis-label" textAnchor="end">
+          {t('Sağlayıcı yönetir')}
+        </text>
 
         {layers.map((layer, index) => {
           const rowHeight = 56
@@ -70,9 +75,16 @@ export function ResponsibilityPyramid({ layers }: ResponsibilityPyramidProps) {
         })}
       </svg>
       <p className="diagram-caption">
-        Aşağıya, SaaS’e doğru altyapı işletimi sağlayıcıya geçer. Veri, kimlik ve erişim
-        sorumluluğun devam eder. Çubuk oranları kavramsaldır; ölçülmüş yüzdeler değildir.
-        {' '}<a href="https://learn.microsoft.com/en-in/azure/security/fundamentals/shared-responsibility" target="_blank" rel="noopener noreferrer">Microsoft ortak sorumluluk modeli</a>
+        {t(
+          'Aşağıya, SaaS’e doğru altyapı işletimi sağlayıcıya geçer. Veri, kimlik ve erişim sorumluluğun devam eder. Çubuk oranları kavramsaldır; ölçülmüş yüzdeler değildir.',
+        )}{' '}
+        <a
+          href="https://learn.microsoft.com/en-in/azure/security/fundamentals/shared-responsibility"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {t('Microsoft ortak sorumluluk modeli')}
+        </a>
       </p>
     </div>
   )
@@ -162,11 +174,7 @@ export function CategoryIcon({ categoryId, title }: CategoryIconProps) {
             stroke="#075fe4"
             strokeWidth="2"
           />
-          <polygon
-            points="28,14 40,21 40,35 28,42 16,35 16,21"
-            fill="#075fe4"
-            opacity="0.15"
-          />
+          <polygon points="28,14 40,21 40,35 28,42 16,35 16,21" fill="#075fe4" opacity="0.15" />
           <circle cx="28" cy="28" r="4" fill="#075fe4" />
           <circle cx="16" cy="21" r="2.5" fill="#0b223f" />
           <circle cx="40" cy="21" r="2.5" fill="#0b223f" />
@@ -224,7 +232,7 @@ export function SavingsBar({ savings, label }: SavingsBarProps) {
     <div
       className="diagram-card diagram-card--inline"
       role="img"
-      aria-label={`${label}: yüzde ${clamped} göreli tasarruf`}
+      aria-label={tf('{0}: yüzde {1} göreli tasarruf', [label, clamped])}
     >
       <div className="savings-bar">
         <div
@@ -253,15 +261,19 @@ export function LatencyMap({ regions }: LatencyMapProps) {
   const plotStart = 210
   const plotWidth = 195
   return (
-    <div className="diagram-card" role="img" aria-label="Bölgelere gecikme: temsili örnek">
+    <div className="diagram-card" role="img" aria-label={t('Bölgelere gecikme: temsili örnek')}>
       <svg viewBox="0 0 480 252" className="diagram-svg" xmlns="http://www.w3.org/2000/svg">
-        <text x="20" y="22" className="diagram-axis-label">Türkiye (İstanbul) → bölge</text>
+        <text x="20" y="22" className="diagram-axis-label">
+          {t('Türkiye (İstanbul) → bölge')}
+        </text>
         {regions.map((region, index) => {
           const barWidth = (region.ms / max) * plotWidth
           const y = 40 + index * 28
           return (
             <g key={region.id}>
-              <text x={20} y={y + 14} className="diagram-row-label-small">{region.label}</text>
+              <text x={20} y={y + 14} className="diagram-row-label-small">
+                {region.label}
+              </text>
               <rect
                 x={plotStart}
                 y={y + 4}
@@ -271,19 +283,17 @@ export function LatencyMap({ regions }: LatencyMapProps) {
                 fill="#075fe4"
                 opacity="0.85"
               />
-              <text
-                x={plotStart + barWidth + 6}
-                y={y + 16}
-                className="diagram-row-label-small"
-              >
+              <text x={plotStart + barWidth + 6} y={y + 16} className="diagram-row-label-small">
                 ~{region.ms} ms
               </text>
             </g>
           )
         })}
-        <text x={20} y={230} className="diagram-axis-label">Temsili değerler; ölçüm değildir.</text>
+        <text x={20} y={230} className="diagram-axis-label">
+          {t('Temsili değerler; ölçüm değildir.')}
+        </text>
         <text x={20} y={248} className="diagram-axis-label">
-          Gerçek gecikme sağlayıcıya ve ağ yoluna göre değişir.
+          {t('Gerçek gecikme sağlayıcıya ve ağ yoluna göre değişir.')}
         </text>
       </svg>
     </div>

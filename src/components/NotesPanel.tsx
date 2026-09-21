@@ -1,3 +1,4 @@
+import { t, tf } from '../i18n'
 interface NotesPanelProps {
   /** Benzersiz bölüm kimliği; localStorage'da anahtar olarak kullanılır. */
   sectionId: string
@@ -26,20 +27,27 @@ export function NotesPanel({ sectionId, value, onChange }: NotesPanelProps) {
   return (
     <section className="notes-panel" aria-labelledby={`notes-${sectionId}-heading`}>
       <header className="notes-panel__header">
-        <h4 id={`notes-${sectionId}-heading`}>Kişisel notun</h4>
-        <p>Bu bölümü okuduktan sonra kafana takılanları 1-2 cümleyle yaz. Sadece senin tarayıcında saklanır.</p>
+        <h4 id={`notes-${sectionId}-heading`}>{t('Kişisel notun')}</h4>
+        <p>
+          {t(
+            'Bu bölümü okuduktan sonra kafana takılanları 1-2 cümleyle yaz. Sadece senin tarayıcında saklanır.',
+          )}
+        </p>
       </header>
       <textarea
         className="notes-panel__textarea"
         rows={3}
-        placeholder="Örn. Bu kavramın en kritik noktası şuymuş..."
+        placeholder={t('Örn. Bu kavramın en kritik noktası şuymuş...')}
         value={value}
         onChange={handleChange}
         data-testid={`notes-${sectionId}`}
-        aria-label={`${sectionId} bölümü için kişisel not`}
+        aria-label={tf('{0} bölümü için kişisel not', [sectionId])}
       />
       <div className="notes-panel__footer">
-        <span className="notes-panel__count">{wordCount} kelime</span>
+        <span className="notes-panel__count">
+          {wordCount}
+          {t(' kelime')}
+        </span>
         <button
           type="button"
           onClick={handleClear}
@@ -47,7 +55,7 @@ export function NotesPanel({ sectionId, value, onChange }: NotesPanelProps) {
           className="notes-panel__clear"
           data-testid={`notes-${sectionId}-clear`}
         >
-          Notu temizle
+          {t('Notu temizle')}
         </button>
       </div>
     </section>

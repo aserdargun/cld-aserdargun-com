@@ -1,3 +1,4 @@
+import { t } from '../i18n'
 interface LearnedToggleProps {
   id: string
   learned: boolean
@@ -9,7 +10,12 @@ interface LearnedToggleProps {
  * Bir kavram kartının üzerinde görünen "Öğrendim" düğmesi.
  * Eğer öğrenildiyse dolu görünür, tıklayınca geri alınabilir.
  */
-export function LearnedToggle({ id, learned, onToggle, label = 'Öğrendim' }: LearnedToggleProps) {
+export function LearnedToggle({
+  id,
+  learned,
+  onToggle,
+  label = t('Öğrendim'),
+}: LearnedToggleProps) {
   return (
     <button
       type="button"
@@ -21,7 +27,7 @@ export function LearnedToggle({ id, learned, onToggle, label = 'Öğrendim' }: L
       <span aria-hidden="true" className="learned-toggle__icon">
         {learned ? '✓' : '○'}
       </span>
-      <span>{learned ? 'Öğrenildi' : label}</span>
+      <span>{learned ? t('Öğrenildi') : label}</span>
     </button>
   )
 }

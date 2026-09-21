@@ -1,3 +1,4 @@
+import { t, tf } from '../i18n'
 import { deepDives, type DeepDive } from '../data/education'
 
 interface DeepDiveSectionProps {
@@ -13,18 +14,24 @@ interface DeepDiveSectionProps {
  * Her biri için: ön koşullar, adım adım yolculuk, akış şeması, sık yapılan hata,
  * sonraki adım önerisi, "Öğrendim" düğmesi ve kişisel not paneli.
  */
-export function DeepDiveSection({ onMarkLearned, isLearned, onSetNote, notes }: DeepDiveSectionProps) {
+export function DeepDiveSection({
+  onMarkLearned,
+  isLearned,
+  onSetNote,
+  notes,
+}: DeepDiveSectionProps) {
   return (
     <section
       className="deep-dive page-section"
-      id="derinleştirme"
+      id={'derinleştirme'}
       aria-labelledby="deep-dive-heading"
     >
       <header className="page-section__heading">
-        <h2 id="deep-dive-heading">Konu derinleştirme</h2>
+        <h2 id="deep-dive-heading">{t('Konu derinleştirme')}</h2>
         <p>
-          Servis kategorilerinin üstüne çıkan, kendi kendine öğrenilebilecek üç kısa yolculuk.
-          Her yolculuk 4-5 adımdan oluşur; ön koşulları ve sonraki adımı açıkça yazılıdır.
+          {t(
+            'Servis kategorilerinin üstüne çıkan, kendi kendine öğrenilebilecek üç kısa yolculuk. Her yolculuk 4-5 adımdan oluşur; ön koşulları ve sonraki adımı açıkça yazılıdır.',
+          )}
         </p>
       </header>
 
@@ -73,12 +80,12 @@ function DeepDiveCard({ dive, isLearned, onMarkLearned, note, onSetNote }: DeepD
           <span aria-hidden="true" className="learned-toggle__icon">
             {isLearned ? '✓' : '○'}
           </span>
-          <span>{isLearned ? 'Öğrenildi' : 'Öğrendim'}</span>
+          <span>{isLearned ? t('Öğrenildi') : t('Öğrendim')}</span>
         </button>
       </header>
 
       <section className="deep-dive__prereq">
-        <h4>Önce bilmen gereken</h4>
+        <h4>{t('Önce bilmen gereken')}</h4>
         <ul>
           {dive.prerequisites.map((item) => (
             <li key={item}>{item}</li>
@@ -95,7 +102,7 @@ function DeepDiveCard({ dive, isLearned, onMarkLearned, note, onSetNote }: DeepD
         ))}
       </ol>
 
-      <section className="deep-dive__flow" aria-label={`${dive.title} akış şeması`}>
+      <section className="deep-dive__flow" aria-label={tf('{0} akış şeması', [dive.title])}>
         <p className="deep-dive__flow-caption">{dive.architecture.caption}</p>
         <ol className="deep-dive__flow-list">
           {dive.architecture.flow.map((step, index) => (
@@ -108,24 +115,27 @@ function DeepDiveCard({ dive, isLearned, onMarkLearned, note, onSetNote }: DeepD
       </section>
 
       <section className="deep-dive__pitfall">
-        <h4>Sık yapılan hata</h4>
+        <h4>{t('Sık yapılan hata')}</h4>
         <p>{dive.pitfall}</p>
       </section>
 
       <section className="deep-dive__next">
-        <h4>Sonraki adım</h4>
+        <h4>{t('Sonraki adım')}</h4>
         <p>{dive.nextStep}</p>
       </section>
 
-      <section className="notes-panel notes-panel--inline" aria-label={`${dive.title} kişisel not`}>
+      <section
+        className="notes-panel notes-panel--inline"
+        aria-label={tf('{0} kişisel not', [dive.title])}
+      >
         <header className="notes-panel__header">
-          <h4>Kişisel notun</h4>
+          <h4>{t('Kişisel notun')}</h4>
         </header>
         <textarea
           className="notes-panel__textarea"
-          aria-label={`${dive.title} için kişisel not`}
+          aria-label={tf('{0} için kişisel not', [dive.title])}
           rows={2}
-          placeholder={`${dive.title} hakkında notun...`}
+          placeholder={tf('{0} hakkında notun...', [dive.title])}
           value={note}
           onChange={(event) => onSetNote(`deep-dive:${dive.id}`, event.target.value)}
           data-testid={`notes-deep-dive:${dive.id}`}

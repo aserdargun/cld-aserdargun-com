@@ -1,11 +1,7 @@
+import { formatLocale, t, tf } from '../i18n'
 import { ChevronDown, ExternalLink } from 'lucide-react'
 import { useState } from 'react'
-import type {
-  Provider,
-  ProviderId,
-  PurchaseAvailability,
-  Source,
-} from '../domain/catalog'
+import type { Provider, ProviderId, PurchaseAvailability, Source } from '../domain/catalog'
 import { ProviderMark } from './ProviderMark'
 import { SourceLink } from './SourceLink'
 
@@ -15,12 +11,12 @@ interface ProviderDetailsProps {
 }
 
 const availabilityLabels: Record<PurchaseAvailability, string> = {
-  verified: 'Doğrulandı; hesap ve ödeme kontrolleri uygulanabilir',
-  conditional: 'Koşullu; ülke, ödeme yöntemi ve hesap doğrulamasına bağlıdır',
-  unverified: 'Doğrulanamadı; satın alma uygunluğu garanti edilmez',
+  verified: t('Doğrulandı; hesap ve ödeme kontrolleri uygulanabilir'),
+  conditional: t('Koşullu; ülke, ödeme yöntemi ve hesap doğrulamasına bağlıdır'),
+  unverified: t('Doğrulanamadı; satın alma uygunluğu garanti edilmez'),
 }
 
-const dateFormatter = new Intl.DateTimeFormat('tr-TR', {
+const dateFormatter = new Intl.DateTimeFormat(formatLocale, {
   day: 'numeric',
   month: 'long',
   year: 'numeric',
@@ -41,9 +37,11 @@ export function ProviderDetails({ providers, sources }: ProviderDetailsProps) {
       aria-labelledby="provider-details-heading"
     >
       <header className="page-section__heading">
-        <h2 id="provider-details-heading">Sağlayıcı ayrıntıları</h2>
+        <h2 id="provider-details-heading">{t('Sağlayıcı ayrıntıları')}</h2>
         <p>
-          Bölge, ödeme ve satın alma bilgileri araştırma tarihindeki resmî kaynaklara dayanır.
+          {t(
+            'Bölge, ödeme ve satın alma bilgileri araştırma tarihindeki resmî kaynaklara dayanır.',
+          )}
         </p>
       </header>
 
@@ -68,10 +66,13 @@ export function ProviderDetails({ providers, sources }: ProviderDetailsProps) {
                   type="button"
                   aria-controls={bodyId}
                   aria-expanded={isOpen}
-                  aria-label={`${provider.name} ayrıntılarını ${isOpen ? 'gizle' : 'göster'}`}
+                  aria-label={tf('{0} ayrıntılarını {1}', [
+                    provider.name,
+                    isOpen ? t('gizle') : t('göster'),
+                  ])}
                   onClick={() => setOpenProviderId(isOpen ? null : provider.id)}
                 >
-                  <span aria-hidden="true">Ayrıntılar</span>
+                  <span aria-hidden="true">{t('Ayrıntılar')}</span>
                   <ChevronDown aria-hidden="true" size={18} strokeWidth={1.9} />
                 </button>
               </header>
@@ -84,21 +85,23 @@ export function ProviderDetails({ providers, sources }: ProviderDetailsProps) {
                       href={provider.officialSite}
                       target="_blank"
                       rel="noopener noreferrer"
-                      aria-label={`${provider.name} resmî sitesi`}
+                      aria-label={tf('{0} resmî sitesi', [provider.name])}
                     >
-                      Resmî site
+                      {t('Resmî site')}
                       <ExternalLink aria-hidden="true" size={15} strokeWidth={1.9} />
                     </a>
 
                     <div className="provider-details__facts">
                       <section>
-                        <h4>Güçlü yönler</h4>
+                        <h4>{t('Güçlü yönler')}</h4>
                         <ul>
-                          {provider.strengths.map((strength) => <li key={strength}>{strength}</li>)}
+                          {provider.strengths.map((strength) => (
+                            <li key={strength}>{strength}</li>
+                          ))}
                         </ul>
                       </section>
                       <section>
-                        <h4>Sınırlamalar</h4>
+                        <h4>{t('Sınırlamalar')}</h4>
                         <ul>
                           {provider.limitations.map((limitation) => (
                             <li key={limitation}>{limitation}</li>
@@ -106,7 +109,7 @@ export function ProviderDetails({ providers, sources }: ProviderDetailsProps) {
                         </ul>
                       </section>
                       <section>
-                        <h4>Avrupa / global bölgeler</h4>
+                        <h4>{t('Avrupa / global bölgeler')}</h4>
                         <ul>
                           {provider.regions.map((region) => (
                             <li key={region.id}>
@@ -117,7 +120,7 @@ export function ProviderDetails({ providers, sources }: ProviderDetailsProps) {
                         </ul>
                       </section>
                       <section>
-                        <h4>Türkiye’den satın alma</h4>
+                        <h4>{t('Türkiye’den satın alma')}</h4>
                         <strong
                           className={`provider-details__availability provider-details__availability--${provider.purchaseAvailability}`}
                         >
@@ -125,21 +128,23 @@ export function ProviderDetails({ providers, sources }: ProviderDetailsProps) {
                         </strong>
                         <p>{provider.purchaseNote}</p>
                         <span className="provider-details__verified">
-                          Doğrulama:{' '}
-                          <time dateTime={provider.verifiedAt}>{formatDate(provider.verifiedAt)}</time>
+                          {t('Doğrulama:')}{' '}
+                          <time dateTime={provider.verifiedAt}>
+                            {formatDate(provider.verifiedAt)}
+                          </time>
                         </span>
                       </section>
                     </div>
 
                     <div className="provider-details__sources">
                       <section>
-                        <h4>Satın alma kaynakları</h4>
+                        <h4>{t('Satın alma kaynakları')}</h4>
                         {provider.purchaseSourceIds.map((sourceId) => (
                           <SourceLink key={sourceId} sourceId={sourceId} sources={sources} />
                         ))}
                       </section>
                       <section>
-                        <h4>Bölge kaynakları</h4>
+                        <h4>{t('Bölge kaynakları')}</h4>
                         {[...new Set(provider.regions.map((region) => region.sourceId))].map(
                           (sourceId) => (
                             <SourceLink key={sourceId} sourceId={sourceId} sources={sources} />

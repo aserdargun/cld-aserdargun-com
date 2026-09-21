@@ -1,3 +1,4 @@
+import { formatLocale, t, tf } from '../i18n'
 import { ChevronDown } from 'lucide-react'
 import type {
   ExchangeRate,
@@ -27,52 +28,52 @@ import { StatusBadge } from './StatusBadge'
 import './DecisionSummary.css'
 
 const categoryLabels: Record<ServiceCategory, string> = {
-  compute: 'Hesaplama',
+  compute: t('Hesaplama'),
   'gpu-ai': 'AI / GPU',
-  'object-storage': 'Nesne depolama',
-  'managed-database': 'Yönetilen veritabanı',
-  serverless: 'Sunucusuz',
-  'cdn-network': 'CDN / ağ',
+  'object-storage': t('Nesne depolama'),
+  'managed-database': t('Yönetilen veritabanı'),
+  serverless: t('Sunucusuz'),
+  'cdn-network': t('CDN / ağ'),
   kubernetes: 'Kubernetes',
 }
 
 const priceKindLabels: Record<PriceKind, string> = {
-  'instance-hour': 'Çalışma süresi',
-  'flat-month': 'Sabit aylık ücret',
-  'storage-gb-month': 'Depolama',
-  'outbound-gb': 'Dış trafik',
-  'requests-million': 'İstekler',
-  'database-gb-month': 'Veritabanı',
-  'gpu-hour': 'GPU kullanımı',
+  'instance-hour': t('Çalışma süresi'),
+  'flat-month': t('Sabit aylık ücret'),
+  'storage-gb-month': t('Depolama'),
+  'outbound-gb': t('Dış trafik'),
+  'requests-million': t('İstekler'),
+  'database-gb-month': t('Veritabanı'),
+  'gpu-hour': t('GPU kullanımı'),
 }
 
 const dimensionLabels: Record<ScenarioUsageDimension, string> = {
-  hoursPerMonth: 'Çalışma süresi',
+  hoursPerMonth: t('Çalışma süresi'),
   vcpu: 'vCPU',
   ramGb: 'RAM',
-  storageGb: 'Depolama',
-  outboundGb: 'Dış trafik',
-  requestsMillion: 'İstek sayısı',
-  databaseGb: 'Veritabanı depolaması',
-  gpuHours: 'GPU kullanımı',
+  storageGb: t('Depolama'),
+  outboundGb: t('Dış trafik'),
+  requestsMillion: t('İstek sayısı'),
+  databaseGb: t('Veritabanı depolaması'),
+  gpuHours: t('GPU kullanımı'),
   gpuVramGb: 'GPU VRAM',
 }
 
-const decimalFormatter = new Intl.NumberFormat('tr-TR', {
+const decimalFormatter = new Intl.NumberFormat(formatLocale, {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 })
 
-const quantityFormatter = new Intl.NumberFormat('tr-TR', {
+const quantityFormatter = new Intl.NumberFormat(formatLocale, {
   maximumFractionDigits: 2,
 })
 
-const exchangeRateFormatter = new Intl.NumberFormat('tr-TR', {
+const exchangeRateFormatter = new Intl.NumberFormat(formatLocale, {
   minimumFractionDigits: 2,
   maximumFractionDigits: 6,
 })
 
-const dateFormatter = new Intl.DateTimeFormat('tr-TR', {
+const dateFormatter = new Intl.DateTimeFormat(formatLocale, {
   day: 'numeric',
   month: 'long',
   year: 'numeric',
@@ -80,7 +81,7 @@ const dateFormatter = new Intl.DateTimeFormat('tr-TR', {
 })
 
 function formatUsd(value: number | null): string {
-  return value === null ? 'Doğrulanamadı' : `${decimalFormatter.format(value)} USD/ay`
+  return value === null ? t('Doğrulanamadı') : tf('{0} USD/ay', [decimalFormatter.format(value)])
 }
 
 function formatDate(value: string): string {
@@ -128,7 +129,10 @@ function LineItem({ lineItem }: { lineItem: PriceLineItemEstimate }) {
   return (
     <li className="decision-summary__price-line">
       <span>{priceKindLabels[lineItem.component.kind]}</span>
-      <span>{quantityFormatter.format(lineItem.quantity)} birim</span>
+      <span>
+        {quantityFormatter.format(lineItem.quantity)}
+        {t(' birim')}
+      </span>
       <span>{formatUsd(lineItem.subtotalBeforeFreeTierUsd)}</span>
       <span>− {formatUsd(lineItem.freeTierSavingsUsd)}</span>
       <strong>{formatUsd(lineItem.totalUsd)}</strong>
@@ -143,17 +147,15 @@ function EstimateMetrics({ estimate }: { estimate: RankedProviderEstimate }) {
   return (
     <dl className="decision-summary__metrics">
       <div>
-        <dt>Ücretsiz katman öncesi</dt>{' '}
+        <dt>{t('Ücretsiz katman öncesi')}</dt>{' '}
         <dd>{formatUsd(estimate.subtotalBeforeFreeTierUsd)}</dd>
       </div>
       <div>
-        <dt>Uygulanan ücretsiz katman indirimi</dt>{' '}
-        <dd>{formatUsd(savings)}</dd>
+        <dt>{t('Uygulanan ücretsiz katman indirimi')}</dt> <dd>{formatUsd(savings)}</dd>
       </div>
       {traffic === null ? null : (
         <div>
-          <dt>Trafik payı</dt>{' '}
-          <dd>%{quantityFormatter.format(traffic)}</dd>
+          <dt>{t('Trafik payı')}</dt> <dd>%{quantityFormatter.format(traffic)}</dd>
         </div>
       )}
     </dl>
@@ -167,40 +169,42 @@ function EstimateEvidenceSignals({
   regionSignal: EstimateRegionSignal
   priceBasis: EstimatePriceBasisSignal
 }) {
-  const currencies = priceBasis.currencies.length > 0
-    ? priceBasis.currencies.join(' + ')
-    : 'Doğrulanamadı'
+  const currencies =
+    priceBasis.currencies.length > 0 ? priceBasis.currencies.join(' + ') : t('Doğrulanamadı')
 
   return (
     <dl className="decision-summary__evidence-signals">
       <div>
-        <dt>Kullanılan bölgeler</dt>
+        <dt>{t('Kullanılan bölgeler')}</dt>
         <dd>
           {regionSignal.status === 'verified'
             ? regionSignal.regions.map(formatRegion).join(' · ')
-            : 'Doğrulanamadı'}
+            : t('Doğrulanamadı')}
         </dd>
       </div>
       <div>
-        <dt>Fiyat tabanı</dt>
+        <dt>{t('Fiyat tabanı')}</dt>
         <dd className="decision-summary__price-basis">
-          <span>{`Vergiler hariç genel liste fiyatı · Özgün para birimi: ${currencies}`}</span>
+          <span>
+            {tf('Vergiler hariç genel liste fiyatı · Özgün para birimi: {0}', [currencies])}
+          </span>
           {priceBasis.status === 'invalid' && priceBasis.currencies.includes('EUR') ? (
-            <strong>ECB dönüşüm kanıtı doğrulanamadı</strong>
+            <strong>{t('ECB dönüşüm kanıtı doğrulanamadı')}</strong>
           ) : null}
           {priceBasis.status === 'invalid' && !priceBasis.currencies.includes('EUR') ? (
-            <strong>Fiyat kanıtı doğrulanamadı</strong>
+            <strong>{t('Fiyat kanıtı doğrulanamadı')}</strong>
           ) : null}
           {priceBasis.status === 'verified' && priceBasis.kind === 'public-list-ecb'
             ? priceBasis.ecbEvidence.map(({ exchangeRate, source }) => (
-              <span className="decision-summary__conversion" key={exchangeRate.id}>
-                <span>
-                  ECB dönüşümü: 1 EUR = {exchangeRateFormatter.format(exchangeRate.rate)} USD ·{' '}
-                  <time dateTime={exchangeRate.date}>{formatDate(exchangeRate.date)}</time>
+                <span className="decision-summary__conversion" key={exchangeRate.id}>
+                  <span>
+                    {t('ECB dönüşümü: 1 EUR = ')}
+                    {exchangeRateFormatter.format(exchangeRate.rate)} USD ·{' '}
+                    <time dateTime={exchangeRate.date}>{formatDate(exchangeRate.date)}</time>
+                  </span>
+                  <SourceLink sourceId={source.id} sources={[source]} />
                 </span>
-                <SourceLink sourceId={source.id} sources={[source]} />
-              </span>
-            ))
+              ))
             : null}
         </dd>
       </div>
@@ -214,7 +218,7 @@ function CostDetails({ estimate }: { estimate: RankedProviderEstimate }) {
   return (
     <details className="decision-summary__details">
       <summary>
-        Ayrıntıları göster
+        {t('Ayrıntıları göster')}
         <ChevronDown aria-hidden="true" size={17} strokeWidth={2} />
       </summary>
 
@@ -234,11 +238,11 @@ function CostDetails({ estimate }: { estimate: RankedProviderEstimate }) {
             </header>
 
             <div className="decision-summary__line-head" aria-hidden="true">
-              <span>Kalem</span>
-              <span>Kullanım</span>
-              <span>Ön toplam</span>
-              <span>İndirim</span>
-              <span>Toplam</span>
+              <span>{t('Kalem')}</span>
+              <span>{t('Kullanım')}</span>
+              <span>{t('Ön toplam')}</span>
+              <span>{t('İndirim')}</span>
+              <span>{t('Toplam')}</span>
             </div>
             <ul>
               {offerEstimate.lineItems.map((lineItem, index) => (
@@ -247,9 +251,11 @@ function CostDetails({ estimate }: { estimate: RankedProviderEstimate }) {
             </ul>
             {offerEstimate.offer.notes.length > 0 ? (
               <aside className="decision-summary__notes">
-                <h4>Kapsam ve hariçler</h4>
+                <h4>{t('Kapsam ve hariçler')}</h4>
                 <ul>
-                  {offerEstimate.offer.notes.map((note) => <li key={note}>{note}</li>)}
+                  {offerEstimate.offer.notes.map((note) => (
+                    <li key={note}>{note}</li>
+                  ))}
                 </ul>
               </aside>
             ) : null}
@@ -275,22 +281,30 @@ function ComparableResult({
   const verifiedTotal = estimate.totalUsd
   const delta = priceDeltaFromBest(verifiedTotal, bestUsd)
   const dominantKind = dominantCostKind(estimate)
-  const deltaText = delta === null
-    ? 'Doğrulanamadı'
-    : delta.usd === 0
-      ? 'Baz tahmin'
-      : `+${decimalFormatter.format(delta.usd)} USD · %${quantityFormatter.format(delta.percent)}`
+  const deltaText =
+    delta === null
+      ? t('Doğrulanamadı')
+      : delta.usd === 0
+        ? t('Baz tahmin')
+        : tf('+{0} USD · %{1}', [
+            decimalFormatter.format(delta.usd),
+            quantityFormatter.format(delta.percent),
+          ])
 
   return (
     <li
       className={`decision-summary__result${featured ? ' decision-summary__result--featured' : ''}`}
-      aria-label={featured
-        ? `${provider.name} doğrulanmış tahmin`
-        : `${provider.name} diğer karşılaştırılabilir sonuç`}
+      aria-label={
+        featured
+          ? tf('{0} doğrulanmış tahmin', [provider.name])
+          : tf('{0} diğer karşılaştırılabilir sonuç', [provider.name])
+      }
     >
       <div className="decision-summary__result-head">
         <div className="decision-summary__identity">
-          <span className="decision-summary__mark"><ProviderMark providerId={provider.id} /></span>
+          <span className="decision-summary__mark">
+            <ProviderMark providerId={provider.id} />
+          </span>
           <div>
             <strong>{provider.name}</strong>
             <span>{provider.shortName}</span>
@@ -299,30 +313,28 @@ function ComparableResult({
 
         <div className="decision-summary__status">
           {position === 0 ? (
-            <strong className="decision-summary__rank">En düşük doğrulanmış tahmin</strong>
+            <strong className="decision-summary__rank">{t('En düşük doğrulanmış tahmin')}</strong>
           ) : position === 1 ? (
-            <strong className="decision-summary__rank">İkinci en düşük tahmin</strong>
+            <strong className="decision-summary__rank">{t('İkinci en düşük tahmin')}</strong>
           ) : null}
           <StatusBadge status={estimate.status} />
         </div>
 
-        <output className="decision-summary__total" aria-label="Modellenen aylık tutar">
+        <output className="decision-summary__total" aria-label={t('Modellenen aylık tutar')}>
           {formatUsd(verifiedTotal)}
         </output>
       </div>
 
       <dl className="decision-summary__signals">
         <div>
-          <dt>En düşük tahmine göre</dt>{' '}
-          <dd>{deltaText}</dd>
+          <dt>{t('En düşük tahmine göre')}</dt> <dd>{deltaText}</dd>
         </div>
         <div>
-          <dt>En büyük maliyet kalemi</dt>{' '}
-          <dd>{dominantKind === null ? 'Doğrulanamadı' : priceKindLabels[dominantKind]}</dd>
+          <dt>{t('En büyük maliyet kalemi')}</dt>{' '}
+          <dd>{dominantKind === null ? t('Doğrulanamadı') : priceKindLabels[dominantKind]}</dd>
         </div>
         <div>
-          <dt>Kapsam</dt>{' '}
-          <dd>Eksiksiz</dd>
+          <dt>{t('Kapsam')}</dt> <dd>{t('Eksiksiz')}</dd>
         </div>
       </dl>
 
@@ -339,23 +351,25 @@ function exclusionReason(
 ): string {
   switch (issue) {
     case 'estimate':
-      return 'Tahmin güncel ve eksiksiz olarak doğrulanamadı.'
+      return t('Tahmin güncel ve eksiksiz olarak doğrulanamadı.')
     case 'provider':
-      return 'Sağlayıcı kaydı doğrulanamadı.'
+      return t('Sağlayıcı kaydı doğrulanamadı.')
     case 'purchase-source':
-      return 'Sağlayıcının satın alma kaynağı doğrulanamadı.'
+      return t('Sağlayıcının satın alma kaynağı doğrulanamadı.')
     case 'region-source':
-      return 'Kullanılan bölgenin resmî kaynak eşleşmesi doğrulanamadı.'
+      return t('Kullanılan bölgenin resmî kaynak eşleşmesi doğrulanamadı.')
     case 'verification-date':
-      return 'Tekliflerin doğrulama tarihi doğrulanamadı.'
+      return t('Tekliflerin doğrulama tarihi doğrulanamadı.')
     case 'price-basis':
       return evidence.priceBasis.currencies.includes('EUR')
-        ? 'Fiyat tabanı için gerekli ECB dönüşüm kanıtı doğrulanamadı.'
-        : 'Fiyat tabanı doğrulanamadı.'
+        ? t('Fiyat tabanı için gerekli ECB dönüşüm kanıtı doğrulanamadı.')
+        : t('Fiyat tabanı doğrulanamadı.')
   }
 }
 
-function MissingEvidence({ evidence }: {
+function MissingEvidence({
+  evidence,
+}: {
   evidence: IneligibleEstimateEvidence<RankedProviderEstimate>
 }) {
   const { estimate, provider } = evidence
@@ -364,28 +378,30 @@ function MissingEvidence({ evidence }: {
   const evidenceStatus: VerificationStatus = estimate.status === 'stale' ? 'stale' : 'invalid'
 
   return (
-    <li className="decision-summary__incomplete" aria-label={`${providerName} eksik sonuç`}>
+    <li className="decision-summary__incomplete" aria-label={tf('{0} eksik sonuç', [providerName])}>
       <div className="decision-summary__incomplete-head">
         <strong>{providerName}</strong>
         <StatusBadge status={evidenceStatus} />
       </div>
       {estimate.missingCategories.length > 0 ? (
         <p>
-          <strong>Eksik kategoriler:</strong>{' '}
+          <strong>{t('Eksik kategoriler:')}</strong>{' '}
           {estimate.missingCategories.map((category) => categoryLabels[category]).join(', ')}
         </p>
       ) : null}
       {estimate.missingDimensions.length > 0 ? (
         <p>
-          <strong>Eksik kullanım boyutları:</strong>{' '}
+          <strong>{t('Eksik kullanım boyutları:')}</strong>{' '}
           {estimate.missingDimensions.map((dimension) => dimensionLabels[dimension]).join(', ')}
         </p>
       ) : null}
       {reasons.length > 0 ? (
         <div className="decision-summary__exclusion-reasons">
-          <strong>Hariç tutulma nedenleri</strong>
+          <strong>{t('Hariç tutulma nedenleri')}</strong>
           <ul>
-            {reasons.map((reason) => <li key={reason}>{reason}</li>)}
+            {reasons.map((reason) => (
+              <li key={reason}>{reason}</li>
+            ))}
           </ul>
         </div>
       ) : null}
@@ -417,17 +433,17 @@ export function DecisionSummary({
   const otherResultCount = groups.remainingComparable.length + groups.incomplete.length
 
   return (
-    <section className="decision-summary" id="sonuclar" aria-label="Karar özeti">
+    <section className="decision-summary" id="sonuclar" aria-label={t('Karar özeti')}>
       <header className="decision-summary__heading">
         <div>
-          <span>Karar desteği</span>
-          <h2>Karar özeti</h2>
+          <span>{t('Karar desteği')}</span>
+          <h2>{t('Karar özeti')}</h2>
         </div>
-        <p>Eksiksiz ve güncel tahminler fiyat sırasıyla gösterilir.</p>
+        <p>{t('Eksiksiz ve güncel tahminler fiyat sırasıyla gösterilir.')}</p>
       </header>
 
       {groups.featured.length === 0 ? (
-        <p className="decision-summary__empty">Bu senaryo için eksiksiz tahmin bulunamadı</p>
+        <p className="decision-summary__empty">{t('Bu senaryo için eksiksiz tahmin bulunamadı')}</p>
       ) : (
         <ol className="decision-summary__featured">
           {groups.featured.map((evidence, index) => (
@@ -446,12 +462,12 @@ export function DecisionSummary({
         <details className="decision-summary__other-results">
           <summary>
             {groups.featured.length === 0
-              ? `Eksik sonuçları incele · ${otherResultCount}`
-              : `Diğer sonuçlar · ${otherResultCount}`}
+              ? tf('Eksik sonuçları incele · {0}', [otherResultCount])
+              : tf('Diğer sonuçlar · {0}', [otherResultCount])}
             <ChevronDown aria-hidden="true" size={18} strokeWidth={2} />
           </summary>
           <section aria-labelledby="remaining-comparable-heading">
-            <h3 id="remaining-comparable-heading">Diğer karşılaştırılabilir sonuçlar</h3>
+            <h3 id="remaining-comparable-heading">{t('Diğer karşılaştırılabilir sonuçlar')}</h3>
             <ul>
               {groups.remainingComparable.map((evidence, index) => (
                 <ComparableResult
@@ -465,13 +481,10 @@ export function DecisionSummary({
             </ul>
           </section>
           <section aria-labelledby="incomplete-results-heading">
-            <h3 id="incomplete-results-heading">Eksik kanıt veya kapsam</h3>
+            <h3 id="incomplete-results-heading">{t('Eksik kanıt veya kapsam')}</h3>
             <ul>
               {groups.incomplete.map((evidence) => (
-                <MissingEvidence
-                  key={evidence.estimate.providerId}
-                  evidence={evidence}
-                />
+                <MissingEvidence key={evidence.estimate.providerId} evidence={evidence} />
               ))}
             </ul>
           </section>

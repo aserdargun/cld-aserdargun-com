@@ -1,3 +1,4 @@
+import { locale, t } from '../i18n'
 import { getCatalogHealth, getUsableExchangeRates, loadCatalog } from '../data/catalog'
 import type { Catalog, Offer, ProviderId } from '../domain/catalog'
 import { getCatalogStats, rankEvidenceEligibleEstimates } from '../domain/presentation'
@@ -42,11 +43,10 @@ function Dashboard({ catalog, today }: { catalog: Catalog; today: Date }) {
   }
 
   const rankingOffers = catalog.offers.filter(
-    (offer) => (
+    (offer) =>
       state.selectedProviderIds.has(offer.providerId) &&
       state.selectedRegionKeys.has(providerRegionKey(offer.providerId, offer.region)) &&
-      eligibleByStatus(offer)
-    ),
+      eligibleByStatus(offer),
   )
   const pricingContext = {
     exchangeRates: usableExchangeRates,
@@ -56,9 +56,9 @@ function Dashboard({ catalog, today }: { catalog: Catalog; today: Date }) {
     statusByFreeTierId: health.statusByFreeTierId,
     statusByExchangeRateId: health.statusByExchangeRateId,
   }
-  const providerEstimates = [...state.selectedProviderIds].map((providerId: ProviderId) => (
-    estimateProvider(providerId, rankingOffers, state.scenario, pricingContext)
-  ))
+  const providerEstimates = [...state.selectedProviderIds].map((providerId: ProviderId) =>
+    estimateProvider(providerId, rankingOffers, state.scenario, pricingContext),
+  )
   const estimateEvidenceContext = {
     exchangeRates: catalog.exchangeRates,
     sources: catalog.sources,
@@ -72,14 +72,16 @@ function Dashboard({ catalog, today }: { catalog: Catalog; today: Date }) {
 
   const detailedOffers = catalog.offers.filter((offer) => {
     if (!state.selectedProviderIds.has(offer.providerId)) return false
-    if (!state.selectedRegionKeys.has(providerRegionKey(offer.providerId, offer.region))) return false
+    if (!state.selectedRegionKeys.has(providerRegionKey(offer.providerId, offer.region)))
+      return false
     if (!state.selectedCategories.has(offer.category)) return false
     if (!eligibleByStatus(offer)) return false
     if (!state.freeOnly) return true
-    return catalog.freeTiers.some((freeTier) => (
-      freeTier.compatibleOfferIds.includes(offer.id) &&
-      (health.statusByFreeTierId[freeTier.id] ?? 'invalid') !== 'invalid'
-    ))
+    return catalog.freeTiers.some(
+      (freeTier) =>
+        freeTier.compatibleOfferIds.includes(offer.id) &&
+        (health.statusByFreeTierId[freeTier.id] ?? 'invalid') !== 'invalid',
+    )
   })
 
   return (
@@ -89,17 +91,23 @@ function Dashboard({ catalog, today }: { catalog: Catalog; today: Date }) {
       <main className="app-main">
         {usableExchangeRates.length === 0 ? (
           <p className="catalog-notice" role="status">
-            Güncel ve kaynaklı ECB EUR/USD kuru yok. EUR fiyatlar için USD toplamı ve sıralama üretilmez.
-            {' '}Katalogdaki kur tarihi: {catalog.exchangeRates.map((rate) => rate.date).join(', ') || 'kayıt yok'}.
+            {t(
+              'Güncel ve kaynaklı ECB EUR/USD kuru yok. EUR fiyatlar için USD toplamı ve sıralama üretilmez.',
+            )}{' '}
+            {t('Katalogdaki kur tarihi: ')}
+            {catalog.exchangeRates.map((rate) => rate.date).join(', ') || t('kayıt yok')}.
           </p>
         ) : null}
         {health.staleCount > 0 ? (
           <p className="catalog-notice" role="status">
-            {health.staleCount} teklif veya ücretsiz katman kaydı 30 günden eski.
-            {' '}Bu kayıtlar güncel fiyat sıralamasına alınmaz. Satın almadan önce resmî kaynakları yeniden kontrol edin.
+            {health.staleCount}
+            {t(' teklif veya ücretsiz katman kaydı 30 günden eski.')}{' '}
+            {t(
+              'Bu kayıtlar güncel fiyat sıralamasına alınmaz. Satın almadan önce resmî kaynakları yeniden kontrol edin.',
+            )}
           </p>
         ) : null}
-        <section className="scenario-workspace" id="senaryolar" aria-label="Senaryolar">
+        <section className="scenario-workspace" id="senaryolar" aria-label={t('Senaryolar')}>
           <div className="scenario-workspace__grid">
             <ScenarioCalculator state={state} scenarios={catalog.scenarios} />
             <DecisionSummary
@@ -123,7 +131,7 @@ function Dashboard({ catalog, today }: { catalog: Catalog; today: Date }) {
         <OfferExplorer
           offers={detailedOffers}
           filterBar={<FilterBar state={state} providers={catalog.providers} />}
-          comparisonTable={(
+          comparisonTable={
             <ComparisonTable
               offers={detailedOffers}
               providers={catalog.providers}
@@ -134,7 +142,7 @@ function Dashboard({ catalog, today }: { catalog: Catalog; today: Date }) {
               scenario={state.scenario}
               eligibleFreeTierIds={eligibleFreeTierIds}
             />
-          )}
+          }
         />
 
         <Education />
@@ -155,11 +163,13 @@ function Dashboard({ catalog, today }: { catalog: Catalog; today: Date }) {
         <div>
           <strong>CLD</strong>
           <span aria-hidden="true">{' · '}</span>
-          <span>Kaynaklı bulut maliyet karşılaştırması</span>
+          <span>{t('Kaynaklı bulut maliyet karşılaştırması')}</span>
         </div>
-        <nav aria-label="Portföy ve sayfa bağlantıları">
-          <a href="https://aserdargun.com/tr/">aserdargun.com</a>
-          <a href="#genel-bakis">Başa dön</a>
+        <nav aria-label={t('Portföy ve sayfa bağlantıları')}>
+          <a href={locale === 'en' ? 'https://aserdargun.com/' : 'https://aserdargun.com/tr/'}>
+            aserdargun.com
+          </a>
+          <a href="#genel-bakis">{t('Başa dön')}</a>
         </nav>
       </footer>
     </div>
@@ -172,7 +182,7 @@ export function App({ loadCatalogData = loadCatalog, today = new Date() }: AppPr
   if (catalog === null) {
     return (
       <main className="catalog-error">
-        <p role="alert">Fiyat kataloğu doğrulanamadı. Kaynak verileri kontrol edin.</p>
+        <p role="alert">{t('Fiyat kataloğu doğrulanamadı. Kaynak verileri kontrol edin.')}</p>
       </main>
     )
   }

@@ -1,10 +1,11 @@
+import { t } from '../i18n'
 import { Moon, Sun } from 'lucide-react'
 import { useTheme } from '../app/useTheme'
 
 export function ThemeToggle() {
   const { theme, toggleTheme } = useTheme()
   const isDark = theme === 'dark'
-  const label = isDark ? 'Aydınlık temaya geç' : 'Karanlık temaya geç'
+  const label = isDark ? t('Aydınlık temaya geç') : t('Karanlık temaya geç')
 
   return (
     <button

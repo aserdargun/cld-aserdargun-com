@@ -1,3 +1,4 @@
+import { localizedData } from '../i18n'
 import type {
   Catalog,
   CatalogHealth,
@@ -24,7 +25,7 @@ import { catalogSchema } from './schemas'
 const bundledCatalog = { providers, sources, offers, freeTiers, exchangeRates, scenarios }
 
 export function loadCatalog(input: unknown = bundledCatalog): Catalog {
-  return catalogSchema.parse(input)
+  return localizedData(catalogSchema.parse(input))
 }
 
 function verificationStatus(
@@ -35,21 +36,26 @@ function verificationStatus(
   expectedKind: Source['kind'],
   today: Date,
 ): VerificationStatus {
-  if (!hasExactSourceEvidence(
-    sourceIds,
-    sourcesById,
-    expectedOwner,
-    expectedKind,
-    true,
-  )) {
+  if (!hasExactSourceEvidence(sourceIds, sourcesById, expectedOwner, expectedKind, true)) {
     return 'invalid'
   }
 
   const verifiedOn = new Date(`${verifiedAt}T00:00:00.000Z`)
-  const todayAtUtcMidnight = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate())
+  const todayAtUtcMidnight = Date.UTC(
+    today.getUTCFullYear(),
+    today.getUTCMonth(),
+    today.getUTCDate(),
+  )
   const ageInDays = Math.floor((todayAtUtcMidnight - verifiedOn.getTime()) / 86_400_000)
-  if (!Number.isFinite(ageInDays) || ageInDays < 0 ||
-    sourceIds.some((id) => new Date(`${sourcesById.get(id)!.accessedAt}T00:00:00.000Z`).getTime() > todayAtUtcMidnight)) return 'invalid'
+  if (
+    !Number.isFinite(ageInDays) ||
+    ageInDays < 0 ||
+    sourceIds.some(
+      (id) =>
+        new Date(`${sourcesById.get(id)!.accessedAt}T00:00:00.000Z`).getTime() > todayAtUtcMidnight,
+    )
+  )
+    return 'invalid'
   return ageInDays > 30 ? 'stale' : 'current'
 }
 
@@ -90,27 +96,27 @@ function collectInvalidReferences(catalog: Catalog, sourcesById: Map<string, Sou
       'purchase',
       true,
     )
-    provider.regions.forEach((region) => addInvalid(
-      `provider:${provider.id}:region:${region.id}`,
-      [region.sourceId],
-      provider.id,
-      'regions',
-    ))
+    provider.regions.forEach((region) =>
+      addInvalid(
+        `provider:${provider.id}:region:${region.id}`,
+        [region.sourceId],
+        provider.id,
+        'regions',
+      ),
+    )
   })
-  catalog.offers.forEach((offer) => addInvalid(
-    `offer:${offer.id}`,
-    offer.sourceIds,
-    offer.providerId,
-    'pricing',
-  ))
-  catalog.freeTiers.forEach((freeTier) => addInvalid(
-    `free-tier:${freeTier.id}`,
-    freeTier.sourceIds,
-    freeTier.providerId,
-    'free-tier',
-  ))
+  catalog.offers.forEach((offer) =>
+    addInvalid(`offer:${offer.id}`, offer.sourceIds, offer.providerId, 'pricing'),
+  )
+  catalog.freeTiers.forEach((freeTier) =>
+    addInvalid(`free-tier:${freeTier.id}`, freeTier.sourceIds, freeTier.providerId, 'free-tier'),
+  )
   catalog.exchangeRates.forEach((exchangeRate) => {
-    const issue = sourceEvidenceIssue(sourcesById.get(exchangeRate.sourceId), 'ecb', 'exchange-rate')
+    const issue = sourceEvidenceIssue(
+      sourcesById.get(exchangeRate.sourceId),
+      'ecb',
+      'exchange-rate',
+    )
     if (issue) {
       invalidReferences.push(
         `exchange-rate:${exchangeRate.id}:${exchangeRate.sourceId}${issue === 'missing' ? '' : `:${issue}`}`,
@@ -147,17 +153,20 @@ export function getCatalogHealth(catalog: Catalog, today: Date): CatalogHealth {
   const statusByOfferId = statusesFor(catalog.offers, sourcesById, 'pricing', today)
   const statusByFreeTierId = statusesFor(catalog.freeTiers, sourcesById, 'free-tier', today)
   const statusByExchangeRateId = Object.fromEntries(
-    catalog.exchangeRates.map((exchangeRate) => [
-      exchangeRate.id,
-      verificationStatus(
-        exchangeRate.date,
-        [exchangeRate.sourceId],
-        sourcesById,
-        'ecb',
-        'exchange-rate',
-        today,
-      ),
-    ] satisfies [string, VerificationStatus]),
+    catalog.exchangeRates.map(
+      (exchangeRate) =>
+        [
+          exchangeRate.id,
+          verificationStatus(
+            exchangeRate.date,
+            [exchangeRate.sourceId],
+            sourcesById,
+            'ecb',
+            'exchange-rate',
+            today,
+          ),
+        ] satisfies [string, VerificationStatus],
+    ),
   )
   const statusValues = [...Object.values(statusByOfferId), ...Object.values(statusByFreeTierId)]
   const invalidReferences = collectInvalidReferences(catalog, sourcesById)

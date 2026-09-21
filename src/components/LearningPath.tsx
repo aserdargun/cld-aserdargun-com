@@ -1,3 +1,4 @@
+import { t } from '../i18n'
 import { useEffect, useState } from 'react'
 
 export interface LearningPathStep {
@@ -22,9 +23,18 @@ interface LearningPathProps {
  * - Her adımın altında küçük ilerleme çubuğu
  * - Son ziyaret edilen adım hafızada tutulur
  */
-export function LearningPath({ steps, learnedByStep, totalPerStep, lastVisited, onVisit }: LearningPathProps) {
+export function LearningPath({
+  steps,
+  learnedByStep,
+  totalPerStep,
+  lastVisited,
+  onVisit,
+}: LearningPathProps) {
   const initialIndex = lastVisited
-    ? Math.max(0, steps.findIndex((step) => step.id === lastVisited))
+    ? Math.max(
+        0,
+        steps.findIndex((step) => step.id === lastVisited),
+      )
     : 0
   const [activeIndex, setActiveIndex] = useState(Math.min(initialIndex, steps.length - 1))
 
@@ -46,14 +56,23 @@ export function LearningPath({ steps, learnedByStep, totalPerStep, lastVisited, 
   const overallPercent = totalItems === 0 ? 0 : Math.round((totalLearned / totalItems) * 100)
 
   return (
-    <nav className="learning-path" aria-label="Sıralı öğrenme yolu" data-testid="learning-path">
+    <nav
+      className="learning-path"
+      aria-label={t('Sıralı öğrenme yolu')}
+      data-testid="learning-path"
+    >
       <div className="learning-path__header">
         <div>
-          <h3>Sıralı öğrenme yolu</h3>
-          <p>Yukarıdan aşağıya {steps.length} adım. Kavramları “Öğrendim” ile işaretle; not alanlarına kendi örneklerini ekle.</p>
+          <h3>{t('Sıralı öğrenme yolu')}</h3>
+          <p>
+            {t('Yukarıdan aşağıya ')}
+            {steps.length}
+            {t(' adım. Kavramları “Öğrendim” ile işaretle; not alanlarına kendi örneklerini ekle.')}
+          </p>
         </div>
         <div className="learning-path__progress" role="status" aria-live="polite">
-          <strong>{totalLearned}</strong> / {totalItems} öğrenildi
+          <strong>{totalLearned}</strong> / {totalItems}
+          {t(' öğrenildi')}
           <span className="learning-path__progress-bar" aria-hidden="true">
             <span
               className="learning-path__progress-fill"
@@ -85,7 +104,7 @@ export function LearningPath({ steps, learnedByStep, totalPerStep, lastVisited, 
                 <span className="learning-path__step-index">{index + 1}</span>
                 <span className="learning-path__step-label">{step.label}</span>
                 <span className="learning-path__step-progress">
-                  {total > 0 ? `${learned} / ${total}` : 'Rehber'}
+                  {total > 0 ? `${learned} / ${total}` : t('Rehber')}
                 </span>
               </button>
             </li>
@@ -102,14 +121,15 @@ export function LearningPath({ steps, learnedByStep, totalPerStep, lastVisited, 
             className="learning-path__nav-button"
             data-testid="learning-path-prev"
           >
-            ← Önceki
+            {t('← Önceki')}
           </button>
           <a
             href={currentStep.href}
             className="learning-path__nav-link"
             data-testid="learning-path-current"
           >
-            Şu an: {currentStep.label}
+            {t('Şu an: ')}
+            {currentStep.label}
           </a>
           <button
             type="button"
@@ -118,7 +138,7 @@ export function LearningPath({ steps, learnedByStep, totalPerStep, lastVisited, 
             className="learning-path__nav-button"
             data-testid="learning-path-next"
           >
-            Sonraki →
+            {t('Sonraki →')}
           </button>
         </div>
       ) : null}
