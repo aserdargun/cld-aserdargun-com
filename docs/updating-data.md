@@ -15,6 +15,14 @@ Katalog kaynak denetlenebilirliğini korumak için fiyat, ücretsiz katman, sağ
 
 Kaynak URL'sinin HTTP 200 dönmesi veya sayfanın tarayıcıda açılması yeterli değildir. İlgili fiyat/kota, birim, para birimi, bölge, kapasite ve uygunluk ifadesi sayfa gövdesi, seçilmiş resmî fiyat görünümü veya resmî makine-okunur API cevabında bulunmalıdır. Dinamik ya da bot korumalı sayfada claim yeniden görülemiyorsa tarih ilerletilmez; sınırlama raporlanır ve gerekirse daha açık bir resmî API/sayfa kullanılır.
 
+## Güncellik kapısı (gerçek saat)
+
+`npm run validate:data` iki ayrı kontrol çalıştırır. Birincisi, `src/data/snapshot.ts` içindeki dondurulmuş katalog tarihine karşı tarihli fotoğrafın bütünlüğünü sınar; bu deterministiktir ve asla solmaz. İkincisi, aynı 30 günlük doğrulama penceresini **gerçek duvar saatine** karşı sınar ve pencere aşıldıysa sıfırdan farklı bir çıkış koduyla başarısız olur.
+
+Bu ikinci kapı, üretimde EUR→USD dönüşümünü ve USD sıralamasını bastıran koşulla aynı `getCatalogHealth` yolunu okuduğu için kapı ile ürün davranışı ayrışamaz. Başarısızlık her bayt listeler: `FAIL stale offer <id> verified <tarih> is <gün> days old (window 30 days)`. Yani hangi kaydın, hangi resmî kaynaktan, kaç gün gecikmeyle yeniden doğrulanması gerektiği doğrudan görülür.
+
+Pencere bir ürün sözleşmesidir; kapıyı yeşile çevirmek için genişletilmez veya daraltılmaz. Pencereyi geçmek için tarihler ilerletilmez — kaynak gerçekten yeniden açılıp doğrulanır. Yalnız fotoğraf tarihi ilerletilerek kapı geçilmez.
+
 ## Dosyalar ve bütünlük kuralları
 
 - `src/data/providers.json`: satın alma durumu, not, kaynaklar ve bölgeler

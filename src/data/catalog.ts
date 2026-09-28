@@ -28,6 +28,19 @@ export function loadCatalog(input: unknown = bundledCatalog): Catalog {
   return localizedData(catalogSchema.parse(input))
 }
 
+// Product contract: a verification older than this many days is stale and is
+// excluded from pricing and ranking. The window is never widened to pass a gate.
+export const verificationWindowDays = 30
+
+function utcMidnight(date: Date): number {
+  return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
+}
+
+export function verificationAgeInDays(verifiedAt: string, today: Date): number {
+  const verifiedOn = new Date(`${verifiedAt}T00:00:00.000Z`)
+  return Math.floor((utcMidnight(today) - verifiedOn.getTime()) / 86_400_000)
+}
+
 function verificationStatus(
   verifiedAt: string,
   sourceIds: string[],
@@ -40,13 +53,8 @@ function verificationStatus(
     return 'invalid'
   }
 
-  const verifiedOn = new Date(`${verifiedAt}T00:00:00.000Z`)
-  const todayAtUtcMidnight = Date.UTC(
-    today.getUTCFullYear(),
-    today.getUTCMonth(),
-    today.getUTCDate(),
-  )
-  const ageInDays = Math.floor((todayAtUtcMidnight - verifiedOn.getTime()) / 86_400_000)
+  const ageInDays = verificationAgeInDays(verifiedAt, today)
+  const todayAtUtcMidnight = utcMidnight(today)
   if (
     !Number.isFinite(ageInDays) ||
     ageInDays < 0 ||
@@ -56,7 +64,7 @@ function verificationStatus(
     )
   )
     return 'invalid'
-  return ageInDays > 30 ? 'stale' : 'current'
+  return ageInDays > verificationWindowDays ? 'stale' : 'current'
 }
 
 export { sourceEvidenceIssue }

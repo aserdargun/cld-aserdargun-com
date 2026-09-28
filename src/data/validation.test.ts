@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Catalog } from '../domain/catalog'
-import { loadCatalog } from './catalog'
-import { validateCatalog } from './validation'
+import { getCatalogHealth, getUsableExchangeRates, loadCatalog } from './catalog'
+import { validateCatalog, staleVerificationRecords, validateCatalogFreshness } from './validation'
 
 function clonedCatalog(): Catalog {
   return structuredClone(loadCatalog())
@@ -220,5 +220,74 @@ describe('catalog validator policy', () => {
     expect(validateCatalog(catalog)).toContain(
       'provider cloudflare global region global must have countryCode null',
     )
+  })
+})
+
+describe('wall-clock freshness gate', () => {
+  // Every clock is injected so the 30-day window boundary is asserted exactly and
+  // these tests never rot as real time passes.
+  const at = (date: string) => new Date(`${date}T12:00:00.000Z`)
+  const ecbRate = 'ecb-eur-usd-2026-08-13'
+
+  it('passes when every record is inside the window', () => {
+    expect(validateCatalogFreshness(clonedCatalog(), at('2026-09-04'))).toEqual([])
+  })
+
+  it('keeps a record verified exactly 30 days ago inside the window', () => {
+    // 2026-08-13 + 30 days is 2026-09-12; that is the last accepted day.
+    expect(validateCatalogFreshness(clonedCatalog(), at('2026-09-12'))).toEqual([])
+  })
+
+  it('fails a record one day past the window and names it with its age', () => {
+    const failures = validateCatalogFreshness(clonedCatalog(), at('2026-09-13'))
+
+    expect(failures).toContain(
+      `stale exchange rate ${ecbRate} verified 2026-08-13 is 31 days old (window 30 days); re-verify it against its official source and advance its date`,
+    )
+  })
+
+  it('names every stale record kind with the exact number of days overdue', () => {
+    const catalog = clonedCatalog()
+    const stale = staleVerificationRecords(catalog, at('2026-10-01'))
+    const failures = validateCatalogFreshness(catalog, at('2026-10-01'))
+
+    // One summary line plus one actionable line per offending record id.
+    expect(failures).toHaveLength(stale.length + 1)
+    expect(failures[0]).toBe(
+      `catalog freshness: ${stale.length} record(s) are past the 30-day verification window as of 2026-10-01; the live EUR to USD conversion and USD ranking stay suppressed until they are re-verified`,
+    )
+    expect(failures).toEqual(expect.arrayContaining([
+      expect.stringMatching(/^stale offer azure-b2s-westeurope verified \d{4}-\d{2}-\d{2} is \d+ days old \(window 30 days\); /),
+      expect.stringMatching(/^stale free tier azure-vm-750-hours verified \d{4}-\d{2}-\d{2} is \d+ days old \(window 30 days\); /),
+      `stale exchange rate ${ecbRate} verified 2026-08-13 is 49 days old (window 30 days); re-verify it against its official source and advance its date`,
+    ]))
+    expect(new Set(stale.map((record) => record.kind))).toEqual(new Set(['offer', 'free tier', 'exchange rate']))
+  })
+
+  it('reports the same staleness the live product sees, so a stale gate means a suppressed ranking', () => {
+    const catalog = clonedCatalog()
+
+    expect(getUsableExchangeRates(catalog, getCatalogHealth(catalog, at('2026-09-12')))).toHaveLength(1)
+    expect(validateCatalogFreshness(catalog, at('2026-09-12'))).toEqual([])
+
+    const expired = getCatalogHealth(catalog, at('2026-09-13'))
+    expect(getUsableExchangeRates(catalog, expired)).toEqual([])
+    expect(expired.statusByExchangeRateId[ecbRate]).toBe('stale')
+    expect(validateCatalogFreshness(catalog, at('2026-09-13'))).not.toEqual([])
+  })
+
+  it('never repairs stale data silently: moving a date into the window clears only that record', () => {
+    const catalog = clonedCatalog()
+    const stillStale = 'azure-b2s-westeurope'
+    const refreshed = 'gcp-e2-standard-2-belgium'
+    catalog.exchangeRates[0]!.date = '2026-09-20'
+    catalog.offers.find((offer) => offer.id === refreshed)!.verifiedAt = '2026-09-20'
+
+    const failures = validateCatalogFreshness(catalog, at('2026-09-21'))
+
+    expect(failures).toEqual(expect.arrayContaining([
+      expect.stringContaining(`stale offer ${stillStale} `),
+    ]))
+    expect(failures.join('\n')).not.toContain(refreshed)
   })
 })

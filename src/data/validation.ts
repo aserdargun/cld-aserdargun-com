@@ -11,7 +11,13 @@ import {
 } from '../domain/coverage'
 import { estimateOffer, priceKindForFreeTierUnit, type PricingContext } from '../domain/pricing'
 import { estimateProvider } from '../domain/ranking'
-import { getCatalogHealth, getUsableExchangeRates, sourceEvidenceIssue } from './catalog'
+import {
+  getCatalogHealth,
+  getUsableExchangeRates,
+  sourceEvidenceIssue,
+  verificationAgeInDays,
+  verificationWindowDays,
+} from './catalog'
 
 import { catalogSnapshotDate } from './snapshot'
 export { catalogSnapshotDate } from './snapshot'
@@ -96,6 +102,61 @@ function countCompleteCurrentEstimates(catalog: Catalog, scenario: Scenario, con
       estimate.missingCategories.length === 0 &&
       estimate.missingDimensions.length === 0
   }).length
+}
+
+export interface StaleVerification {
+  kind: 'offer' | 'free tier' | 'exchange rate'
+  id: string
+  verifiedAt: string
+  ageInDays: number
+}
+
+/**
+ * Records that the live product would score `stale` on the given clock, using the
+ * same `getCatalogHealth` path the UI reads, so this gate can never drift from the
+ * behaviour it protects. The clock is a parameter: callers pass the real wall clock.
+ */
+export function staleVerificationRecords(catalog: Catalog, today: Date): StaleVerification[] {
+  const health = getCatalogHealth(catalog, today)
+  const stale = (kind: StaleVerification['kind'], id: string, verifiedAt: string) => ({
+    kind,
+    id,
+    verifiedAt,
+    ageInDays: verificationAgeInDays(verifiedAt, today),
+  })
+  return [
+    ...catalog.offers
+      .filter((offer) => health.statusByOfferId[offer.id] === 'stale')
+      .map((offer) => stale('offer', offer.id, offer.verifiedAt)),
+    ...catalog.freeTiers
+      .filter((freeTier) => health.statusByFreeTierId[freeTier.id] === 'stale')
+      .map((freeTier) => stale('free tier', freeTier.id, freeTier.verifiedAt)),
+    ...catalog.exchangeRates
+      .filter((exchangeRate) => health.statusByExchangeRateId[exchangeRate.id] === 'stale')
+      .map((exchangeRate) => stale('exchange rate', exchangeRate.id, exchangeRate.date)),
+  ]
+}
+
+/**
+ * Wall-clock freshness gate. `validateCatalog` checks the integrity of the dated
+ * snapshot; this checks that the snapshot is still inside the documented
+ * verification window on the real clock. Stale data is never repaired here: the
+ * gate fails and names the records a maintainer must re-verify.
+ */
+export function validateCatalogFreshness(catalog: Catalog, today: Date): string[] {
+  const staleRecords = staleVerificationRecords(catalog, today)
+  if (staleRecords.length === 0) return []
+
+  const asOf = today.toISOString().slice(0, 10)
+  const failures = [
+    `catalog freshness: ${staleRecords.length} record(s) are past the ${verificationWindowDays}-day verification window as of ${asOf}; the live EUR to USD conversion and USD ranking stay suppressed until they are re-verified`,
+  ]
+  for (const record of staleRecords) {
+    failures.push(
+      `stale ${record.kind} ${record.id} verified ${record.verifiedAt} is ${record.ageInDays} days old (window ${verificationWindowDays} days); re-verify it against its official source and advance its date`,
+    )
+  }
+  return failures
 }
 
 export function validateCatalog(catalog: Catalog): string[] {

@@ -1,6 +1,6 @@
 import { providerIds, serviceCategories, type Catalog } from '../src/domain/catalog'
-import { loadCatalog } from '../src/data/catalog'
-import { validateCatalog } from '../src/data/validation'
+import { loadCatalog, verificationWindowDays } from '../src/data/catalog'
+import { validateCatalog, validateCatalogFreshness } from '../src/data/validation'
 
 let catalog: Catalog
 try {
@@ -11,11 +11,18 @@ try {
   process.exit(1)
 }
 
-const failures = validateCatalog(catalog)
+// The snapshot gate proves the dated research photo is internally consistent; the
+// freshness gate proves it is still inside the documented window on the real clock.
+const today = new Date()
+const failures = [...validateCatalog(catalog), ...validateCatalogFreshness(catalog, today)]
 if (failures.length > 0) {
   for (const failure of failures) console.error(`FAIL ${failure}`)
   process.exit(1)
 }
+
+console.log(
+  `catalog fresh as of ${today.toISOString().slice(0, 10)}: every offer, free-tier and exchange-rate record is within the ${verificationWindowDays}-day verification window`,
+)
 
 for (const providerId of providerIds) {
   const offerCount = catalog.offers.filter((offer) => offer.providerId === providerId).length
