@@ -10,11 +10,49 @@
     />
     <title>CLD - Bulut Sağlayıcı Maliyet Karşılaştırması</title>
     <link rel="canonical" href="https://cld.aserdargun.com/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Cloud Provider Cost Comparison" />
+    <meta property="og:title" content="Cloud Provider Cost Comparison" />
+    <meta
+      property="og:description"
+      content="A source-backed decision tool comparing pre-tax USD costs for cloud services available from Türkiye."
+    />
+    <meta property="og:url" content="https://cld.aserdargun.com/" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="tr_TR" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Cloud Provider Cost Comparison" />
+    <meta
+      name="twitter:description"
+      content="A source-backed decision tool comparing pre-tax USD costs for cloud services available from Türkiye."
+    />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
   </head>
   <body>
     <div id="root"></div>
+    <noscript lang="en">
+      <h1>Cloud Provider Cost Comparison</h1>
+      <p>
+        A source-backed decision tool comparing pre-tax USD costs for cloud services available from
+        Türkiye. Each catalog record carries a primary-source URL and a verification date, and every
+        modeled amount is reproducible from its scenario, region, usage, and dated FX inputs. The
+        catalog date does not mean every record was reverified on that date: records older than the
+        30-day window are flagged and excluded from price rankings, and a USD total is not produced
+        from a stale or future-dated exchange rate. Recheck official sources before purchasing.
+      </p>
+      <p>The tool covers:</p>
+      <ul>
+        <li>Offer records for object storage, managed databases, CDN and network egress, run time, and GPU usage</li>
+        <li>Scenario-based cost modeling with region and usage filters, compared across providers</li>
+        <li>Free-tier records, per-offer scope notes, and the primary source behind every estimate</li>
+        <li>Methodology, evidence limits, and a learning section on cloud pricing models</li>
+      </ul>
+      <p>
+        The full tool needs JavaScript. With JavaScript disabled, this page describes what is
+        compared; no catalog record, price, or ranking is shown.
+      </p>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
