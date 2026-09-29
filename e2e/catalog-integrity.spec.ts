@@ -8,7 +8,7 @@ test('every preset produces finite evidence-backed results and accessible note i
   await page.setViewportSize({ width: 1440, height: 1000 })
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
-  await page.goto('/')
+  await page.goto('/?lang=tr')
   const tabs = page.getByRole('tablist', { name: 'Kullanım senaryoları' }).getByRole('tab')
   const summary = page.getByRole('region', { name: 'Karar özeti' })
   for (let index = 0; index < (await tabs.count()); index++) {
@@ -35,7 +35,7 @@ test('aged catalog cannot advertise verified ranked prices', async ({ page }) =>
   const expired = new Date(`${catalogSnapshotDate}T12:00:00Z`)
   expired.setUTCDate(expired.getUTCDate() + 31)
   await page.clock.setFixedTime(expired)
-  await page.goto('/')
+  await page.goto('/?lang=tr')
   const summary = page.getByRole('region', { name: 'Karar özeti' })
   await expect(summary.getByRole('listitem', { name: /doğrulanmış tahmin/i })).toHaveCount(0)
   await expect(summary).not.toContainText(/En düşük doğrulanmış tahmin/u)
@@ -53,7 +53,7 @@ test('current-date notices and portfolio context stay visible on desktop and mob
   await page.clock.setFixedTime(new Date('2026-09-21T12:00:00Z'))
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 900 })
-    await page.goto('/')
+    await page.goto('/?lang=tr')
     await expect(page).toHaveTitle('CLD - Bulut Sağlayıcı Maliyet Karşılaştırması')
     await expect(
       page.getByText('Güncel ve kaynaklı ECB EUR/USD kuru yok.', { exact: false }),

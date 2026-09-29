@@ -13,12 +13,12 @@ afterEach(() => {
 })
 
 describe('language entry and translations', () => {
-  it('uses an explicit English entry and keeps Turkish as the default', async () => {
+  it('uses an explicit Turkish entry and keeps English as the default', async () => {
     const { localeFromSearch } = await withLanguage('en')
     expect(localeFromSearch('?lang=en')).toBe('en')
     expect(localeFromSearch('?lang=tr')).toBe('tr')
-    expect(localeFromSearch('?lang=invalid')).toBe('tr')
-    expect(localeFromSearch('')).toBe('tr')
+    expect(localeFromSearch('?lang=invalid')).toBe('en')
+    expect(localeFromSearch('')).toBe('en')
   })
 
   it('translates labels and interpolations without losing surrounding spacing', async () => {

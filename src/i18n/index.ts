@@ -2,7 +2,7 @@ import english from './en.json'
 
 export type Locale = 'tr' | 'en'
 export function localeFromSearch(search: string): Locale {
-  return new URLSearchParams(search).get('lang') === 'en' ? 'en' : 'tr'
+  return new URLSearchParams(search).get('lang') === 'tr' ? 'tr' : 'en'
 }
 export const locale = localeFromSearch(typeof window === 'undefined' ? '' : window.location.search)
 export const formatLocale = locale === 'en' ? 'en-US' : 'tr-TR'

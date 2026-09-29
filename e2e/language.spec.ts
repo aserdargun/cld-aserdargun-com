@@ -5,6 +5,22 @@ test.beforeEach(async ({ page }) => {
   await page.clock.setFixedTime(new Date(`${catalogSnapshotDate}T12:00:00Z`))
 })
 
+test('the entry point opens in English and only an explicit request opens Turkish', async ({
+  page,
+}) => {
+  await page.goto('/')
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en')
+  await expect(
+    page.getByRole('heading', { name: 'Compare cloud costs for your scenario' }),
+  ).toBeVisible()
+
+  await page.goto('/?lang=tr')
+  await expect(page.locator('html')).toHaveAttribute('lang', 'tr')
+  await expect(
+    page.getByRole('heading', { name: 'Bulut maliyetini senaryona göre karşılaştır' }),
+  ).toBeVisible()
+})
+
 test('English entry translates the calculator, evidence, providers and all in-page targets', async ({
   page,
 }) => {

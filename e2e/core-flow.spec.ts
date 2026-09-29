@@ -27,7 +27,7 @@ test('desktop decision-first flow recomputes a scenario and reaches official off
   const consoleProblems = collectConsoleProblems(page)
 
   await page.setViewportSize({ width: 1440, height: 1000 })
-  await page.goto('/')
+  await page.goto('/?lang=tr')
 
   await expect(page).toHaveTitle(/^CLD - /u)
   await expect(page.getByRole('heading', {
@@ -127,7 +127,7 @@ test('mobile flow uses a visible scenario select, stacked inputs, and table-owne
   const consoleProblems = collectConsoleProblems(page)
 
   await page.setViewportSize({ width: 390, height: 844 })
-  await page.goto('/')
+  await page.goto('/?lang=tr')
 
   await expect(page.getByRole('heading', {
     name: 'Bulut maliyetini senaryona göre karşılaştır',
@@ -244,7 +244,7 @@ test('tablet trust, calculator, decision, and provider surfaces fit with 44px pr
   const consoleProblems = collectConsoleProblems(page)
 
   await page.setViewportSize({ width: 768, height: 1024 })
-  await page.goto('/')
+  await page.goto('/?lang=tr')
 
   await expect(page.getByRole('heading', {
     name: 'Bulut maliyetini senaryona göre karşılaştır',
@@ -310,7 +310,7 @@ test('learning recovers invalid storage, advances cards, preserves notes and cou
   await page.addInitScript(() => {
     if (!localStorage.getItem('cld:learning:v1')) localStorage.setItem('cld:learning:v1', 'null')
   })
-  await page.goto('/')
+  await page.goto('/?lang=tr')
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
   const progress = page.getByTestId('education-overall-progress')
   await expect(progress).toContainText('0 /')
@@ -337,7 +337,7 @@ test('learning recovers invalid storage, advances cards, preserves notes and cou
 
 test('advanced input remains usable and stale catalog never produces a current winner', async ({ page }) => {
   const problems = collectConsoleProblems(page)
-  await page.goto('/')
+  await page.goto('/?lang=tr')
   await page.getByText('Gelişmiş kullanım ayarları', { exact: true }).click()
   const input = page.getByRole('spinbutton', { name: 'Aylık GPU kullanımı' })
   await input.fill('')
