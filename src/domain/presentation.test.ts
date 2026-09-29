@@ -135,7 +135,7 @@ function offerEstimate(
   {
     currency = 'USD',
     region = defaultRegionByProvider[providerId],
-    verifiedAt = '2026-08-13',
+    verifiedAt = '2026-09-29',
     status = 'current',
     offerProviderId = providerId,
   }: {
@@ -224,7 +224,7 @@ describe('presentation models', () => {
       providerCount: 8,
       offerCount: 41,
       sourceCount: 66,
-      latestVerificationDate: '2026-09-04',
+      latestVerificationDate: '2026-09-29',
     })
   })
 
@@ -269,7 +269,7 @@ describe('presentation models', () => {
   it('keeps valid EUR evidence eligible and selects only a rate on or before the offer date', () => {
     const ecbSource = catalog.sources.find((source) => source.id === 'ecb-daily-exr')!
     const assessment = assessEstimateEvidence(
-      estimate('hetzner', 10, 'current', { currency: 'EUR', verifiedAt: '2026-08-13' }),
+      estimate('hetzner', 10, 'current', { currency: 'EUR', verifiedAt: '2026-09-29' }),
       catalog.providers,
       {
         exchangeRates: [
@@ -278,7 +278,7 @@ describe('presentation models', () => {
             base: 'EUR',
             quote: 'USD',
             rate: 1.1,
-            date: '2026-08-12',
+            date: '2026-09-28',
             sourceId: ecbSource.id,
           },
           {
@@ -286,7 +286,7 @@ describe('presentation models', () => {
             base: 'EUR',
             quote: 'USD',
             rate: 1.2,
-            date: '2026-08-14',
+            date: '2026-09-30',
             sourceId: ecbSource.id,
           },
         ],

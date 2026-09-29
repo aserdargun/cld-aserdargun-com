@@ -21,7 +21,7 @@ const providers: Provider[] = [
     purchaseAvailability: 'verified',
     purchaseNote: 'Türkiye satın alımı doğrulandı.',
     purchaseSourceIds: ['azure-purchase'],
-    verifiedAt: '2026-08-13',
+    verifiedAt: '2026-09-29',
     strengths: [],
     limitations: [],
     regions: [
@@ -42,7 +42,7 @@ const providers: Provider[] = [
     purchaseAvailability: 'conditional',
     purchaseNote: 'Satın alım koşulludur.',
     purchaseSourceIds: ['cloudflare-purchase'],
-    verifiedAt: '2026-08-13',
+    verifiedAt: '2026-09-29',
     strengths: [],
     limitations: [],
     regions: [
@@ -63,7 +63,7 @@ const providers: Provider[] = [
     purchaseAvailability: 'conditional',
     purchaseNote: 'Satın alım koşulludur.',
     purchaseSourceIds: ['hetzner-purchase'],
-    verifiedAt: '2026-08-13',
+    verifiedAt: '2026-09-29',
     strengths: [],
     limitations: [],
     regions: [
@@ -85,7 +85,7 @@ const sources: Source[] = [
     title: 'Azure resmi fiyatlandırma',
     url: 'https://azure.microsoft.com/pricing',
     kind: 'pricing',
-    accessedAt: '2026-08-13',
+    accessedAt: '2026-09-29',
   },
   {
     id: 'cloudflare-price',
@@ -93,7 +93,7 @@ const sources: Source[] = [
     title: 'Cloudflare Workers fiyatlandırma',
     url: 'https://developers.cloudflare.com/workers/platform/pricing/',
     kind: 'pricing',
-    accessedAt: '2026-08-12',
+    accessedAt: '2026-09-28',
   },
   {
     id: 'hetzner-price',
@@ -101,7 +101,7 @@ const sources: Source[] = [
     title: 'Hetzner Cloud fiyatlandırma',
     url: 'https://www.hetzner.com/cloud/',
     kind: 'pricing',
-    accessedAt: '2026-08-11',
+    accessedAt: '2026-09-27',
   },
   {
     id: 'ecb-rate',
@@ -109,7 +109,7 @@ const sources: Source[] = [
     title: 'ECB euro reference exchange rate',
     url: 'https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/',
     kind: 'exchange-rate',
-    accessedAt: '2026-08-13',
+    accessedAt: '2026-09-29',
   },
 ]
 
@@ -124,7 +124,7 @@ const offers: Offer[] = [
     specs: { vcpu: 2, ramGb: 4, outboundGb: 100 },
     prices: [{ kind: 'instance-hour', price: 0.05, currency: 'USD', includedQuantity: 0 }],
     sourceIds: ['azure-price'],
-    verifiedAt: '2026-08-13',
+    verifiedAt: '2026-09-29',
     notes: ['Disk, yedekleme ve lisans dahil değildir.'],
   },
   {
@@ -140,7 +140,7 @@ const offers: Offer[] = [
       { kind: 'requests-million', price: 0.3, currency: 'USD', includedQuantity: 10 },
     ],
     sourceIds: ['cloudflare-price'],
-    verifiedAt: '2026-08-12',
+    verifiedAt: '2026-09-28',
     notes: ['Worker yürütme süresi ve ek depolama dahil değildir.'],
   },
 ]
@@ -160,7 +160,7 @@ const freeTiers: FreeTier[] = [
     overageNote: 'Aşım ücretlidir.',
     automaticChargeNote: 'Ücretli hesapta otomatik yansır.',
     sourceIds: ['azure-price'],
-    verifiedAt: '2026-08-13',
+    verifiedAt: '2026-09-29',
   },
 ]
 
@@ -269,7 +269,7 @@ describe('ComparisonTable', () => {
     expect(source).toHaveAttribute('target', '_blank')
     expect(source).toHaveAttribute('rel', expect.stringContaining('noopener'))
     expect(source).toHaveAttribute('rel', expect.stringContaining('noreferrer'))
-    expect(azure).toHaveTextContent('2026-08-13')
+    expect(azure).toHaveTextContent('2026-09-29')
   })
 
   it('sorts rows with button headers and exposes the active direction through aria-sort', async () => {
@@ -380,7 +380,7 @@ describe('ComparisonTable', () => {
       sources: catalog.sources,
       freeTiers: catalog.freeTiers,
       exchangeRates: catalog.exchangeRates,
-      health: getCatalogHealth(catalog, new Date('2026-08-14T00:00:00Z')),
+      health: getCatalogHealth(catalog, new Date('2026-09-30T00:00:00Z')),
       scenario: staticSite,
     })
 
@@ -406,7 +406,7 @@ describe('ComparisonTable', () => {
       sources: catalog.sources,
       freeTiers: catalog.freeTiers,
       exchangeRates: catalog.exchangeRates,
-      health: getCatalogHealth(catalog, new Date('2026-08-14T00:00:00Z')),
+      health: getCatalogHealth(catalog, new Date('2026-09-30T00:00:00Z')),
       scenario: smallWeb,
     })
 
@@ -437,7 +437,7 @@ describe('ComparisonTable', () => {
       sources: catalog.sources,
       freeTiers: catalog.freeTiers,
       exchangeRates: catalog.exchangeRates,
-      health: getCatalogHealth(catalog, new Date('2026-08-14T00:00:00Z')),
+      health: getCatalogHealth(catalog, new Date('2026-09-30T00:00:00Z')),
       scenario: highTraffic,
     })
 
@@ -465,7 +465,7 @@ describe('ComparisonTable', () => {
       sources: catalog.sources,
       freeTiers: catalog.freeTiers,
       exchangeRates: catalog.exchangeRates,
-      health: getCatalogHealth(catalog, new Date('2026-08-14T00:00:00Z')),
+      health: getCatalogHealth(catalog, new Date('2026-09-30T00:00:00Z')),
       scenario: highTraffic,
     })
 
@@ -493,7 +493,7 @@ describe('ComparisonTable', () => {
       sources: catalog.sources,
       freeTiers: catalog.freeTiers,
       exchangeRates: catalog.exchangeRates,
-      health: getCatalogHealth(catalog, new Date('2026-08-14T00:00:00Z')),
+      health: getCatalogHealth(catalog, new Date('2026-09-30T00:00:00Z')),
       scenario: aiGpu,
     })
 
@@ -714,7 +714,7 @@ describe('ComparisonTable', () => {
         },
       ],
       sourceIds: ['hetzner-price'],
-      verifiedAt: '2026-08-13',
+      verifiedAt: '2026-09-29',
       notes: [],
     }
 
@@ -724,19 +724,19 @@ describe('ComparisonTable', () => {
       scenario: { ...scenario, hoursPerMonth: 730 },
       exchangeRates: [
         {
-          id: 'eur-usd-2026-08-13',
+          id: 'eur-usd-2026-09-29',
           base: 'EUR',
           quote: 'USD',
           rate: 1.1,
-          date: '2026-08-13',
+          date: '2026-09-29',
           sourceId: 'ecb-rate',
         },
         {
-          id: 'eur-usd-2026-08-14',
+          id: 'eur-usd-2026-09-30',
           base: 'EUR',
           quote: 'USD',
           rate: 1.25,
-          date: '2026-08-14',
+          date: '2026-09-30',
           sourceId: 'ecb-rate',
         },
       ],
@@ -744,8 +744,8 @@ describe('ComparisonTable', () => {
         statusByOfferId: { 'hetzner-cx23': 'stale' },
         statusByFreeTierId: {},
         statusByExchangeRateId: {
-          'eur-usd-2026-08-13': 'current',
-          'eur-usd-2026-08-14': 'current',
+          'eur-usd-2026-09-29': 'current',
+          'eur-usd-2026-09-30': 'current',
         },
       }),
     })
@@ -753,7 +753,7 @@ describe('ComparisonTable', () => {
     const row = screen.getByRole('row', { name: /Hetzner Cloud CX23/ })
     expect(row).toHaveTextContent('€0.0088/saat · $0.00968/saat')
     expect(row).toHaveTextContent('aylık üst sınır €5.49 · $6.04')
-    expect(row).toHaveTextContent('Kur: 1 EUR = 1.10 USD · 2026-08-13')
+    expect(row).toHaveTextContent('Kur: 1 EUR = 1.10 USD · 2026-09-29')
     expect(row).toHaveTextContent('$6.04/ay')
     expect(row).toHaveTextContent('30 günden eski')
   })
@@ -775,7 +775,7 @@ describe('ComparisonTable', () => {
         monthlyCap: 5.49,
       }],
       sourceIds: ['hetzner-price'],
-      verifiedAt: '2026-08-13',
+      verifiedAt: '2026-09-29',
       notes: [],
     }
     const rate = {
@@ -783,7 +783,7 @@ describe('ComparisonTable', () => {
       base: 'EUR' as const,
       quote: 'USD' as const,
       rate: 1.1,
-      date: '2026-08-13',
+      date: '2026-09-29',
       sourceId: 'ecb-rate',
     }
 
@@ -819,7 +819,7 @@ describe('ComparisonTable', () => {
     const hetzner = catalog.offers.find((offer) => offer.id === 'hetzner-cx23-nuremberg')!
     const exchangeRates = catalog.exchangeRates.map((rate) => ({ ...rate, sourceId }))
     const mutatedCatalog = { ...catalog, exchangeRates }
-    const mutatedHealth = getCatalogHealth(mutatedCatalog, new Date('2026-08-14T00:00:00Z'))
+    const mutatedHealth = getCatalogHealth(mutatedCatalog, new Date('2026-09-30T00:00:00Z'))
 
     renderTable({
       offers: [hetzner],
@@ -900,7 +900,7 @@ describe('ComparisonTable', () => {
       specs: {},
       prices: [{ kind: 'outbound-gb', price: 0.1, currency: 'EUR', includedQuantity: 0 }],
       sourceIds: ['hetzner-price'],
-      verifiedAt: '2026-08-13',
+      verifiedAt: '2026-09-29',
       notes: [],
     }
     renderTable({
@@ -908,18 +908,18 @@ describe('ComparisonTable', () => {
       freeTiers: [],
       exchangeRates: [
         {
-          id: 'eur-usd-2026-08-13',
+          id: 'eur-usd-2026-09-29',
           base: 'EUR',
           quote: 'USD',
           rate: 1.1,
-          date: '2026-08-13',
+          date: '2026-09-29',
           sourceId: 'ecb-rate',
         },
       ],
       health: health({
         statusByOfferId: { 'hetzner-eur-outbound': 'current' },
         statusByFreeTierId: {},
-        statusByExchangeRateId: { 'eur-usd-2026-08-13': 'current' },
+        statusByExchangeRateId: { 'eur-usd-2026-09-29': 'current' },
       }),
     })
 

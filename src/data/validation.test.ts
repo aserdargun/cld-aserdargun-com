@@ -62,9 +62,9 @@ describe('catalog validator policy', () => {
     const catalog = clonedCatalog()
     expect(validateCatalog(catalog)).toEqual([])
 
-    catalog.sources[0]!.accessedAt = '2026-09-05'
+    catalog.sources[0]!.accessedAt = '2026-09-30'
     expect(validateCatalog(catalog)).toContain(
-      `source ${catalog.sources[0]!.id} is dated after catalog snapshot 2026-09-04: 2026-09-05`,
+      `source ${catalog.sources[0]!.id} is dated after catalog snapshot 2026-09-29: 2026-09-30`,
     )
   })
 
@@ -225,41 +225,44 @@ describe('catalog validator policy', () => {
 
 describe('wall-clock freshness gate', () => {
   // Every clock is injected so the 30-day window boundary is asserted exactly and
-  // these tests never rot as real time passes.
+  // these tests never rot as real time passes. Offers and free tiers are verified
+  // on 2026-09-29; the ECB rate carries its own 2026-09-28 reference date, so the
+  // rate is the binding record and 2026-10-28 is the last accepted day.
   const at = (date: string) => new Date(`${date}T12:00:00.000Z`)
-  const ecbRate = 'ecb-eur-usd-2026-08-13'
+  const ecbRate = 'ecb-eur-usd-2026-09-28'
 
   it('passes when every record is inside the window', () => {
-    expect(validateCatalogFreshness(clonedCatalog(), at('2026-09-04'))).toEqual([])
+    expect(validateCatalogFreshness(clonedCatalog(), at('2026-09-29'))).toEqual([])
   })
 
   it('keeps a record verified exactly 30 days ago inside the window', () => {
-    // 2026-08-13 + 30 days is 2026-09-12; that is the last accepted day.
-    expect(validateCatalogFreshness(clonedCatalog(), at('2026-09-12'))).toEqual([])
+    // The oldest record in the bundled catalog is verified on 2026-09-04, so
+    // 2026-10-04 is the last day the whole catalog is still inside the window.
+    expect(validateCatalogFreshness(clonedCatalog(), at('2026-10-04'))).toEqual([])
   })
 
   it('fails a record one day past the window and names it with its age', () => {
-    const failures = validateCatalogFreshness(clonedCatalog(), at('2026-09-13'))
+    const failures = validateCatalogFreshness(clonedCatalog(), at('2026-10-29'))
 
     expect(failures).toContain(
-      `stale exchange rate ${ecbRate} verified 2026-08-13 is 31 days old (window 30 days); re-verify it against its official source and advance its date`,
+      `stale exchange rate ${ecbRate} verified 2026-09-28 is 31 days old (window 30 days); re-verify it against its official source and advance its date`,
     )
   })
 
   it('names every stale record kind with the exact number of days overdue', () => {
     const catalog = clonedCatalog()
-    const stale = staleVerificationRecords(catalog, at('2026-10-01'))
-    const failures = validateCatalogFreshness(catalog, at('2026-10-01'))
+    const stale = staleVerificationRecords(catalog, at('2026-11-16'))
+    const failures = validateCatalogFreshness(catalog, at('2026-11-16'))
 
     // One summary line plus one actionable line per offending record id.
     expect(failures).toHaveLength(stale.length + 1)
     expect(failures[0]).toBe(
-      `catalog freshness: ${stale.length} record(s) are past the 30-day verification window as of 2026-10-01; the live EUR to USD conversion and USD ranking stay suppressed until they are re-verified`,
+      `catalog freshness: ${stale.length} record(s) are past the 30-day verification window as of 2026-11-16; the live EUR to USD conversion and USD ranking stay suppressed until they are re-verified`,
     )
     expect(failures).toEqual(expect.arrayContaining([
       expect.stringMatching(/^stale offer azure-b2s-westeurope verified \d{4}-\d{2}-\d{2} is \d+ days old \(window 30 days\); /),
       expect.stringMatching(/^stale free tier azure-vm-750-hours verified \d{4}-\d{2}-\d{2} is \d+ days old \(window 30 days\); /),
-      `stale exchange rate ${ecbRate} verified 2026-08-13 is 49 days old (window 30 days); re-verify it against its official source and advance its date`,
+      `stale exchange rate ${ecbRate} verified 2026-09-28 is 49 days old (window 30 days); re-verify it against its official source and advance its date`,
     ]))
     expect(new Set(stale.map((record) => record.kind))).toEqual(new Set(['offer', 'free tier', 'exchange rate']))
   })
@@ -267,23 +270,23 @@ describe('wall-clock freshness gate', () => {
   it('reports the same staleness the live product sees, so a stale gate means a suppressed ranking', () => {
     const catalog = clonedCatalog()
 
-    expect(getUsableExchangeRates(catalog, getCatalogHealth(catalog, at('2026-09-12')))).toHaveLength(1)
-    expect(validateCatalogFreshness(catalog, at('2026-09-12'))).toEqual([])
+    expect(getUsableExchangeRates(catalog, getCatalogHealth(catalog, at('2026-10-04')))).toHaveLength(1)
+    expect(validateCatalogFreshness(catalog, at('2026-10-04'))).toEqual([])
 
-    const expired = getCatalogHealth(catalog, at('2026-09-13'))
+    const expired = getCatalogHealth(catalog, at('2026-10-29'))
     expect(getUsableExchangeRates(catalog, expired)).toEqual([])
     expect(expired.statusByExchangeRateId[ecbRate]).toBe('stale')
-    expect(validateCatalogFreshness(catalog, at('2026-09-13'))).not.toEqual([])
+    expect(validateCatalogFreshness(catalog, at('2026-10-29'))).not.toEqual([])
   })
 
   it('never repairs stale data silently: moving a date into the window clears only that record', () => {
     const catalog = clonedCatalog()
     const stillStale = 'azure-b2s-westeurope'
     const refreshed = 'gcp-e2-standard-2-belgium'
-    catalog.exchangeRates[0]!.date = '2026-09-20'
-    catalog.offers.find((offer) => offer.id === refreshed)!.verifiedAt = '2026-09-20'
+    catalog.exchangeRates[0]!.date = '2026-10-29'
+    catalog.offers.find((offer) => offer.id === refreshed)!.verifiedAt = '2026-10-29'
 
-    const failures = validateCatalogFreshness(catalog, at('2026-09-21'))
+    const failures = validateCatalogFreshness(catalog, at('2026-10-30'))
 
     expect(failures).toEqual(expect.arrayContaining([
       expect.stringContaining(`stale offer ${stillStale} `),

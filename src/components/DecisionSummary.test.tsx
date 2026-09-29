@@ -117,7 +117,7 @@ function offer(
   providerId: Offer['providerId'],
   prices: PriceComponent[],
   region = defaultRegionByProvider[providerId],
-  verifiedAt = '2026-08-13',
+  verifiedAt = '2026-09-29',
   idSuffix = region,
 ): Offer {
   return {
@@ -157,7 +157,7 @@ function offerLine(
   lineItems: PriceLineItemEstimate[],
   status: VerificationStatus = 'current',
   region = defaultRegionByProvider[providerId],
-  verifiedAt = '2026-08-13',
+  verifiedAt = '2026-09-29',
   idSuffix = region,
 ): OfferEstimate {
   return {
@@ -336,13 +336,13 @@ describe('DecisionSummary', () => {
 
     const result = screen.getByRole('listitem', { name: 'Hetzner doğrulanmış tahmin' })
     const priceBasis = within(result).getByText('Fiyat tabanı').closest('div')
-    const rateDate = within(priceBasis!).getByText('13 Ağustos 2026')
+    const rateDate = within(priceBasis!).getByText('28 Eylül 2026')
 
     expect(priceBasis).toHaveTextContent('Vergiler hariç genel liste fiyatı')
     expect(priceBasis).toHaveTextContent('Özgün para birimi: EUR')
-    expect(priceBasis).toHaveTextContent('ECB dönüşümü: 1 EUR = 1,1534 USD')
-    expect(rateDate).toHaveAttribute('datetime', '2026-08-13')
-    expect(priceBasis).toHaveTextContent('ECB daily EUR reference exchange rate for USD on 13 August 2026')
+    expect(priceBasis).toHaveTextContent('ECB dönüşümü: 1 EUR = 1,1378 USD')
+    expect(rateDate).toHaveAttribute('datetime', '2026-09-28')
+    expect(priceBasis).toHaveTextContent('ECB daily EUR reference exchange rate for USD on 28 September 2026')
   })
 
   it('deduplicates and maps every region actually used by a multi-region estimate', () => {
@@ -351,7 +351,7 @@ describe('DecisionSummary', () => {
       [priceLine(computeComponent, 8, 0, 8)],
       'current',
       'eu-central-1',
-      '2026-08-10',
+      '2026-09-26',
       'frankfurt-1',
     )
     const repeatedFrankfurt = offerLine(
@@ -359,7 +359,7 @@ describe('DecisionSummary', () => {
       [priceLine(trafficComponent, 4, 0, 4)],
       'current',
       'eu-central-1',
-      '2026-08-11',
+      '2026-09-27',
       'frankfurt-2',
     )
     const global = offerLine(
@@ -367,7 +367,7 @@ describe('DecisionSummary', () => {
       [priceLine(trafficComponent, 3, 0, 3)],
       'current',
       'global',
-      '2026-08-13',
+      '2026-09-29',
       'global',
     )
     const estimate = rankedEstimate({
@@ -516,7 +516,7 @@ describe('DecisionSummary', () => {
   })
 
   it('shows one truthful reason for a real seeded partial estimate', () => {
-    const health = getCatalogHealth(catalog, new Date('2026-08-29T00:00:00.000Z'))
+    const health = getCatalogHealth(catalog, new Date('2026-10-04T00:00:00.000Z'))
     const scenario = catalog.scenarios.find((candidate) => candidate.id === 'small-web-app')
     if (!scenario) throw new Error('Seeded small-web-app scenario is required for this test')
     const partial = estimateProvider('hetzner', catalog.offers, scenario, {

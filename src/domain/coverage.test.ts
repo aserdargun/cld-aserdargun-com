@@ -40,7 +40,7 @@ function offer(overrides: Partial<Offer> = {}): Offer {
     specs: {},
     prices: [{ kind: 'storage-gb-month', price: 0.02, currency: 'USD', includedQuantity: 0 }],
     sourceIds: ['source'],
-    verifiedAt: '2026-08-13',
+    verifiedAt: '2026-09-29',
     notes: [],
     ...overrides,
   }
@@ -109,7 +109,7 @@ describe('scenario category coverage', () => {
 
   it('keeps the required number of complete current estimates in the real catalog', () => {
     const catalog = loadCatalog()
-    const health = getCatalogHealth(catalog, new Date('2026-08-14T00:00:00Z'))
+    const health = getCatalogHealth(catalog, new Date('2026-09-30T00:00:00Z'))
     const realContext: PricingContext = {
       exchangeRates: catalog.exchangeRates,
       freeTiers: catalog.freeTiers,
@@ -135,7 +135,7 @@ describe('scenario category coverage', () => {
 
   it('never leaves controlled usage edits as unchanged complete totals', () => {
     const catalog = loadCatalog()
-    const health = getCatalogHealth(catalog, new Date('2026-08-14T00:00:00Z'))
+    const health = getCatalogHealth(catalog, new Date('2026-09-30T00:00:00Z'))
     const realContext: PricingContext = {
       exchangeRates: catalog.exchangeRates,
       freeTiers: catalog.freeTiers,

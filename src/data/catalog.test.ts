@@ -14,15 +14,15 @@ const sourceBackedOffer = {
   specs: {},
   prices: [],
   sourceIds: ['azure-retail-vm-b2s'],
-  verifiedAt: '2026-08-13',
+  verifiedAt: '2026-09-29',
   notes: [],
 }
 
 describe('catalog schemas', () => {
   it.each([
-    ['2026-09-12', 'current'],
-    ['2026-09-13', 'stale'],
-    ['2026-08-12', 'invalid'],
+    ['2026-10-28', 'current'],
+    ['2026-10-29', 'stale'],
+    ['2026-09-27', 'invalid'],
   ] as const)('checks ECB rate age at the UTC day boundary on %s', (date, status) => {
     const catalog = loadCatalog()
     const health = getCatalogHealth(catalog, new Date(`${date}T23:59:59Z`))
@@ -32,15 +32,15 @@ describe('catalog schemas', () => {
 
   it('rejects a future ECB source access date even when the rate date is valid', () => {
     const catalog = loadCatalog()
-    catalog.sources.find((source) => source.owner === 'ecb')!.accessedAt = '2026-09-22'
-    const health = getCatalogHealth(catalog, new Date('2026-08-20T00:00:00Z'))
+    catalog.sources.find((source) => source.owner === 'ecb')!.accessedAt = '2026-11-08'
+    const health = getCatalogHealth(catalog, new Date('2026-10-06T00:00:00Z'))
     expect(getUsableExchangeRates(catalog, health)).toEqual([])
   })
 
   it('keeps a newly verified EUR offer out of ranking when only an expired ECB rate exists', () => {
     const catalog = loadCatalog()
-    catalog.offers.forEach((offer) => { offer.verifiedAt = '2026-09-21' })
-    const health = getCatalogHealth(catalog, new Date('2026-09-21T00:00:00Z'))
+    catalog.offers.forEach((offer) => { offer.verifiedAt = '2026-11-07' })
+    const health = getCatalogHealth(catalog, new Date('2026-11-07T00:00:00Z'))
     const scenario = {
       ...catalog.scenarios[0]!,
       requiredCategories: ['compute' as const],
@@ -252,10 +252,10 @@ describe('catalog schemas', () => {
           ...catalog.providers.filter((provider) => provider.id !== 'azure'),
         ],
         exchangeRates: [
-          { id: 'test-rate', base: 'EUR', quote: 'USD', rate: 1.1, date: '2026-08-13', sourceId: 'missing-rate-source' },
+          { id: 'test-rate', base: 'EUR', quote: 'USD', rate: 1.1, date: '2026-09-29', sourceId: 'missing-rate-source' },
         ],
       },
-      new Date('2026-08-13T00:00:00Z'),
+      new Date('2026-09-29T00:00:00Z'),
     )
 
     expect(health.invalidReferences).toEqual(
@@ -277,7 +277,7 @@ describe('catalog schemas', () => {
         sourceId: 'missing-ecb-source',
       })),
     })
-    const health = getCatalogHealth(parsed, new Date('2026-08-14T00:00:00Z'))
+    const health = getCatalogHealth(parsed, new Date('2026-09-30T00:00:00Z'))
     const computeOnly = {
       ...catalog.scenarios.find((scenario) => scenario.id === 'small-web-app')!,
       requiredCategories: ['compute' as const],
@@ -314,7 +314,7 @@ describe('catalog schemas', () => {
     const catalog = loadCatalog()
     const rate = { ...catalog.exchangeRates[0]!, sourceId: 'azure-purchase-methods' }
     const parsed = loadCatalog({ ...catalog, exchangeRates: [rate] })
-    const health = getCatalogHealth(parsed, new Date('2026-08-14T00:00:00Z'))
+    const health = getCatalogHealth(parsed, new Date('2026-09-30T00:00:00Z'))
 
     expect(health.statusByExchangeRateId[rate.id]).toBe('invalid')
     expect(health.invalidReferences).toContain(`exchange-rate:${rate.id}:azure-purchase-methods:wrong-owner`)
@@ -333,7 +333,7 @@ describe('catalog schemas', () => {
           ...catalog.providers.filter((provider) => provider.id !== 'azure'),
         ],
       },
-      new Date('2026-08-13T00:00:00Z'),
+      new Date('2026-09-29T00:00:00Z'),
     )
 
     expect(health.invalidReferences).toContain('provider:azure:purchase:missing-purchase-source')
@@ -347,7 +347,7 @@ describe('catalog schemas', () => {
     if (!aws) throw new Error('Seeded AWS provider is required for this test')
     aws.purchaseSourceIds = []
 
-    const health = getCatalogHealth(mutated, new Date('2026-08-13T00:00:00Z'))
+    const health = getCatalogHealth(mutated, new Date('2026-09-29T00:00:00Z'))
 
     expect(health.invalidReferences).toEqual(['provider:aws:purchase:empty'])
     expect(health.invalidCount).toBe(1)
@@ -367,7 +367,7 @@ describe('catalog schemas', () => {
         ...catalog.providers.filter((provider) => provider.id !== 'azure'),
       ],
     })
-    const health = getCatalogHealth(parsed, new Date('2026-08-14T00:00:00Z'))
+    const health = getCatalogHealth(parsed, new Date('2026-09-30T00:00:00Z'))
 
     expect(health.invalidReferences).toEqual(expect.arrayContaining([
       'provider:azure:purchase:missing-purchase-source',
@@ -401,7 +401,7 @@ describe('catalog schemas', () => {
       freeTiers: [...catalog.freeTiers, affectedFreeTier],
     }
     const parsed = loadCatalog(mutated)
-    const health = getCatalogHealth(parsed, new Date('2026-08-14T00:00:00Z'))
+    const health = getCatalogHealth(parsed, new Date('2026-09-30T00:00:00Z'))
 
     expect(parsed.offers).toHaveLength(catalog.offers.length + 1)
     expect(health.statusByOfferId['source-backed-offer']).toBe('invalid')
@@ -439,7 +439,7 @@ describe('catalog schemas', () => {
         offer.id === affectedOfferId ? { ...offer, sourceIds: [sourceId] } : offer,
       ),
     })
-    const health = getCatalogHealth(parsed, new Date('2026-08-14T00:00:00Z'))
+    const health = getCatalogHealth(parsed, new Date('2026-09-30T00:00:00Z'))
     const smallWeb = parsed.scenarios.find((scenario) => scenario.id === 'small-web-app')!
     const gcpEstimate = estimateProvider('gcp', parsed.offers, smallWeb, {
       exchangeRates: parsed.exchangeRates,
@@ -470,7 +470,7 @@ describe('catalog schemas', () => {
         freeTier.id === affectedTierId ? { ...freeTier, sourceIds: [sourceId] } : freeTier,
       ),
     })
-    const health = getCatalogHealth(parsed, new Date('2026-09-04T00:00:00Z'))
+    const health = getCatalogHealth(parsed, new Date('2026-10-21T00:00:00Z'))
 
     expect(health.statusByFreeTierId[affectedTierId]).toBe('invalid')
     expect(health.invalidReferences).toContain(
@@ -494,7 +494,7 @@ describe('catalog schemas', () => {
         }
         : provider),
     })
-    const health = getCatalogHealth(parsed, new Date('2026-08-14T00:00:00Z'))
+    const health = getCatalogHealth(parsed, new Date('2026-09-30T00:00:00Z'))
 
     expect(health.invalidReferences).toEqual(expect.arrayContaining([
       'provider:azure:purchase:gcp-purchase-currency:wrong-owner',
@@ -515,11 +515,11 @@ describe('catalog schemas', () => {
 
   it('marks a record verified exactly 30 days ago as current', () => {
     const catalog = loadCatalog()
-    const offer = { ...sourceBackedOffer, id: 'offer-at-thirty-days', verifiedAt: '2026-07-14' }
+    const offer = { ...sourceBackedOffer, id: 'offer-at-thirty-days', verifiedAt: '2026-08-30' }
 
     const health = getCatalogHealth(
       { ...catalog, offers: [offer] },
-      new Date('2026-08-13T00:00:00Z'),
+      new Date('2026-09-29T00:00:00Z'),
     )
 
     expect(health.statusByOfferId[offer.id]).toBe('current')
@@ -527,11 +527,11 @@ describe('catalog schemas', () => {
 
   it('marks a record verified 31 days ago as stale', () => {
     const catalog = loadCatalog()
-    const offer = { ...sourceBackedOffer, id: 'offer-at-thirty-one-days', verifiedAt: '2026-07-13' }
+    const offer = { ...sourceBackedOffer, id: 'offer-at-thirty-one-days', verifiedAt: '2026-08-29' }
 
     const health = getCatalogHealth(
       { ...catalog, offers: [offer] },
-      new Date('2026-08-13T00:00:00Z'),
+      new Date('2026-09-29T00:00:00Z'),
     )
 
     expect(health.statusByOfferId[offer.id]).toBe('stale')
@@ -666,7 +666,7 @@ describe('official catalog policy', () => {
 
 it('does not mark future-dated prices as verified', () => {
   const catalog = loadCatalog()
-  const offer = { ...catalog.offers[0]!, verifiedAt: '2026-09-11' }
-  const health = getCatalogHealth({ ...catalog, offers: [offer] }, new Date('2026-09-10T00:00:00Z'))
+  const offer = { ...catalog.offers[0]!, verifiedAt: '2026-10-28' }
+  const health = getCatalogHealth({ ...catalog, offers: [offer] }, new Date('2026-10-27T00:00:00Z'))
   expect(health.statusByOfferId[offer.id]).toBe('invalid')
 })
