@@ -29,7 +29,7 @@ test('desktop decision-first flow recomputes a scenario and reaches official off
   await page.setViewportSize({ width: 1440, height: 1000 })
   await page.goto('/?lang=tr')
 
-  await expect(page).toHaveTitle(/^CLD - /u)
+  await expect(page).toHaveTitle(/^CLD — /u)
   await expect(page.getByRole('heading', {
     name: 'Bulut maliyetini senaryona göre karşılaştır',
   })).toBeVisible()

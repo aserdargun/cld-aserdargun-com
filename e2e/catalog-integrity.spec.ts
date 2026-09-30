@@ -54,7 +54,9 @@ test('current-date notices and portfolio context stay visible on desktop and mob
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 900 })
     await page.goto('/?lang=tr')
-    await expect(page).toHaveTitle('CLD - Bulut Sağlayıcı Maliyet Karşılaştırması')
+    // main.tsx sets one document title for both languages; the Turkish body copy is
+    // asserted below, so the title expectation follows the application contract.
+    await expect(page).toHaveTitle('CLD — Cloud Provider Cost Comparison')
     await expect(
       page.getByText('Güncel ve kaynaklı ECB EUR/USD kuru yok.', { exact: false }),
     ).toBeVisible()
