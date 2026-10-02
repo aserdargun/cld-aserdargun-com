@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { catalogSnapshotDate } from '../data/snapshot'
 import type { Offer, Scenario, ScenarioUsageDimension, ServiceCategory } from './catalog'
 import { evaluateCategoryCoverage, projectScenarioForCategory, unassignedScenarioDimensions } from './coverage'
 import { estimateOffer, type PricingContext } from './pricing'
@@ -109,7 +110,7 @@ describe('scenario category coverage', () => {
 
   it('keeps the required number of complete current estimates in the real catalog', () => {
     const catalog = loadCatalog()
-    const health = getCatalogHealth(catalog, new Date('2026-09-30T00:00:00Z'))
+    const health = getCatalogHealth(catalog, new Date(`${catalogSnapshotDate}T00:00:00.000Z`))
     const realContext: PricingContext = {
       exchangeRates: catalog.exchangeRates,
       freeTiers: catalog.freeTiers,
@@ -135,7 +136,7 @@ describe('scenario category coverage', () => {
 
   it('never leaves controlled usage edits as unchanged complete totals', () => {
     const catalog = loadCatalog()
-    const health = getCatalogHealth(catalog, new Date('2026-09-30T00:00:00Z'))
+    const health = getCatalogHealth(catalog, new Date(`${catalogSnapshotDate}T00:00:00.000Z`))
     const realContext: PricingContext = {
       exchangeRates: catalog.exchangeRates,
       freeTiers: catalog.freeTiers,

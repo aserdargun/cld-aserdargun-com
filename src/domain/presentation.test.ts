@@ -224,7 +224,7 @@ describe('presentation models', () => {
       providerCount: 8,
       offerCount: 41,
       sourceCount: 66,
-      latestVerificationDate: '2026-09-29',
+      latestVerificationDate: catalogSnapshotDate,
     })
   })
 

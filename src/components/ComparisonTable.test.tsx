@@ -1,4 +1,5 @@
 import { cleanup, render, screen, within } from '@testing-library/react'
+import { catalogSnapshotDate } from '../data/snapshot'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it } from 'vitest'
 import { getCatalogHealth, loadCatalog } from '../data/catalog'
@@ -380,7 +381,7 @@ describe('ComparisonTable', () => {
       sources: catalog.sources,
       freeTiers: catalog.freeTiers,
       exchangeRates: catalog.exchangeRates,
-      health: getCatalogHealth(catalog, new Date('2026-09-30T00:00:00Z')),
+      health: getCatalogHealth(catalog, new Date(`${catalogSnapshotDate}T00:00:00.000Z`)),
       scenario: staticSite,
     })
 
@@ -406,7 +407,7 @@ describe('ComparisonTable', () => {
       sources: catalog.sources,
       freeTiers: catalog.freeTiers,
       exchangeRates: catalog.exchangeRates,
-      health: getCatalogHealth(catalog, new Date('2026-09-30T00:00:00Z')),
+      health: getCatalogHealth(catalog, new Date(`${catalogSnapshotDate}T00:00:00.000Z`)),
       scenario: smallWeb,
     })
 
@@ -437,7 +438,7 @@ describe('ComparisonTable', () => {
       sources: catalog.sources,
       freeTiers: catalog.freeTiers,
       exchangeRates: catalog.exchangeRates,
-      health: getCatalogHealth(catalog, new Date('2026-09-30T00:00:00Z')),
+      health: getCatalogHealth(catalog, new Date(`${catalogSnapshotDate}T00:00:00.000Z`)),
       scenario: highTraffic,
     })
 
@@ -465,7 +466,7 @@ describe('ComparisonTable', () => {
       sources: catalog.sources,
       freeTiers: catalog.freeTiers,
       exchangeRates: catalog.exchangeRates,
-      health: getCatalogHealth(catalog, new Date('2026-09-30T00:00:00Z')),
+      health: getCatalogHealth(catalog, new Date(`${catalogSnapshotDate}T00:00:00.000Z`)),
       scenario: highTraffic,
     })
 
@@ -493,7 +494,7 @@ describe('ComparisonTable', () => {
       sources: catalog.sources,
       freeTiers: catalog.freeTiers,
       exchangeRates: catalog.exchangeRates,
-      health: getCatalogHealth(catalog, new Date('2026-09-30T00:00:00Z')),
+      health: getCatalogHealth(catalog, new Date(`${catalogSnapshotDate}T00:00:00.000Z`)),
       scenario: aiGpu,
     })
 
@@ -819,7 +820,7 @@ describe('ComparisonTable', () => {
     const hetzner = catalog.offers.find((offer) => offer.id === 'hetzner-cx23-nuremberg')!
     const exchangeRates = catalog.exchangeRates.map((rate) => ({ ...rate, sourceId }))
     const mutatedCatalog = { ...catalog, exchangeRates }
-    const mutatedHealth = getCatalogHealth(mutatedCatalog, new Date('2026-09-30T00:00:00Z'))
+    const mutatedHealth = getCatalogHealth(mutatedCatalog, new Date(`${catalogSnapshotDate}T00:00:00.000Z`))
 
     renderTable({
       offers: [hetzner],

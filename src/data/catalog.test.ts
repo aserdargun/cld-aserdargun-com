@@ -2,7 +2,14 @@ import { describe, expect, it } from 'vitest'
 import { providerIds, serviceCategories } from '../domain/catalog'
 import { estimateProvider, rankProviderEstimates } from '../domain/ranking'
 import { getCatalogHealth, getUsableExchangeRates, loadCatalog } from './catalog'
+import { catalogSnapshotDate } from './snapshot'
 import { catalogSchema, freeTierSchema, offerSchema, priceComponentSchema, providerSchema } from './schemas'
+
+function daysBeforeSnapshot(days: number): string {
+  const date = new Date(`${catalogSnapshotDate}T00:00:00.000Z`)
+  date.setUTCDate(date.getUTCDate() - days)
+  return date.toISOString().slice(0, 10)
+}
 
 const sourceBackedOffer = {
   id: 'source-backed-offer',
@@ -14,7 +21,7 @@ const sourceBackedOffer = {
   specs: {},
   prices: [],
   sourceIds: ['azure-retail-vm-b2s'],
-  verifiedAt: '2026-09-29',
+  verifiedAt: catalogSnapshotDate,
   notes: [],
 }
 
@@ -252,10 +259,10 @@ describe('catalog schemas', () => {
           ...catalog.providers.filter((provider) => provider.id !== 'azure'),
         ],
         exchangeRates: [
-          { id: 'test-rate', base: 'EUR', quote: 'USD', rate: 1.1, date: '2026-09-29', sourceId: 'missing-rate-source' },
+          { id: 'test-rate', base: 'EUR', quote: 'USD', rate: 1.1, date: catalogSnapshotDate, sourceId: 'missing-rate-source' },
         ],
       },
-      new Date('2026-09-29T00:00:00Z'),
+      new Date(`${catalogSnapshotDate}T00:00:00.000Z`),
     )
 
     expect(health.invalidReferences).toEqual(
@@ -277,7 +284,7 @@ describe('catalog schemas', () => {
         sourceId: 'missing-ecb-source',
       })),
     })
-    const health = getCatalogHealth(parsed, new Date('2026-09-30T00:00:00Z'))
+    const health = getCatalogHealth(parsed, new Date(`${catalogSnapshotDate}T00:00:00.000Z`))
     const computeOnly = {
       ...catalog.scenarios.find((scenario) => scenario.id === 'small-web-app')!,
       requiredCategories: ['compute' as const],
@@ -314,7 +321,7 @@ describe('catalog schemas', () => {
     const catalog = loadCatalog()
     const rate = { ...catalog.exchangeRates[0]!, sourceId: 'azure-purchase-methods' }
     const parsed = loadCatalog({ ...catalog, exchangeRates: [rate] })
-    const health = getCatalogHealth(parsed, new Date('2026-09-30T00:00:00Z'))
+    const health = getCatalogHealth(parsed, new Date(`${catalogSnapshotDate}T00:00:00.000Z`))
 
     expect(health.statusByExchangeRateId[rate.id]).toBe('invalid')
     expect(health.invalidReferences).toContain(`exchange-rate:${rate.id}:azure-purchase-methods:wrong-owner`)
@@ -333,7 +340,7 @@ describe('catalog schemas', () => {
           ...catalog.providers.filter((provider) => provider.id !== 'azure'),
         ],
       },
-      new Date('2026-09-29T00:00:00Z'),
+      new Date(`${catalogSnapshotDate}T00:00:00.000Z`),
     )
 
     expect(health.invalidReferences).toContain('provider:azure:purchase:missing-purchase-source')
@@ -347,7 +354,7 @@ describe('catalog schemas', () => {
     if (!aws) throw new Error('Seeded AWS provider is required for this test')
     aws.purchaseSourceIds = []
 
-    const health = getCatalogHealth(mutated, new Date('2026-09-29T00:00:00Z'))
+    const health = getCatalogHealth(mutated, new Date(`${catalogSnapshotDate}T00:00:00.000Z`))
 
     expect(health.invalidReferences).toEqual(['provider:aws:purchase:empty'])
     expect(health.invalidCount).toBe(1)
@@ -367,7 +374,7 @@ describe('catalog schemas', () => {
         ...catalog.providers.filter((provider) => provider.id !== 'azure'),
       ],
     })
-    const health = getCatalogHealth(parsed, new Date('2026-09-30T00:00:00Z'))
+    const health = getCatalogHealth(parsed, new Date(`${catalogSnapshotDate}T00:00:00.000Z`))
 
     expect(health.invalidReferences).toEqual(expect.arrayContaining([
       'provider:azure:purchase:missing-purchase-source',
@@ -401,7 +408,7 @@ describe('catalog schemas', () => {
       freeTiers: [...catalog.freeTiers, affectedFreeTier],
     }
     const parsed = loadCatalog(mutated)
-    const health = getCatalogHealth(parsed, new Date('2026-09-30T00:00:00Z'))
+    const health = getCatalogHealth(parsed, new Date(`${catalogSnapshotDate}T00:00:00.000Z`))
 
     expect(parsed.offers).toHaveLength(catalog.offers.length + 1)
     expect(health.statusByOfferId['source-backed-offer']).toBe('invalid')
@@ -439,7 +446,7 @@ describe('catalog schemas', () => {
         offer.id === affectedOfferId ? { ...offer, sourceIds: [sourceId] } : offer,
       ),
     })
-    const health = getCatalogHealth(parsed, new Date('2026-09-30T00:00:00Z'))
+    const health = getCatalogHealth(parsed, new Date(`${catalogSnapshotDate}T00:00:00.000Z`))
     const smallWeb = parsed.scenarios.find((scenario) => scenario.id === 'small-web-app')!
     const gcpEstimate = estimateProvider('gcp', parsed.offers, smallWeb, {
       exchangeRates: parsed.exchangeRates,
@@ -470,7 +477,7 @@ describe('catalog schemas', () => {
         freeTier.id === affectedTierId ? { ...freeTier, sourceIds: [sourceId] } : freeTier,
       ),
     })
-    const health = getCatalogHealth(parsed, new Date('2026-10-21T00:00:00Z'))
+    const health = getCatalogHealth(parsed, new Date(`${catalogSnapshotDate}T00:00:00.000Z`))
 
     expect(health.statusByFreeTierId[affectedTierId]).toBe('invalid')
     expect(health.invalidReferences).toContain(
@@ -494,7 +501,7 @@ describe('catalog schemas', () => {
         }
         : provider),
     })
-    const health = getCatalogHealth(parsed, new Date('2026-09-30T00:00:00Z'))
+    const health = getCatalogHealth(parsed, new Date(`${catalogSnapshotDate}T00:00:00.000Z`))
 
     expect(health.invalidReferences).toEqual(expect.arrayContaining([
       'provider:azure:purchase:gcp-purchase-currency:wrong-owner',
@@ -515,11 +522,11 @@ describe('catalog schemas', () => {
 
   it('marks a record verified exactly 30 days ago as current', () => {
     const catalog = loadCatalog()
-    const offer = { ...sourceBackedOffer, id: 'offer-at-thirty-days', verifiedAt: '2026-08-30' }
+    const offer = { ...sourceBackedOffer, id: 'offer-at-thirty-days', verifiedAt: daysBeforeSnapshot(30) }
 
     const health = getCatalogHealth(
       { ...catalog, offers: [offer] },
-      new Date('2026-09-29T00:00:00Z'),
+      new Date(`${catalogSnapshotDate}T00:00:00.000Z`),
     )
 
     expect(health.statusByOfferId[offer.id]).toBe('current')
@@ -527,11 +534,11 @@ describe('catalog schemas', () => {
 
   it('marks a record verified 31 days ago as stale', () => {
     const catalog = loadCatalog()
-    const offer = { ...sourceBackedOffer, id: 'offer-at-thirty-one-days', verifiedAt: '2026-08-29' }
+    const offer = { ...sourceBackedOffer, id: 'offer-at-thirty-one-days', verifiedAt: daysBeforeSnapshot(31) }
 
     const health = getCatalogHealth(
       { ...catalog, offers: [offer] },
-      new Date('2026-09-29T00:00:00Z'),
+      new Date(`${catalogSnapshotDate}T00:00:00.000Z`),
     )
 
     expect(health.statusByOfferId[offer.id]).toBe('stale')
