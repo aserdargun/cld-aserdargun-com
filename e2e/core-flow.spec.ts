@@ -74,7 +74,7 @@ test('desktop decision-first flow recomputes a scenario and reaches official off
   const awsComparison = page.getByRole('article', { name: 'Amazon Web Services' })
   await expect(awsComparison).toContainText('Europe (Frankfurt) · DE')
   await expect(awsComparison).not.toContainText('CloudFront global edge network')
-  await expect(awsComparison.getByText('2 Ekim 2026')).toHaveAttribute(
+  await expect(awsComparison.getByText('3 Ekim 2026')).toHaveAttribute(
     'datetime',
     catalogSnapshotDate,
   )
