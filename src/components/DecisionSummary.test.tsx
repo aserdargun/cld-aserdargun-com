@@ -117,7 +117,7 @@ function offer(
   providerId: Offer['providerId'],
   prices: PriceComponent[],
   region = defaultRegionByProvider[providerId],
-  verifiedAt = '2026-09-29',
+  verifiedAt = '2026-10-02',
   idSuffix = region,
 ): Offer {
   return {
@@ -157,7 +157,7 @@ function offerLine(
   lineItems: PriceLineItemEstimate[],
   status: VerificationStatus = 'current',
   region = defaultRegionByProvider[providerId],
-  verifiedAt = '2026-09-29',
+  verifiedAt = '2026-10-02',
   idSuffix = region,
 ): OfferEstimate {
   return {
@@ -336,13 +336,13 @@ describe('DecisionSummary', () => {
 
     const result = screen.getByRole('listitem', { name: 'Hetzner doğrulanmış tahmin' })
     const priceBasis = within(result).getByText('Fiyat tabanı').closest('div')
-    const rateDate = within(priceBasis!).getByText('28 Eylül 2026')
+    const rateDate = within(priceBasis!).getByText('2 Ekim 2026')
 
     expect(priceBasis).toHaveTextContent('Vergiler hariç genel liste fiyatı')
     expect(priceBasis).toHaveTextContent('Özgün para birimi: EUR')
-    expect(priceBasis).toHaveTextContent('ECB dönüşümü: 1 EUR = 1,1378 USD')
-    expect(rateDate).toHaveAttribute('datetime', '2026-09-28')
-    expect(priceBasis).toHaveTextContent('ECB daily EUR reference exchange rate for USD on 28 September 2026')
+    expect(priceBasis).toHaveTextContent('ECB dönüşümü: 1 EUR = 1,1225 USD')
+    expect(rateDate).toHaveAttribute('datetime', '2026-10-02')
+    expect(priceBasis).toHaveTextContent('ECB daily EUR reference exchange rate for USD on 2 October 2026')
   })
 
   it('deduplicates and maps every region actually used by a multi-region estimate', () => {
