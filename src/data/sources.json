@@ -46,7 +46,7 @@
 
   {"id":"hetzner-payment","owner":"hetzner","title":"Hetzner payment overview","url":"https://docs.hetzner.com/general/billing-and-account-management/billing-at-hetzner/payment-overview/","kind":"purchase","accessedAt":"2026-08-13"},
   {"id":"hetzner-regions","owner":"hetzner","title":"Hetzner Cloud locations","url":"https://docs.hetzner.com/cloud/general/locations/","kind":"regions","accessedAt":"2026-08-13"},
-  {"id":"hetzner-price-adjustment","owner":"hetzner","title":"Hetzner price adjustment effective 15 June 2026","url":"https://docs.hetzner.com/general/infrastructure-and-availability/price-adjustment/","kind":"pricing","accessedAt":"2026-10-03"},
+  {"id":"hetzner-price-adjustment","owner":"hetzner","title":"Hetzner price adjustment effective 15 June 2026","url":"https://docs.hetzner.com/general/infrastructure-and-availability/price-adjustment/","kind":"pricing","accessedAt":"2026-10-06"},
   {"id":"hetzner-cloud-specs","owner":"hetzner","title":"Hetzner Cloud server plans and specifications","url":"https://www.hetzner.com/cloud/","kind":"pricing","accessedAt":"2026-08-13"},
 
   {"id":"oracle-purchase-free-faq","owner":"oracle","title":"Oracle Cloud Free Tier FAQ and signup requirements","url":"https://www.oracle.com/cloud/free/faq/","kind":"purchase","accessedAt":"2026-08-13"},
@@ -72,5 +72,5 @@
   {"id":"vultr-plans-api","owner":"vultr","title":"Vultr public plans API","url":"https://api.vultr.com/v2/plans?type=vc2&per_page=100","kind":"pricing","accessedAt":"2026-10-03"},
   {"id":"vultr-object-pricing","owner":"vultr","title":"Vultr Object Storage billing","url":"https://docs.vultr.com/support/platform/billing/how-is-object-storage-billed","kind":"pricing","accessedAt":"2026-10-03"},
 
-  {"id":"ecb-daily-exr","owner":"ecb","title":"ECB daily EUR reference exchange rate for USD on 2 October 2026","url":"https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A?startPeriod=2026-09-25&endPeriod=2026-10-02&format=csvdata","kind":"exchange-rate","accessedAt":"2026-10-03"}
+  {"id":"ecb-daily-exr","owner":"ecb","title":"ECB daily EUR reference exchange rate for USD on 5 October 2026","url":"https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A?startPeriod=2026-10-05&endPeriod=2026-10-05&format=csvdata","kind":"exchange-rate","accessedAt":"2026-10-06"}
 ]

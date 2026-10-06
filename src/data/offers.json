@@ -144,12 +144,12 @@
 
   {
     "id":"hetzner-cx23-nuremberg","providerId":"hetzner","serviceName":"Hetzner Cloud CX23","category":"compute","rankable":true,"region":"nbg1","specs":{"vcpu":2,"ramGb":4,"storageGb":40},
-    "prices":[{"kind":"instance-hour","price":0.0088,"currency":"EUR","includedQuantity":0,"monthlyCap":5.49}],"sourceIds":["hetzner-price-adjustment","hetzner-cloud-specs"],"verifiedAt":"2026-10-03",
+    "prices":[{"kind":"instance-hour","price":0.0088,"currency":"EUR","includedQuantity":0,"monthlyCap":5.49}],"sourceIds":["hetzner-price-adjustment","hetzner-cloud-specs"],"verifiedAt":"2026-10-06",
     "notes":["15 Haziran 2026 sonrası Almanya/Finlandiya KDV hariç fiyatıdır; paylaşımlı CPU, birincil IPv4, snapshot/backup, ek trafik ve vergi hariçtir."]
   },
   {
     "id":"hetzner-cax11-nuremberg","providerId":"hetzner","serviceName":"Hetzner Cloud CAX11 Arm","category":"compute","rankable":true,"region":"nbg1","specs":{"vcpu":2,"ramGb":4,"storageGb":40},
-    "prices":[{"kind":"instance-hour","price":0.0096,"currency":"EUR","includedQuantity":0,"monthlyCap":5.99}],"sourceIds":["hetzner-price-adjustment","hetzner-cloud-specs"],"verifiedAt":"2026-10-03",
+    "prices":[{"kind":"instance-hour","price":0.0096,"currency":"EUR","includedQuantity":0,"monthlyCap":5.99}],"sourceIds":["hetzner-price-adjustment","hetzner-cloud-specs"],"verifiedAt":"2026-10-06",
     "notes":["15 Haziran 2026 sonrası Almanya/Finlandiya KDV hariç Arm fiyatıdır; paylaşımlı CPU, birincil IPv4, snapshot/backup, ek trafik ve vergi hariçtir."]
   },
 

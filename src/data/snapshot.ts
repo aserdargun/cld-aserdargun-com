@@ -1,2 +1,2 @@
 // Shared clock for the bundled research snapshot; independent of JSON loaders.
-export const catalogSnapshotDate = '2026-10-03'
+export const catalogSnapshotDate = '2026-10-06'

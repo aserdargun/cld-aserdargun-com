@@ -135,7 +135,7 @@ function offerEstimate(
   {
     currency = 'USD',
     region = defaultRegionByProvider[providerId],
-    verifiedAt = '2026-10-02',
+    verifiedAt = '2026-10-05',
     status = 'current',
     offerProviderId = providerId,
   }: {

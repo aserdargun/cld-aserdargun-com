@@ -2,6 +2,7 @@ import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it } from 'vitest'
 import { getCatalogHealth, getUsableExchangeRates, loadCatalog } from '../data/catalog'
+import { catalogSnapshotDate } from '../data/snapshot'
 import type {
   ExchangeRate,
   Offer,
@@ -117,7 +118,7 @@ function offer(
   providerId: Offer['providerId'],
   prices: PriceComponent[],
   region = defaultRegionByProvider[providerId],
-  verifiedAt = '2026-10-02',
+  verifiedAt = '2026-10-05',
   idSuffix = region,
 ): Offer {
   return {
@@ -157,7 +158,7 @@ function offerLine(
   lineItems: PriceLineItemEstimate[],
   status: VerificationStatus = 'current',
   region = defaultRegionByProvider[providerId],
-  verifiedAt = '2026-10-02',
+  verifiedAt = '2026-10-05',
   idSuffix = region,
 ): OfferEstimate {
   return {
@@ -336,13 +337,13 @@ describe('DecisionSummary', () => {
 
     const result = screen.getByRole('listitem', { name: 'Hetzner doğrulanmış tahmin' })
     const priceBasis = within(result).getByText('Fiyat tabanı').closest('div')
-    const rateDate = within(priceBasis!).getByText('2 Ekim 2026')
+    const rateDate = within(priceBasis!).getByText('5 Ekim 2026')
 
     expect(priceBasis).toHaveTextContent('Vergiler hariç genel liste fiyatı')
     expect(priceBasis).toHaveTextContent('Özgün para birimi: EUR')
-    expect(priceBasis).toHaveTextContent('ECB dönüşümü: 1 EUR = 1,1225 USD')
-    expect(rateDate).toHaveAttribute('datetime', '2026-10-02')
-    expect(priceBasis).toHaveTextContent('ECB daily EUR reference exchange rate for USD on 2 October 2026')
+    expect(priceBasis).toHaveTextContent('ECB dönüşümü: 1 EUR = 1,1204 USD')
+    expect(rateDate).toHaveAttribute('datetime', '2026-10-05')
+    expect(priceBasis).toHaveTextContent('ECB daily EUR reference exchange rate for USD on 5 October 2026')
   })
 
   it('deduplicates and maps every region actually used by a multi-region estimate', () => {
@@ -516,7 +517,9 @@ describe('DecisionSummary', () => {
   })
 
   it('shows one truthful reason for a real seeded partial estimate', () => {
-    const health = getCatalogHealth(catalog, new Date('2026-10-04T00:00:00.000Z'))
+    // Read the live catalog at its own snapshot date, so the newest record in the
+    // catalog is always already published at the clock this estimate runs against.
+    const health = getCatalogHealth(catalog, new Date(`${catalogSnapshotDate}T00:00:00.000Z`))
     const scenario = catalog.scenarios.find((candidate) => candidate.id === 'small-web-app')
     if (!scenario) throw new Error('Seeded small-web-app scenario is required for this test')
     const partial = estimateProvider('hetzner', catalog.offers, scenario, {

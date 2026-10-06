@@ -240,23 +240,32 @@ describe('catalog validator policy', () => {
 describe('wall-clock freshness gate', () => {
   // Every clock is injected so the 30-day window boundary is asserted exactly and
   // these tests never rot as real time passes. The clocks are expressed relative to
-  // the snapshot date, so refreshing the catalog does not invalidate them. The ECB
-  // rate carries its own reference date and is the binding record in these fixtures.
+  // the snapshot date, so refreshing the catalog does not invalidate them. Records
+  // that are individually re-verified can sit on different dates, so the whole
+  // catalog goes stale as soon as its oldest record does and that date drives the
+  // whole-catalog assertions; the ECB rate keeps its own date for rate assertions.
   const at = (date: string) => new Date(`${date}T12:00:00.000Z`)
   const snapshotPlus = (days: number) => shiftDate(catalogSnapshotDate, days)
   const ecbRate = clonedCatalog().exchangeRates[0]!.id
   const ecbRateDate = clonedCatalog().exchangeRates[0]!.date
   const lastDayInsideWindow = (date: string) => shiftDate(date, 30)
   const firstDayOutsideWindow = (date: string) => shiftDate(date, 31)
+  const oldestVerifiedDate = (catalog: Catalog): string => [
+    ...catalog.offers.map((offer) => offer.verifiedAt),
+    ...catalog.freeTiers.map((freeTier) => freeTier.verifiedAt),
+    ...catalog.exchangeRates.map((exchangeRate) => exchangeRate.date),
+  ].reduce((oldest, date) => (date < oldest ? date : oldest))
 
   it('passes when every record is inside the window', () => {
     expect(validateCatalogFreshness(clonedCatalog(), at(catalogSnapshotDate))).toEqual([])
   })
 
   it('keeps a record verified exactly 30 days ago inside the window', () => {
-    // A record verified on the snapshot date is still accepted 30 days later, so
-    // the snapshot date plus 30 days is the last day the catalog is inside the window.
-    expect(validateCatalogFreshness(clonedCatalog(), at(lastDayInsideWindow(ecbRateDate)))).toEqual([])
+    // The oldest record is still accepted 30 days after it was verified, so that
+    // date is the last day the whole catalog is inside the window.
+    const catalog = clonedCatalog()
+
+    expect(validateCatalogFreshness(catalog, at(lastDayInsideWindow(oldestVerifiedDate(catalog))))).toEqual([])
   })
 
   it('fails a record one day past the window and names it with its age', () => {
@@ -291,7 +300,7 @@ describe('wall-clock freshness gate', () => {
 
     const lastDay = lastDayInsideWindow(ecbRateDate)
     expect(getUsableExchangeRates(catalog, getCatalogHealth(catalog, at(lastDay)))).toHaveLength(1)
-    expect(validateCatalogFreshness(catalog, at(lastDay))).toEqual([])
+    expect(validateCatalogFreshness(catalog, at(lastDayInsideWindow(oldestVerifiedDate(catalog))))).toEqual([])
 
     const expired = getCatalogHealth(catalog, at(firstDayOutsideWindow(ecbRateDate)))
     expect(getUsableExchangeRates(catalog, expired)).toEqual([])

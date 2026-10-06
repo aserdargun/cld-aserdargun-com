@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 
+import offers from '../src/data/offers.json' with { type: 'json' }
 import { catalogSnapshotDate } from '../src/data/snapshot'
 
 test.beforeEach(async ({ page }) => {
@@ -74,10 +75,19 @@ test('desktop decision-first flow recomputes a scenario and reaches official off
   const awsComparison = page.getByRole('article', { name: 'Amazon Web Services' })
   await expect(awsComparison).toContainText('Europe (Frankfurt) · DE')
   await expect(awsComparison).not.toContainText('CloudFront global edge network')
-  await expect(awsComparison.getByText('3 Ekim 2026')).toHaveAttribute(
-    'datetime',
-    catalogSnapshotDate,
-  )
+  // The stamp is the offer's own verification date, not the catalog snapshot date:
+  // offers are re-verified on their own clock, so derive both the label and the
+  // datetime from the record instead of pinning a literal here.
+  const awsFrankfurtDate = offers.find(
+    (offer) => offer.providerId === 'aws' && offer.region === 'eu-central-1',
+  )!.verifiedAt
+  const turkishStamp = new Intl.DateTimeFormat('tr', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(`${awsFrankfurtDate}T00:00:00.000Z`))
+  await expect(awsComparison.getByText(turkishStamp)).toHaveAttribute('datetime', awsFrankfurtDate)
 
   await page.getByRole('tab', { name: 'Yüksek trafikli uygulama' }).click()
   await page.getByLabel('Aylık dış trafik').fill('1000')
