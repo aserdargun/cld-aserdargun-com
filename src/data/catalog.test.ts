@@ -27,9 +27,9 @@ const sourceBackedOffer = {
 
 describe('catalog schemas', () => {
   it.each([
-    ['2026-11-04', 'current'],
-    ['2026-11-05', 'stale'],
-    ['2026-10-04', 'invalid'],
+    ['2026-11-06', 'current'],
+    ['2026-11-07', 'stale'],
+    ['2026-10-06', 'invalid'],
   ] as const)('checks ECB rate age at the UTC day boundary on %s', (date, status) => {
     const catalog = loadCatalog()
     const health = getCatalogHealth(catalog, new Date(`${date}T23:59:59Z`))
