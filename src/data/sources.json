@@ -522,9 +522,9 @@
   {
     "id": "ecb-daily-exr",
     "owner": "ecb",
-    "title": "ECB daily EUR reference exchange rate for USD on 7 October 2026",
-    "url": "https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A?startPeriod=2026-10-07&endPeriod=2026-10-07&format=csvdata",
+    "title": "ECB daily EUR reference exchange rate for USD on 9 October 2026",
+    "url": "https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A?startPeriod=2026-10-09&endPeriod=2026-10-09&format=csvdata",
     "kind": "exchange-rate",
-    "accessedAt": "2026-10-07"
+    "accessedAt": "2026-10-09"
   }
 ]

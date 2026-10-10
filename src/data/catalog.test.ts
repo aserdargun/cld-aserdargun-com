@@ -27,9 +27,9 @@ const sourceBackedOffer = {
 
 describe('catalog schemas', () => {
   it.each([
-    ['2026-11-06', 'current'],
-    ['2026-11-07', 'stale'],
-    ['2026-10-06', 'invalid'],
+    ['2026-11-08', 'current'],
+    ['2026-11-09', 'stale'],
+    ['2026-10-08', 'invalid'],
   ] as const)('checks ECB rate age at the UTC day boundary on %s', (date, status) => {
     const catalog = loadCatalog()
     const health = getCatalogHealth(catalog, new Date(`${date}T23:59:59Z`))
@@ -39,15 +39,15 @@ describe('catalog schemas', () => {
 
   it('rejects a future ECB source access date even when the rate date is valid', () => {
     const catalog = loadCatalog()
-    catalog.sources.find((source) => source.owner === 'ecb')!.accessedAt = '2026-11-08'
-    const health = getCatalogHealth(catalog, new Date('2026-10-06T00:00:00Z'))
+    catalog.sources.find((source) => source.owner === 'ecb')!.accessedAt = '2026-11-10'
+    const health = getCatalogHealth(catalog, new Date('2026-10-10T00:00:00Z'))
     expect(getUsableExchangeRates(catalog, health)).toEqual([])
   })
 
   it('keeps a newly verified EUR offer out of ranking when only an expired ECB rate exists', () => {
     const catalog = loadCatalog()
-    catalog.offers.forEach((offer) => { offer.verifiedAt = '2026-11-07' })
-    const health = getCatalogHealth(catalog, new Date('2026-11-07T00:00:00Z'))
+    catalog.offers.forEach((offer) => { offer.verifiedAt = '2026-11-09' })
+    const health = getCatalogHealth(catalog, new Date('2026-11-09T00:00:00Z'))
     const scenario = {
       ...catalog.scenarios[0]!,
       requiredCategories: ['compute' as const],

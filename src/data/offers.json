@@ -771,7 +771,7 @@
       "hetzner-price-adjustment",
       "hetzner-cloud-specs"
     ],
-    "verifiedAt": "2026-10-07",
+    "verifiedAt": "2026-10-09",
     "notes": [
       "15 Haziran 2026 sonrası Almanya/Finlandiya KDV hariç fiyatıdır; paylaşımlı CPU, birincil IPv4, snapshot/backup, ek trafik ve vergi hariçtir."
     ]
@@ -801,7 +801,7 @@
       "hetzner-price-adjustment",
       "hetzner-cloud-specs"
     ],
-    "verifiedAt": "2026-10-07",
+    "verifiedAt": "2026-10-09",
     "notes": [
       "15 Haziran 2026 sonrası Almanya/Finlandiya KDV hariç Arm fiyatıdır; paylaşımlı CPU, birincil IPv4, snapshot/backup, ek trafik ve vergi hariçtir."
     ]
