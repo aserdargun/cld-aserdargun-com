@@ -357,7 +357,7 @@
     "title": "Hetzner price adjustment effective 15 June 2026",
     "url": "https://docs.hetzner.com/general/infrastructure-and-availability/price-adjustment/",
     "kind": "pricing",
-    "accessedAt": "2026-10-07"
+    "accessedAt": "2026-10-13"
   },
   {
     "id": "hetzner-cloud-specs",
@@ -522,9 +522,9 @@
   {
     "id": "ecb-daily-exr",
     "owner": "ecb",
-    "title": "ECB daily EUR reference exchange rate for USD on 9 October 2026",
-    "url": "https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A?startPeriod=2026-10-09&endPeriod=2026-10-09&format=csvdata",
+    "title": "ECB daily EUR reference exchange rate for USD on 12 October 2026",
+    "url": "https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A?startPeriod=2026-10-12&endPeriod=2026-10-12&format=csvdata",
     "kind": "exchange-rate",
-    "accessedAt": "2026-10-09"
+    "accessedAt": "2026-10-13"
   }
 ]
