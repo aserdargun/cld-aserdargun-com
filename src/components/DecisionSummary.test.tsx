@@ -337,13 +337,13 @@ describe('DecisionSummary', () => {
 
     const result = screen.getByRole('listitem', { name: 'Hetzner doğrulanmış tahmin' })
     const priceBasis = within(result).getByText('Fiyat tabanı').closest('div')
-    const rateDate = within(priceBasis!).getByText('15 Ekim 2026')
+    const rateDate = within(priceBasis!).getByText('16 Ekim 2026')
 
     expect(priceBasis).toHaveTextContent('Vergiler hariç genel liste fiyatı')
     expect(priceBasis).toHaveTextContent('Özgün para birimi: EUR')
-    expect(priceBasis).toHaveTextContent('ECB dönüşümü: 1 EUR = 1,1208 USD')
-    expect(rateDate).toHaveAttribute('datetime', '2026-10-15')
-    expect(priceBasis).toHaveTextContent('ECB daily EUR reference exchange rate for USD on 15 October 2026')
+    expect(priceBasis).toHaveTextContent('ECB dönüşümü: 1 EUR = 1,1253 USD')
+    expect(rateDate).toHaveAttribute('datetime', '2026-10-16')
+    expect(priceBasis).toHaveTextContent('ECB daily EUR reference exchange rate for USD on 16 October 2026')
   })
 
   it('deduplicates and maps every region actually used by a multi-region estimate', () => {
