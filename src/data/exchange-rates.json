@@ -2,5 +2,6 @@
   {"id":"ecb-eur-usd-2026-10-16","base":"EUR","quote":"USD","rate":1.1253,"date":"2026-10-16","sourceId":"ecb-daily-exr"},
   {"id":"ecb-eur-usd-2026-10-15","base":"EUR","quote":"USD","rate":1.1208,"date":"2026-10-15","sourceId":"ecb-daily-exr-2026-10-15"},
   {"id":"ecb-eur-usd-2026-10-14","base":"EUR","quote":"USD","rate":1.1195,"date":"2026-10-14","sourceId":"ecb-daily-exr-2026-10-14"},
+  {"id":"ecb-eur-usd-2026-10-13","base":"EUR","quote":"USD","rate":1.1188,"date":"2026-10-13","sourceId":"ecb-daily-exr-2026-10-13"},
   {"id":"ecb-eur-usd-2026-10-12","base":"EUR","quote":"USD","rate":1.1181,"date":"2026-10-12","sourceId":"ecb-daily-exr-2026-10-12"}
 ]
