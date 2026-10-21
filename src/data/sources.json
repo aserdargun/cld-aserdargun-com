@@ -520,12 +520,28 @@
     "accessedAt": "2026-10-03"
   },
   {
+    "id": "ecb-daily-exr-2026-10-19",
+    "owner": "ecb",
+    "title": "ECB daily EUR reference exchange rate for USD on 19 October 2026",
+    "url": "https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A?startPeriod=2026-10-19&endPeriod=2026-10-19&format=csvdata",
+    "kind": "exchange-rate",
+    "accessedAt": "2026-10-21"
+  },
+  {
     "id": "ecb-daily-exr",
+    "owner": "ecb",
+    "title": "ECB daily EUR reference exchange rate for USD on 20 October 2026",
+    "url": "https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A?startPeriod=2026-10-20&endPeriod=2026-10-20&format=csvdata",
+    "kind": "exchange-rate",
+    "accessedAt": "2026-10-21"
+  },
+  {
+    "id": "ecb-daily-exr-2026-10-16",
     "owner": "ecb",
     "title": "ECB daily EUR reference exchange rate for USD on 16 October 2026",
     "url": "https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A?startPeriod=2026-10-16&endPeriod=2026-10-16&format=csvdata",
     "kind": "exchange-rate",
-    "accessedAt": "2026-10-19"
+    "accessedAt": "2026-10-21"
   },
   {
     "id": "ecb-daily-exr-2026-10-13",
@@ -533,7 +549,7 @@
     "title": "ECB daily EUR reference exchange rate for USD on 13 October 2026",
     "url": "https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A?startPeriod=2026-10-13&endPeriod=2026-10-13&format=csvdata",
     "kind": "exchange-rate",
-    "accessedAt": "2026-10-19"
+    "accessedAt": "2026-10-21"
   },
   {
     "id": "ecb-daily-exr-2026-10-15",
@@ -541,7 +557,7 @@
     "title": "ECB daily EUR reference exchange rate for USD on 15 October 2026",
     "url": "https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A?startPeriod=2026-10-15&endPeriod=2026-10-15&format=csvdata",
     "kind": "exchange-rate",
-    "accessedAt": "2026-10-16"
+    "accessedAt": "2026-10-21"
   },
   {
     "id": "ecb-daily-exr-2026-10-14",
@@ -549,7 +565,7 @@
     "title": "ECB daily EUR reference exchange rate for USD on 14 October 2026",
     "url": "https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A?startPeriod=2026-10-14&endPeriod=2026-10-14&format=csvdata",
     "kind": "exchange-rate",
-    "accessedAt": "2026-10-15"
+    "accessedAt": "2026-10-21"
   },
   {
     "id": "ecb-daily-exr-2026-10-12",
@@ -557,6 +573,6 @@
     "title": "ECB daily EUR reference exchange rate for USD on 12 October 2026",
     "url": "https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A?startPeriod=2026-10-12&endPeriod=2026-10-12&format=csvdata",
     "kind": "exchange-rate",
-    "accessedAt": "2026-10-13"
+    "accessedAt": "2026-10-21"
   }
 ]

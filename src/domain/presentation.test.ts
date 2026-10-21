@@ -223,13 +223,13 @@ describe('presentation models', () => {
     expect(getCatalogStats(catalog)).toEqual({
       providerCount: 8,
       offerCount: 41,
-      sourceCount: 70,
+      sourceCount: 72,
       // Latest provider/offer/free-tier verification date, which trails the catalog
       // snapshot clock: the snapshot moved to re-read the ECB rate, but no pricing
       // record itself was re-verified.
       latestVerificationDate: '2026-10-13',
     })
-    expect(catalogSnapshotDate).toBe('2026-10-19')
+    expect(catalogSnapshotDate).toBe('2026-10-21')
   })
 
   it('keeps only evidence-eligible estimates in the top three', () => {
