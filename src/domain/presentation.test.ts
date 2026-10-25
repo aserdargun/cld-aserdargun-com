@@ -229,7 +229,7 @@ describe('presentation models', () => {
       // record itself was re-verified.
       latestVerificationDate: '2026-10-13',
     })
-    expect(catalogSnapshotDate).toBe('2026-10-24')
+    expect(catalogSnapshotDate).toBe('2026-10-25')
   })
 
   it('keeps only evidence-eligible estimates in the top three', () => {
