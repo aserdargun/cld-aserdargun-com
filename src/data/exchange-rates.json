@@ -1,5 +1,13 @@
 [
   {
+    "id": "ecb-eur-usd-2026-10-26",
+    "base": "EUR",
+    "quote": "USD",
+    "rate": 1.1188,
+    "date": "2026-10-26",
+    "sourceId": "ecb-daily-exr"
+  },
+  {
     "id": "ecb-eur-usd-2026-10-23",
     "base": "EUR",
     "quote": "USD",
